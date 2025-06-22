@@ -54,10 +54,16 @@ Characters:
         for c in characters:
             prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
 
-        prompt += "\nOutput a JSON structure with fields: title, setting, genre, characters (array), and openingScene (string)."
+        prompt += "\nRespond ONLY with raw JSON. Do not wrap the output in code blocks or explanations."
 
         response = model.generate_content(prompt)
         output = response.text.strip()
+
+        # --- Clean up triple backticks if present ---
+        if output.startswith("```json"):
+            output = output.replace("```json", "").strip()
+        if output.endswith("```"):
+            output = output[:-3].strip()
 
         try:
             sekai_json = json.loads(output)
