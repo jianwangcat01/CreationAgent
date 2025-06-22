@@ -25,7 +25,7 @@ with col1:
         suggestion = generate_field(f"Suggest a detailed setting, title and genre based on the idea: '{world_idea}'")
         st.session_state["world_suggestion"] = suggestion
     world_title = st.text_input("Sekai Title", st.session_state.get("world_suggestion", "Midnight Library"))
-    world_setting = st.text_area("World Setting", "A magical library that only appears at midnight, where books come alive.")
+    world_setting = st.text_area("World Setting", "A magical library that only appears at midnight, where books come alive.", height=120)
     world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=["Fantasy"])
 
 # --- Step 2: Define Characters ---
@@ -37,13 +37,29 @@ for i in range(num_characters):
     with st.expander(f"Character {i+1}"):
         idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
         if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
-            prompt = f"Write a name, role, and personality traits for a character based on: {idea}"
+            prompt = (
+                f"Based on the following idea, create a character with the following format:\n\n"
+                f"Name: <Character Name>\n"
+                f"Role: <Character Role>\n"
+                f"Traits: <Personality traits and special abilities>\n\n"
+                f"Idea: {idea}"
+            )
             result = generate_field(prompt)
             st.session_state[f"char_{i}"] = result
-        default_text = st.session_state.get(f"char_{i}", "Name: , Role: , Traits: ")
-        name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=default_text.split('Name: ')[-1].split(',')[0].strip())
-        role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=default_text.split('Role: ')[-1].split(',')[0].strip())
-        trait = st.text_input(f"Key Traits {i+1}", key=f"trait_{i}", value=default_text.split('Traits: ')[-1].strip())
+
+        default_text = st.session_state.get(f"char_{i}", "")
+        parsed_name, parsed_role, parsed_traits = "", "", ""
+        if "Name:" in default_text and "Role:" in default_text and "Traits:" in default_text:
+            try:
+                parsed_name = default_text.split("Name:")[1].split("Role:")[0].strip().strip("*:")
+                parsed_role = default_text.split("Role:")[1].split("Traits:")[0].strip().strip("*:")
+                parsed_traits = default_text.split("Traits:")[1].strip().strip("*:")
+            except Exception:
+                parsed_name, parsed_role, parsed_traits = "", "", ""
+
+        name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
+        role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=parsed_role)
+        trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100)
         characters.append({"name": name, "role": role, "traits": trait})
 
 # --- Step 3: Generate Sekai JSON ---
