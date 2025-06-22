@@ -9,7 +9,7 @@ st.title("Sekai AI Creation Agent")
 
 # --- Gemini API Setup (from secrets) ---
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model_type = "gemini-2.5-flash"
+model_type = "gemini-2.5-flash-lite-preview-06-17"
 model = genai.GenerativeModel(model_type)
 
 # --- Helper: Generate Suggestions ---
@@ -129,20 +129,22 @@ Include the player character: {user_name}.
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 """
-        st.session_state["game_state"] = [model.generate_content(story_prompt).text.strip()]
+        first_turn = model.generate_content(story_prompt).text.strip()
+        st.session_state["game_state"] = [first_turn]
         st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
+        st.session_state["user_inputs"] = [""]
 
 # --- Step 5: Game UI ---
 if "game_state" in st.session_state:
     st.markdown("---")
     st.subheader("🚀 Game In Progress")
 
-    for i, block in enumerate(st.session_state["game_state"]):
+    for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
         color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
-        st.markdown(f'<div style="background-color:{color}; padding:10px; border-radius:8px">{block}</div>', unsafe_allow_html=True)
+        user_reply_html = f'<p style="margin-bottom:4px;"><b>Your input:</b> {user_input}</p>' if user_input.strip() else ""
+        st.markdown(f'<div style="background-color:{color}; padding:10px; border-radius:8px">{user_reply_html}{block}</div>', unsafe_allow_html=True)
 
-    user_input = st.text_input("Your reply", key="reply_input")
-
+    user_input = st.text_input("Enter your next action or dialogue", key="reply_input")
     if st.button("🔄 Send"):
         if user_input.strip():
             last_turn = st.session_state["game_state"][-1]
@@ -152,7 +154,7 @@ if "game_state" in st.session_state:
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
-            # Assign a new color different from the last
+            st.session_state["user_inputs"].append(user_input.strip())
             existing_colors = st.session_state.get("story_colors", [])
             available_colors = [c for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"] if c != existing_colors[-1]]
             new_color = random.choice(available_colors)
