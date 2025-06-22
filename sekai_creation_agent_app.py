@@ -94,16 +94,15 @@ Characters:
 if "sekai_json" in st.session_state:
     st.subheader("4. Start Your Sekai Interactive Game")
     if st.button("🎮 Start Game"):
-       story_prompt = f"""You are the game narrator. Begin the interactive story using the setting below.
+        story_prompt = f"""You are the game narrator. Begin the interactive story using the setting below.
 Let each character speak in turn. Occasionally, ask the user for a response and wait for their input.
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 """
-
-
         st.session_state["game_state"] = [model.generate_content(story_prompt).text.strip()]
 
+# --- Step 5: Game UI ---
 if "game_state" in st.session_state:
     st.markdown("---")
     st.subheader("🚀 Game In Progress")
