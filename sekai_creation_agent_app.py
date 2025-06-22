@@ -1,24 +1,14 @@
-# sekai_creation_agent_app.py (upgraded for generative input + game start)
-
 import streamlit as st
 import google.generativeai as genai
 import json
 
-# --- Config ---
+# --- Page Config ---
 st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
 st.title("Sekai AI Creation Agent")
 
-# --- Gemini API Setup ---
-with st.sidebar:
-    st.header("🔐 API Settings")
-    api_key = st.text_input("Enter your Gemini API Key", type="password")
-    model_type = st.selectbox("Model", ["gemini-2.5-flash"])
-
-if not api_key:
-    st.warning("Please enter your Gemini API key to start.")
-    st.stop()
-
-genai.configure(api_key=api_key)
+# --- Gemini API Setup (from secrets) ---
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+model_type = "gemini-2.5-flash"
 model = genai.GenerativeModel(model_type)
 
 # --- Helper: Generate Suggestions ---
@@ -110,7 +100,6 @@ if "game_state" in st.session_state:
     for block in st.session_state["game_state"]:
         st.markdown(block)
 
-    # Ensure session state keys exist
     if "user_reply" not in st.session_state:
         st.session_state["user_reply"] = ""
     if "send_triggered" not in st.session_state:
@@ -123,15 +112,13 @@ if "game_state" in st.session_state:
         st.session_state["user_reply"] = user_input
 
     if st.session_state.get("send_triggered", False):
-        st.session_state["send_triggered"] = False  # reset trigger
+        st.session_state["send_triggered"] = False
         if st.session_state["user_reply"]:
             last_turn = st.session_state["game_state"][-1]
             reply_prompt = f"Continue the interactive story. The user replied: '{st.session_state['user_reply']}'. Respond with the next part."
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
-            st.session_state["user_reply"] = ""  # safe now
+            st.session_state["user_reply"] = ""
 
-
-
-# ... footer unchanged ...
+# Footer
 st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
