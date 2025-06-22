@@ -110,25 +110,27 @@ if "game_state" in st.session_state:
     for block in st.session_state["game_state"]:
         st.markdown(block)
 
+    # Ensure session state keys exist
     if "user_reply" not in st.session_state:
-    st.session_state["user_reply"] = ""
-if "send_triggered" not in st.session_state:
-    st.session_state["send_triggered"] = False
+        st.session_state["user_reply"] = ""
+    if "send_triggered" not in st.session_state:
+        st.session_state["send_triggered"] = False
 
-user_input = st.text_input("Your reply", value=st.session_state["user_reply"], key="reply_input")
+    user_input = st.text_input("Your reply", value=st.session_state["user_reply"], key="reply_input")
 
-if st.button("🔄 Send"):
-    st.session_state["send_triggered"] = True
-    st.session_state["user_reply"] = user_input
+    if st.button("🔄 Send"):
+        st.session_state["send_triggered"] = True
+        st.session_state["user_reply"] = user_input
 
-if st.session_state.get("send_triggered", False):
-    st.session_state["send_triggered"] = False  # reset trigger
-    if st.session_state["user_reply"]:
-        last_turn = st.session_state["game_state"][-1]
-        reply_prompt = f"Continue the interactive story. The user replied: '{st.session_state['user_reply']}'. Respond with the next part."
-        new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
-        st.session_state["game_state"].append(new_turn)
-        st.session_state["user_reply"] = ""  # safe now
+    if st.session_state.get("send_triggered", False):
+        st.session_state["send_triggered"] = False  # reset trigger
+        if st.session_state["user_reply"]:
+            last_turn = st.session_state["game_state"][-1]
+            reply_prompt = f"Continue the interactive story. The user replied: '{st.session_state['user_reply']}'. Respond with the next part."
+            new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
+            st.session_state["game_state"].append(new_turn)
+            st.session_state["user_reply"] = ""  # safe now
+
 
 
 # ... footer unchanged ...
