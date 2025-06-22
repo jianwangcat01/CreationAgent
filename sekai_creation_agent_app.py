@@ -106,15 +106,21 @@ JSON:
 if "game_state" in st.session_state:
     st.markdown("---")
     st.subheader("🚀 Game In Progress")
+
     for block in st.session_state["game_state"]:
         st.markdown(block)
 
-    user_input = st.text_input("Your reply")
-    if st.button("🔄 Send") and user_input:
-        last_turn = st.session_state["game_state"][-1]
-        reply_prompt = f"Continue the interactive story. The user replied: '{user_input}'. Respond with the next part."
-        new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
-        st.session_state["game_state"].append(new_turn)
-        st.experimental_rerun()
+    user_input = st.text_input("Your reply", key="user_reply")
 
+    if st.button("🔄 Send"):
+        if user_input:
+            last_turn = st.session_state["game_state"][-1]
+            reply_prompt = f"Continue the interactive story. The user replied: '{user_input}'. Respond with the next part."
+            new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
+            st.session_state["game_state"].append(new_turn)
+
+            # Clear input manually instead of rerun
+            st.session_state["user_reply"] = ""
+
+# ... footer unchanged ...
 st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
