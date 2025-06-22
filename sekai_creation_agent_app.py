@@ -36,6 +36,19 @@ st.subheader("2. Create Main Characters")
 num_characters = st.slider("Number of Characters", 1, 5, 2)
 characters = []
 
+if st.button("✨ Generate All Characters"):
+    for i in range(num_characters):
+        idea = st.session_state.get(f"idea_{i}", "")
+        prompt = (
+            f"Based on the following idea, create a character with the following format:\n\n"
+            f"Name: <Character Name>\n"
+            f"Role: <Character Role>\n"
+            f"Traits: <Personality traits and special abilities>\n\n"
+            f"Idea: {idea if idea else f'A new character that fits this setting: {world_setting}'}"
+        )
+        result = generate_field(prompt)
+        st.session_state[f"char_{i}"] = result
+
 for i in range(num_characters):
     with st.expander(f"Character {i+1}"):
         idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
@@ -103,6 +116,11 @@ Characters:
 # --- Step 4: Start the Game ---
 if "sekai_json" in st.session_state:
     st.subheader("4. Start Your Sekai Interactive Game")
+    st.markdown("""
+📜 In this game, please:
+- Type your character's dialogue normally: e.g., `What are you doing here?`
+- Type your character's **actions** with asterisks: e.g., `*run away from the library*`
+    """)
     if st.button("\U0001F3AE Start Game"):
         story_prompt = f"""You are the game narrator. Begin the interactive story using a visual novel script format.
 Limit narration to short sentences. Prioritize character dialogue and inner thoughts.
@@ -112,20 +130,16 @@ JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 """
         st.session_state["game_state"] = [model.generate_content(story_prompt).text.strip()]
+        st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
 
 # --- Step 5: Game UI ---
 if "game_state" in st.session_state:
     st.markdown("---")
     st.subheader("🚀 Game In Progress")
 
-    highlight_colors = ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
-
     for i, block in enumerate(st.session_state["game_state"]):
-        if i == len(st.session_state["game_state"]) - 1:
-            bg = random.choice(highlight_colors)
-            st.markdown(f'<div style="background-color:{bg}; padding:10px; border-radius:8px">{block}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(block)
+        color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
+        st.markdown(f'<div style="background-color:{color}; padding:10px; border-radius:8px">{block}</div>', unsafe_allow_html=True)
 
     user_input = st.text_input("Your reply", key="reply_input")
 
@@ -133,11 +147,16 @@ if "game_state" in st.session_state:
         if user_input.strip():
             last_turn = st.session_state["game_state"][-1]
             reply_prompt = (
-                f"Continue the visual novel format story. The player said: '{user_input}'."
+                f"Continue the visual novel format story. The player said or did: '{user_input}'."
                 f" Focus on character dialogue and thoughts. Keep narration brief."
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
+            # Assign a new color different from the last
+            existing_colors = st.session_state.get("story_colors", [])
+            available_colors = [c for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"] if c != existing_colors[-1]]
+            new_color = random.choice(available_colors)
+            st.session_state["story_colors"].append(new_color)
             st.rerun()
 
 # Footer
