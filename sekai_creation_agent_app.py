@@ -124,13 +124,15 @@ if "sekai_json" in st.session_state:
     if st.button("\U0001F3AE Start Game"):
         story_prompt = f"""
 You are an interactive fiction narrator. Begin the story based on the following JSON world structure.
-Use visual novel format with dialogue, thoughts, and light narration. Focus on the opening scene and keep it concise.
+Use a visual novel format focused on character dialogue and thoughts, with minimal narration.
+Introduce the player character and quickly bring all other main characters into the story within the first scene or two.
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 
-Now write the first turn of the story.
+Now write the first turn of the story that introduces the setting and ensures the player meets at least one main character right away.
 """
+
         first_turn = model.generate_content(story_prompt).text.strip()
 
         if first_turn.startswith("{") or first_turn.startswith('"title"'):
