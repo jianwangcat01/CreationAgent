@@ -138,7 +138,7 @@ if "game_state" in st.session_state:
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
-            st.experimental_rerun()
+            st.rerun()
 
 # Footer
 st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
