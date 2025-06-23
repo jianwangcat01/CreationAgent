@@ -83,21 +83,24 @@ num_characters = st.slider("Number of Characters", 1, 5, 2)
 characters = []
 
 if st.button("✨ Generate All Characters"):
-    existing = []
-    for i in range(num_characters):
-        idea = st.session_state.get(f"idea_{i}", "")
+    with st.spinner(f"Generating {num_characters} characters..."):
         prompt = (
-            f"Create a completely unique and different character for the world: {world_setting}.\n"
-            f"Avoid using any of the following names: {', '.join([c['name'] for c in existing])}.\n"
-            f"Ensure the name, personality, and abilities are distinct from existing characters.\n"
-            "\nRespond in this format:\n"
+            f"Generate {num_characters} completely unique and different characters for the world: {world_setting}.\n"
+            f"Ensure the names, personalities, and abilities are distinct from each other.\n"
+            f"Please provide {num_characters} character descriptions separated by '---'.\n\n"
+            "Each character description must follow this format:\n"
             "Name: <Character Name>\n"
             "Role: <Character Role>\n"
             "Traits: <Personality traits and special abilities>"
         )
+        response_text = generate_field(prompt)
+        generated_characters = response_text.strip().split("\n---\n")
 
-        result = generate_field(prompt)
-        st.session_state[f"char_{i}"] = result
+        for i in range(num_characters):
+            if i < len(generated_characters):
+                st.session_state[f"char_{i}"] = generated_characters[i].strip()
+            else:
+                st.session_state[f"char_{i}"] = ""
 
 for i in range(num_characters):
     with st.expander(f"Character {i+1}"):
