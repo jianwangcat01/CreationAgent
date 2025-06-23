@@ -190,13 +190,14 @@ Rules:
 - Use narrator and character lines as shown.
 - Focus on character dialogue and internal thoughts.
 - Avoid long narration.
+- You must introduce all main characters from the JSON within the first 3 story turns.
 - Do NOT offer multiple choice options or suggestions.
 - End with: **\"What do you do?\"**
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 
-Write the opening scene below:
+Write the opening scene below, making sure to introduce one or more characters:
 """
     first_turn = model.generate_content(story_prompt).text.strip()
 
@@ -245,8 +246,23 @@ if "game_state" in st.session_state:
     if st.button("🔄 Send"):
         if user_input.strip():
             last_turn = st.session_state["game_state"][-1]
+            
+            introduction_instruction = ""
+            # Ensure all characters are introduced within the first 3 turns
+            if len(st.session_state["game_state"]) < 3:
+                full_story_text = "".join(st.session_state["game_state"])
+                all_characters_in_json = st.session_state["sekai_json"].get("characters", [])
+                character_names = [c.get("name") for c in all_characters_in_json if c.get("name")]
+                unintroduced_characters = [
+                    name for name in character_names if name.lower() not in full_story_text.lower()
+                ]
+                if unintroduced_characters:
+                    char_list = ", ".join(unintroduced_characters)
+                    introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
+
             reply_prompt = (
                 f"Continue the story in script format. The player said or did: '{user_input}'. "
+                f"{introduction_instruction}"
                 f"Focus on character dialogue and thoughts. Keep narration brief. Do not give choices."
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
