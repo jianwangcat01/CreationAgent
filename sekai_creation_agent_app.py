@@ -121,25 +121,31 @@ if "sekai_json" in st.session_state:
 - Type your character's dialogue normally: e.g., `What are you doing here?`
 - Type your character's **actions** with asterisks: e.g., `*run away from the library*`
     """)
-    if st.button("\U0001F3AE Start Game"):
-        story_prompt = f"""
-You are an interactive fiction narrator. Begin the story based on the following JSON world structure.
-Use a visual novel format focused on character dialogue and thoughts, with minimal narration.
-Introduce the player character and quickly bring all other main characters into the story within the first scene or two.
+if st.button("\U0001F3AE Start Game"):
+    story_prompt = f"""
+You are an interactive fiction narrator for a visual novel.
+Begin the story using the following JSON world structure.
+Write in a style focused on character **dialogue** and **internal thoughts**, with **very minimal narration**.
+
+Rules:
+- Do NOT offer multiple choice options or suggestions.
+- Focus on direct conversation and personal reactions.
+- End the scene naturally with: **"What do you do?"**
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 
-Now write the first turn of the story that introduces the setting and ensures the player meets at least one main character right away.
+Write the opening scene below:
 """
-        first_turn = model.generate_content(story_prompt).text.strip()
+    first_turn = model.generate_content(story_prompt).text.strip()
 
-        if first_turn.startswith("{") or first_turn.startswith('"title"'):
-            st.error("Model returned raw JSON instead of story text. Please retry.")
-        else:
-            st.session_state["game_state"] = [first_turn]
-            st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
-            st.session_state["user_inputs"] = [""]
+    if first_turn.startswith("{") or first_turn.startswith('"title"'):
+        st.error("Model returned raw JSON instead of story text. Please retry.")
+    else:
+        st.session_state["game_state"] = [first_turn]
+        st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
+        st.session_state["user_inputs"] = [""]
+
 
 # --- Step 5: Game UI ---
 if "game_state" in st.session_state:
