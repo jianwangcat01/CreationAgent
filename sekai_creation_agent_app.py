@@ -168,7 +168,7 @@ Begin the story using the following JSON world structure.
 Write the story in the following script format:
 
 narrator "<scene description>"
-character tone "<dialogue or thoughts>"
+character (expression) "<dialogue or thoughts>"
 
 Rules:
 - Use narrator and character lines as shown.
