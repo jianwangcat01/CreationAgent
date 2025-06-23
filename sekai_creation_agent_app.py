@@ -199,7 +199,15 @@ if "game_state" in st.session_state:
     for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
         color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
         user_reply_html = f'<p style="margin-bottom:4px;"><b>Your input:</b> {user_input}</p>' if user_input.strip() else ""
-        st.markdown(f'<div style="background-color:{color}; padding:10px; border-radius:8px">{user_reply_html}{block}</div>', unsafe_allow_html=True)
+
+        # Format each line on a new line with spacing
+        formatted_block = ""
+        for line in block.split("\n"):
+            line = line.strip()
+            if line:
+                formatted_block += f"<p style='margin:4px 0;'>{line}</p>"
+
+        st.markdown(f'<div style="background-color:{color}; padding:10px; border-radius:8px">{user_reply_html}{formatted_block}</div>', unsafe_allow_html=True)
 
     user_input = st.text_input("Enter your next action or dialogue", key="reply_input")
     if st.button("🔄 Send"):
