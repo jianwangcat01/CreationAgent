@@ -217,8 +217,24 @@ if "game_state" in st.session_state:
         formatted_block = ""
         for line in block.split("\n"):
             line = line.strip()
-            if line:
+            if not line:
+                continue
+
+            # Use regex to find speaker and dialogue
+            match = re.match(r'^(.*?)\s*(".*")', line)
+            if match:
+                speaker = match.group(1).strip()
+                dialogue = match.group(2)
+                
+                if speaker.lower() == 'narrator':
+                    speaker = 'Narrator'
+                
+                formatted_line = f"<b>{speaker}</b> {dialogue}"
+                formatted_block += f"<p style='margin:4px 0;'>{formatted_line}</p>"
+            else:
+                # Handle lines without a speaker, like "**What do you do?**"
                 formatted_block += f"<p style='margin:4px 0;'>{line}</p>"
+
 
         st.markdown(f'<div style="background-color:{color}; padding:10px; border-radius:8px">{user_reply_html}{formatted_block}</div>', unsafe_allow_html=True)
 
