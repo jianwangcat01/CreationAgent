@@ -1,3 +1,4 @@
+
 import streamlit as st
 import google.generativeai as genai
 import json
@@ -17,6 +18,11 @@ model = genai.GenerativeModel(model_type)
 def generate_field(prompt):
     response = model.generate_content(prompt)
     return response.text.strip()
+
+def extract_genres(genre_match):
+    if genre_match and genre_match.group(1):
+        return [g.strip() for g in genre_match.group(1).split("/") if g.strip()]
+    return []
 
 # --- Step 1: Define World ---
 st.subheader("1. Define Your Sekai World")
@@ -44,12 +50,7 @@ with col1:
 
         st.session_state["world_title"] = title.group(1).strip() if title else ""
         st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-        def extract_genres(genre_match):
-    if genre_match and genre_match.group(1):
-        return [g.strip() for g in genre_match.group(1).split("/") if g.strip()]
-    return []
-
-st.session_state["world_genre"] = extract_genres(genre)
+        st.session_state["world_genre"] = extract_genres(genre)
         st.session_state["user_name"] = name.group(1).strip() if name else ""
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
 
