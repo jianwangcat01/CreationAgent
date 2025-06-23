@@ -48,7 +48,8 @@ with col1:
         name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
         traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
 
-        st.session_state["world_title"] = title.group(1).strip() if title else ""
+        if title:
+            st.session_state["world_title"] = title.group(1).strip()
         st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
         st.session_state["user_name"] = name.group(1).strip() if name else ""
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
