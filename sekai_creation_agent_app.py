@@ -26,7 +26,7 @@ with col1:
 
     if st.button("🤖 AI: Suggest World & Character"):
         suggestion = generate_field(
-            f"""Let's craft a compelling concept around the \"{world_idea}\" idea.
+            f'''Let's craft a compelling concept around the "{world_idea}" idea.
 
 Please generate a structured Sekai concept with:
 
@@ -37,9 +37,8 @@ Please generate a structured Sekai concept with:
 **Character Traits:** (1-2 short traits only)
 
 Respond in markdown format using ** for bolded labels.
-"""
+'''
         )
-        # Parse response from Gemini
         title = re.search(r'\*\*Title:\*\*\s*\*\*(.*?)\*\*', suggestion)
         genre = re.search(r'\*\*Genre:\*\*\s*\*\*(.*?)\*\*', suggestion)
         setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
@@ -52,11 +51,11 @@ Respond in markdown format using ** for bolded labels.
         st.session_state["user_name"] = name.group(1).strip() if name else ""
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
 
-    world_title = st.text_input("Sekai Title", key="world_title", value=st.session_state.get("world_title", "Midnight Library"))
-    world_setting = st.text_area("World Setting", key="world_setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120)
+    world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
+    world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
     world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=st.session_state.get("world_genre", ["Fantasy"]), key="world_genre")
-    user_name = st.text_input("Your Character Name (You will be part of the story)", key="user_name", value=st.session_state.get("user_name", "Alex"))
-    user_traits = st.text_area("Your Character Traits", key="user_traits", value=st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100)
+    user_name = st.text_input("Your Character Name (You will be part of the story)", value=st.session_state.get("user_name", "Alex"), key="user_name")
+    user_traits = st.text_area("Your Character Traits", value=st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100, key="user_traits")
 
 # --- Step 2: Define Characters ---
 st.subheader("2. Create Main Characters")
