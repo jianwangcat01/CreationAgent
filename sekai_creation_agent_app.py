@@ -41,14 +41,14 @@ if st.button("✨ Generate All Characters"):
     for i in range(num_characters):
         idea = st.session_state.get(f"idea_{i}", "")
         prompt = (
-    f"Create a completely unique and different character for the world: {world_setting}.\n"
-    f"Avoid using any of the following names: {', '.join([c['name'] for c in existing])}.\n"
-    f"Ensure the name, personality, and abilities are distinct from existing characters.\n"
-    "\nRespond in this format:\n"
-    "Name: <Character Name>\n"
-    "Role: <Character Role>\n"
-    "Traits: <Personality traits and special abilities>"
-)
+            f"Create a completely unique and different character for the world: {world_setting}.\n"
+            f"Avoid using any of the following names: {', '.join([c['name'] for c in existing])}.\n"
+            f"Ensure the name, personality, and abilities are distinct from existing characters.\n"
+            "\nRespond in this format:\n"
+            "Name: <Character Name>\n"
+            "Role: <Character Role>\n"
+            "Traits: <Personality traits and special abilities>"
+        )
 
         result = generate_field(prompt)
         st.session_state[f"char_{i}"] = result
@@ -85,7 +85,7 @@ for i in range(num_characters):
         trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100)
         characters.append({"name": name, "role": role, "traits": trait})
 
-# --- Step 3: Generate Sekai JSON ---
+# --- Step 3: Generate Sekai Story Template ---
 st.subheader("3. Generate Sekai Story Template")
 if st.button("✨ Generate Template"):
     with st.spinner("Talking to Gemini AI..."):
@@ -132,12 +132,17 @@ if st.button("\U0001F3AE Start Game"):
     story_prompt = f"""
 You are an interactive fiction narrator for a visual novel.
 Begin the story using the following JSON world structure.
-Write in a style focused on character **dialogue** and **internal thoughts**, with **very minimal narration**.
+Write the story in the following script format:
+
+narrator "<scene description>"
+character tone "<dialogue or thoughts>"
 
 Rules:
+- Use narrator and character lines as shown.
+- Focus on character dialogue and internal thoughts.
+- Avoid long narration.
 - Do NOT offer multiple choice options or suggestions.
-- Focus on direct conversation and personal reactions.
-- End the scene naturally with: **\"What do you do?\"**
+- End with: **\"What do you do?\"**
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
@@ -168,7 +173,7 @@ if "game_state" in st.session_state:
         if user_input.strip():
             last_turn = st.session_state["game_state"][-1]
             reply_prompt = (
-                f"Continue the visual novel format story. The player said or did: '{user_input}'. "
+                f"Continue the story in script format. The player said or did: '{user_input}'. "
                 f"Focus on character dialogue and thoughts. Keep narration brief. Do not give choices."
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
