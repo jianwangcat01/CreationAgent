@@ -42,8 +42,8 @@ with col1:
             "**Character Traits:** (1-2 short traits only)\n\n"
             "Respond in markdown format using ** for bolded labels."
         )
-        title = re.search(r'\*\*Title:\*\*\s*\*\*(.*?)\*\*', suggestion)
-        genre = re.search(r'\*\*Genre:\*\*\s*\*\*(.*?)\*\*', suggestion)
+        title = re.search(r'\*\*Title:\*\*\s*(.*?)\n', suggestion)
+        genre = re.search(r'\*\*Genre:\*\*\s*(.*?)\n', suggestion)
         setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
         name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
         traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
