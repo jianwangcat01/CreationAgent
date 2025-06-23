@@ -41,14 +41,15 @@ if st.button("✨ Generate All Characters"):
     for i in range(num_characters):
         idea = st.session_state.get(f"idea_{i}", "")
         prompt = (
-            f"Create a unique character that fits the following world setting: {world_setting}\n"
-            f"Make sure the character is clearly different from these already created characters:\n"
-            + "\n".join([f"- {c['name']} ({c['role']}): {c['traits']}" for c in existing]) +
-            "\n\nRespond with the following format:\n"
-            "Name: <Character Name>\n"
-            "Role: <Character Role>\n"
-            "Traits: <Personality traits and special abilities>"
-        )
+    f"Create a completely unique and different character for the world: {world_setting}.\n"
+    f"Avoid using any of the following names: {', '.join([c['name'] for c in existing])}.\n"
+    f"Ensure the name, personality, and abilities are distinct from existing characters.\n"
+    "\nRespond in this format:\n"
+    "Name: <Character Name>\n"
+    "Role: <Character Role>\n"
+    "Traits: <Personality traits and special abilities>"
+)
+
         result = generate_field(prompt)
         st.session_state[f"char_{i}"] = result
 
