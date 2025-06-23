@@ -1,4 +1,3 @@
-
 import streamlit as st
 import google.generativeai as genai
 import json
@@ -24,21 +23,18 @@ st.subheader("1. Define Your Sekai World")
 col1, col2 = st.columns([3, 1])
 with col1:
     world_idea = st.text_input("Describe your world idea (or leave blank to write manually)", "Midnight Library")
+    world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=st.session_state.get("world_genre", ["Fantasy"]), key="world_genre")
 
     if st.button("🤖 AI: Suggest World & Character"):
         suggestion = generate_field(
-            f'''Let's craft a compelling concept around the "{world_idea}" idea.
-
-Please generate a structured Sekai concept with:
-
-**Title:** (a short and poetic title)
-**Genre:** (1-2 genres only, like Fantasy / Romance)
-**World Setting:** (2-3 sentence description)
-**Player Character Name:** (a human name)
-**Character Traits:** (1-2 short traits only)
-
-Respond in markdown format using ** for bolded labels.
-'''
+            f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
+            "Please generate a structured Sekai concept with:\n\n"
+            "**Title:** (a short and poetic title)\n"
+            "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
+            "**World Setting:** (2-3 sentence description)\n"
+            "**Player Character Name:** (a human name)\n"
+            "**Character Traits:** (1-2 short traits only)\n\n"
+            "Respond in markdown format using ** for bolded labels."
         )
         title = re.search(r'\*\*Title:\*\*\s*\*\*(.*?)\*\*', suggestion)
         genre = re.search(r'\*\*Genre:\*\*\s*\*\*(.*?)\*\*', suggestion)
@@ -54,9 +50,9 @@ Respond in markdown format using ** for bolded labels.
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
     world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
-    world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=st.session_state.get("world_genre", ["Fantasy"]), key="world_genre")
     user_name = st.text_input("Your Character Name (You will be part of the story)", value=st.session_state.get("user_name", "Alex"), key="user_name")
     user_traits = st.text_area("Your Character Traits", value=st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100, key="user_traits")
+
 
 # --- Step 2: Define Characters ---
 st.subheader("2. Create Main Characters")
