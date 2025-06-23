@@ -89,7 +89,7 @@ if st.button("✨ Generate All Characters"):
             f"Ensure the names, personalities, and abilities are distinct from each other.\n"
             f"Please provide {num_characters} character descriptions separated by '---'.\n\n"
             "Each character description must follow this format:\n"
-            "Name: <Character Name>\n"
+            "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
             "Role: <Character Role>\n"
             "Traits: <Personality traits and special abilities>"
         )
@@ -112,7 +112,7 @@ for i in range(num_characters):
                 f"Ensure this character is clearly different from any existing characters:\n"
                 + "\n".join(other_chars) +
                 "\n\nRespond in this format:\n"
-                "Name: <Character Name>\n"
+                "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
                 "Role: <Character Role>\n"
                 "Traits: <Personality traits and special abilities>"
             )
