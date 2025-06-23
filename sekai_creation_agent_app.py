@@ -1,4 +1,3 @@
-
 import streamlit as st
 import google.generativeai as genai
 import json
@@ -32,24 +31,7 @@ with col1:
     default_genres = st.session_state.get("world_genre", ["Fantasy"])
     selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre")
 
-    if st.button("🤖 AI: Suggest World & Character"):
-        suggestion = generate_field(
-            f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
-            "Please generate a structured Sekai concept with:\n\n"
-            "**Title:** (a short and poetic title)\n"
-            "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
-            "**World Setting:** (2-3 sentence description)\n"
-            "**Player Character Name:** (a human name)\n"
-            "**Character Traits:** (1-2 short traits only)\n\n"
-            "Respond in markdown format using ** for bolded labels."
-        )
-        title = re.search(r'\*\*Title:\*\*\s*\*\*(.*?)\*\*', suggestion)
-        genre = re.search(r'\*\*Genre:\*\*\s*\*\*(.*?)\*\*', suggestion)
-        setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
-        name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
-        traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
-
-    if st.button("🤖 AI: Suggest World & Character"):
+    if st.button("🤖 AI: Suggest World & Character", key="suggest_world_btn"):
         suggestion = generate_field(
             f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
             "Please generate a structured Sekai concept with:\n\n"
@@ -76,8 +58,6 @@ with col1:
         if st.session_state.get("world_genre") != new_genres:
             st.session_state["world_genre"] = new_genres
             st.experimental_rerun()
-
-
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
     world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
