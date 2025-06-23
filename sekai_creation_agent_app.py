@@ -84,9 +84,11 @@ characters = []
 
 if st.button("✨ Generate All Characters"):
     with st.spinner(f"Generating {num_characters} characters..."):
+        player_name = st.session_state.get("user_name", "")
         prompt = (
             f"Generate {num_characters} completely unique and different characters for the world: {world_setting}.\n"
-            f"Ensure the names, personalities, and abilities are distinct from each other.\n"
+            f"The player's character is named '{player_name}'. Do not use this name for any of the generated characters.\n"
+            f"Ensure the names, personalities, and abilities are distinct from each other and from the player.\n"
             f"Please provide {num_characters} character descriptions separated by '---'.\n\n"
             "Each character description must follow this format:\n"
             "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
@@ -106,10 +108,12 @@ for i in range(num_characters):
     with st.expander(f"Character {i+1}"):
         idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
         if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
+            player_name = st.session_state.get("user_name", "")
             other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
             prompt = (
                 f"Create a new character for the following world: {world_setting}. "
-                f"Ensure this character is clearly different from any existing characters:\n"
+                f"The player's character is named '{player_name}'. Do not use this name.\n"
+                f"Ensure this character is clearly different from the player and any existing characters:\n"
                 + "\n".join(other_chars) +
                 "\n\nRespond in this format:\n"
                 "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
@@ -260,14 +264,22 @@ if "game_state" in st.session_state:
                     char_list = ", ".join(unintroduced_characters)
                     introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
 
+            player_name = st.session_state.get("user_name", "the player")
             reply_prompt = (
-                f"Continue the story in script format. The player said or did: '{user_input}'. "
+                f"You are an interactive fiction narrator. The player character is {player_name}.\n"
+                f"The player's input (action or dialogue) is: '{user_input}'.\n"
+                f"Your role is to describe what happens next. Narrate the scene and have other non-player characters react.\n"
+                f"IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_name}. Their input is already given.\n"
                 f"{introduction_instruction}"
-                f"Focus on character dialogue and thoughts. Keep narration brief. Do not give choices."
+                f"Continue the story in script format. Keep narration brief. Do not give choices."
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
             st.session_state["user_inputs"].append(user_input.strip())
+            
+            # Clear the input box for the next turn
+            st.session_state["reply_input"] = ""
+
             existing_colors = st.session_state.get("story_colors", [])
             available_colors = [c for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"] if c != existing_colors[-1]]
             new_color = random.choice(available_colors)
