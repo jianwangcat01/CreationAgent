@@ -22,14 +22,42 @@ st.subheader("1. Define Your Sekai World")
 col1, col2 = st.columns([3, 1])
 with col1:
     world_idea = st.text_input("Describe your world idea (or leave blank to write manually)", "Midnight Library")
-    if st.button("\U0001F9E0 AI: Suggest World"):
-        suggestion = generate_field(f"Suggest a detailed setting, title and genre based on the idea: '{world_idea}'")
-        st.session_state["world_suggestion"] = suggestion
-    world_title = st.text_input("Sekai Title", st.session_state.get("world_suggestion", "Midnight Library"))
-    world_setting = st.text_area("World Setting", "A magical library that only appears at midnight, where books come alive.", height=120)
-    world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=["Fantasy"])
-    user_name = st.text_input("Your Character Name (You will be part of the story)", "Alex")
-    user_traits = st.text_area("Your Character Traits", "Curious, brave, and a quick thinker", height=100)
+
+    if st.button("🤖 AI: Suggest World & Character"):
+        suggestion = generate_field(
+            f"""Let's craft a compelling concept around the "{world_idea}" idea.
+
+Please generate a structured Sekai concept with:
+
+**Title:** (a short and poetic title)
+**Genre:** (1-2 genres only, like Fantasy / Romance)
+**World Setting:** (2-3 sentence description)
+**Player Character Name:** (a human name)
+**Character Traits:** (personality and style of the main character)
+
+Respond in markdown format using ** for bolded labels.
+"""
+        )
+        # Parse response from Gemini
+        import re
+        title = re.search(r'\*\*Title:\*\*\s*\*\*(.*?)\*\*', suggestion)
+        genre = re.search(r'\*\*Genre:\*\*\s*\*\*(.*?)\*\*', suggestion)
+        setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
+        name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
+        traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
+
+        st.session_state["world_title"] = title.group(1) if title else ""
+        st.session_state["world_setting"] = setting.group(1) if setting else ""
+        st.session_state["world_genre"] = genre.group(1).split("/") if genre else []
+        st.session_state["user_name"] = name.group(1) if name else ""
+        st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
+
+    world_title = st.text_input("Sekai Title", st.session_state.get("world_title", "Midnight Library"))
+    world_setting = st.text_area("World Setting", st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120)
+    world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=st.session_state.get("world_genre", ["Fantasy"]))
+    user_name = st.text_input("Your Character Name (You will be part of the story)", st.session_state.get("user_name", "Alex"))
+    user_traits = st.text_area("Your Character Traits", st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100)
+
 
 # --- Step 2: Define Characters ---
 st.subheader("2. Create Main Characters")
