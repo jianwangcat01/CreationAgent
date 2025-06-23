@@ -29,7 +29,8 @@ st.subheader("1. Define Your Sekai World")
 col1, col2 = st.columns([3, 1])
 with col1:
     world_idea = st.text_input("Describe your world idea (or leave blank to write manually)", "Midnight Library")
-    world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=st.session_state.get("world_genre", ["Fantasy"]), key="world_genre")
+    default_genres = st.session_state.get("world_genre", ["Fantasy"])
+    selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre")
 
     if st.button("🤖 AI: Suggest World & Character"):
         suggestion = generate_field(
@@ -50,15 +51,14 @@ with col1:
 
         st.session_state["world_title"] = title.group(1).strip() if title else ""
         st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-        st.session_state["world_genre"] = extract_genres(genre)
         st.session_state["user_name"] = name.group(1).strip() if name else ""
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
+        st.session_state["world_genre"] = extract_genres(genre) or default_genres
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
     world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
     user_name = st.text_input("Your Character Name (You will be part of the story)", value=st.session_state.get("user_name", "Alex"), key="user_name")
     user_traits = st.text_area("Your Character Traits", value=st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100, key="user_traits")
-
 
 # --- Step 2: Define Characters ---
 st.subheader("2. Create Main Characters")
@@ -85,7 +85,7 @@ if st.button("✨ Generate All Characters"):
 for i in range(num_characters):
     with st.expander(f"Character {i+1}"):
         idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
-        if st.button(f"\U0001F9E0 AI: Generate Character {i+1}", key=f"gen_{i}"):
+        if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
             other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
             prompt = (
                 f"Create a new character for the following world: {world_setting}. "
@@ -124,7 +124,7 @@ Generate a story JSON with: title, setting, genre, characters (array of name, ro
 
 Title: {world_title}
 Setting: {world_setting}
-Genre: {', '.join(world_genre)}
+Genre: {', '.join(selected_genres)}
 Characters:
 - {user_name} (Player): {user_traits}
 """
@@ -157,7 +157,7 @@ if "sekai_json" in st.session_state:
 - Type your character's dialogue normally: e.g., `What are you doing here?`
 - Type your character's **actions** with asterisks: e.g., `*run away from the library*`
     """)
-if st.button("\U0001F3AE Start Game"):
+if st.button("🎮 Start Game"):
     story_prompt = f"""
 You are an interactive fiction narrator for a visual novel.
 Begin the story using the following JSON world structure.
