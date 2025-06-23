@@ -229,15 +229,23 @@ if "game_state" in st.session_state:
                 continue
 
             # Use regex to find speaker and dialogue
-            match = re.match(r'^(.*?)\s*(".*")', line)
+            match = re.match(r'^(.*?)\s*(".*")', line, re.DOTALL)
             if match:
                 speaker = match.group(1).strip()
-                dialogue = match.group(2)
-                
-                if speaker.lower() == 'narrator':
-                    speaker = 'Narrator'
-                
-                formatted_line = f"<b>{speaker}</b> {dialogue}"
+                dialogue = match.group(2)  # Keep original with quotes for characters
+
+                if speaker.lower() == "narrator":
+                    # For narrator, remove quotes and italicize the content
+                    dialogue_content = dialogue.strip()
+                    if dialogue_content.startswith('"') and dialogue_content.endswith(
+                        '"'
+                    ):
+                        dialogue_content = dialogue_content[1:-1]
+                    formatted_line = f"<i>{dialogue_content}</i>"
+                else:
+                    # For characters, bold the speaker and show the dialogue
+                    formatted_line = f"<b>{speaker}</b> {dialogue}"
+
                 formatted_block += f"<p style='margin:4px 0;'>{formatted_line}</p>"
             else:
                 # Handle lines without a speaker, like "**What do you do?**"
