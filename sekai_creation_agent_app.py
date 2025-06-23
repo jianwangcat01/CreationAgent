@@ -49,16 +49,34 @@ with col1:
         name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
         traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
 
-st.session_state["world_title"] = title.group(1).strip() if title else ""
-st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-st.session_state["user_name"] = name.group(1).strip() if name else ""
-st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
+    if st.button("🤖 AI: Suggest World & Character"):
+        suggestion = generate_field(
+            f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
+            "Please generate a structured Sekai concept with:\n\n"
+            "**Title:** (a short and poetic title)\n"
+            "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
+            "**World Setting:** (2-3 sentence description)\n"
+            "**Player Character Name:** (a human name)\n"
+            "**Character Traits:** (1-2 short traits only)\n\n"
+            "Respond in markdown format using ** for bolded labels."
+        )
+        title = re.search(r'\*\*Title:\*\*\s*\*\*(.*?)\*\*', suggestion)
+        genre = re.search(r'\*\*Genre:\*\*\s*\*\*(.*?)\*\*', suggestion)
+        setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
+        name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
+        traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
 
-# Safe update of multiselect key
-new_genres = extract_genres(genre) or default_genres
-if st.session_state.get("world_genre") != new_genres:
-    st.session_state["world_genre"] = new_genres
-    st.experimental_rerun()
+        st.session_state["world_title"] = title.group(1).strip() if title else ""
+        st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
+        st.session_state["user_name"] = name.group(1).strip() if name else ""
+        st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
+
+        # Safe update of multiselect key
+        new_genres = extract_genres(genre) or default_genres
+        if st.session_state.get("world_genre") != new_genres:
+            st.session_state["world_genre"] = new_genres
+            st.experimental_rerun()
+
 
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
