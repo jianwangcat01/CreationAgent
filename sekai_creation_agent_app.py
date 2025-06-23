@@ -25,9 +25,15 @@ def extract_genres(genre_match):
 
 # --- Step 1: Define World ---
 st.subheader("1. Define Your Sekai World")
+AVAILABLE_GENRES = ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"]
+
 col1, col2 = st.columns([3, 1])
 with col1:
     world_idea = st.text_input("Describe your world idea (or leave blank to write manually)", "Midnight Library")
+
+    # Initialize genre in session state if it doesn't exist
+    if "world_genre" not in st.session_state:
+        st.session_state["world_genre"] = ["Fantasy"]
 
     if st.button("🤖 AI: Suggest World & Character", key="suggest_world_btn"):
         with st.spinner("Generating suggestions..."):
@@ -58,13 +64,13 @@ with col1:
             
             new_genres = extract_genres(genre)
             if new_genres:
-                st.session_state["world_genre"] = new_genres
+                valid_genres = [g for g in new_genres if g in AVAILABLE_GENRES]
+                if valid_genres:
+                    st.session_state["world_genre"] = valid_genres
             
             st.rerun()
 
-    default_genres = st.session_state.get("world_genre", ["Fantasy"])
-    selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre_multiselect")
-    st.session_state["world_genre"] = selected_genres
+    selected_genres = st.multiselect("Genre(s)", AVAILABLE_GENRES, key="world_genre")
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
     world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
