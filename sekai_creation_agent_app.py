@@ -37,14 +37,17 @@ num_characters = st.slider("Number of Characters", 1, 5, 2)
 characters = []
 
 if st.button("✨ Generate All Characters"):
+    existing = []
     for i in range(num_characters):
         idea = st.session_state.get(f"idea_{i}", "")
         prompt = (
-            f"Based on the following idea, create a character with the following format:\n\n"
-            f"Name: <Character Name>\n"
-            f"Role: <Character Role>\n"
-            f"Traits: <Personality traits and special abilities>\n\n"
-            f"Idea: {idea if idea else f'A new character that fits this setting: {world_setting}'}"
+            f"Create a unique character that fits the following world setting: {world_setting}\n"
+            f"Make sure the character is clearly different from these already created characters:\n"
+            + "\n".join([f"- {c['name']} ({c['role']}): {c['traits']}" for c in existing]) +
+            "\n\nRespond with the following format:\n"
+            "Name: <Character Name>\n"
+            "Role: <Character Role>\n"
+            "Traits: <Personality traits and special abilities>"
         )
         result = generate_field(prompt)
         st.session_state[f"char_{i}"] = result
@@ -53,12 +56,15 @@ for i in range(num_characters):
     with st.expander(f"Character {i+1}"):
         idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
         if st.button(f"\U0001F9E0 AI: Generate Character {i+1}", key=f"gen_{i}"):
+            other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
             prompt = (
-                f"Based on the following idea, create a character with the following format:\n\n"
-                f"Name: <Character Name>\n"
-                f"Role: <Character Role>\n"
-                f"Traits: <Personality traits and special abilities>\n\n"
-                f"Idea: {idea}"
+                f"Create a new character for the following world: {world_setting}. "
+                f"Ensure this character is clearly different from any existing characters:\n"
+                + "\n".join(other_chars) +
+                "\n\nRespond in this format:\n"
+                "Name: <Character Name>\n"
+                "Role: <Character Role>\n"
+                "Traits: <Personality traits and special abilities>"
             )
             result = generate_field(prompt)
             st.session_state[f"char_{i}"] = result
@@ -130,7 +136,7 @@ Write in a style focused on character **dialogue** and **internal thoughts**, wi
 Rules:
 - Do NOT offer multiple choice options or suggestions.
 - Focus on direct conversation and personal reactions.
-- End the scene naturally with: **"What do you do?"**
+- End the scene naturally with: **\"What do you do?\"**
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
@@ -145,7 +151,6 @@ Write the opening scene below:
         st.session_state["game_state"] = [first_turn]
         st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
         st.session_state["user_inputs"] = [""]
-
 
 # --- Step 5: Game UI ---
 if "game_state" in st.session_state:
