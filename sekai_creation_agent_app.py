@@ -30,7 +30,9 @@ col1, col2 = st.columns([3, 1])
 with col1:
     world_idea = st.text_input("Describe your world idea (or leave blank to write manually)", "Midnight Library")
     default_genres = st.session_state.get("world_genre", ["Fantasy"])
-    selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre")
+
+    # Use a local variable here instead of directly modifying session_state during rendering
+    local_genres = default_genres
 
     if st.button("🤖 AI: Suggest World & Character"):
         suggestion = generate_field(
@@ -55,10 +57,7 @@ with col1:
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
         st.session_state["world_genre"] = extract_genres(genre) or default_genres
 
-    world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
-    world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
-    user_name = st.text_input("Your Character Name (You will be part of the story)", value=st.session_state.get("user_name", "Alex"), key="user_name")
-    user_traits = st.text_area("Your Character Traits", value=st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100, key="user_traits")
+    selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre")
 
 # --- Step 2: Define Characters ---
 st.subheader("2. Create Main Characters")
