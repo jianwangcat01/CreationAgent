@@ -132,7 +132,6 @@ JSON:
 
 Now write the first turn of the story that introduces the setting and ensures the player meets at least one main character right away.
 """
-
         first_turn = model.generate_content(story_prompt).text.strip()
 
         if first_turn.startswith("{") or first_turn.startswith('"title"'):
@@ -157,8 +156,8 @@ if "game_state" in st.session_state:
         if user_input.strip():
             last_turn = st.session_state["game_state"][-1]
             reply_prompt = (
-                f"Continue the visual novel format story. The player said or did: '{user_input}'."
-                f" Focus on character dialogue and thoughts. Keep narration brief."
+                f"Continue the visual novel format story. The player said or did: '{user_input}'. "
+                f"Focus on character dialogue and thoughts. Keep narration brief. Do not give choices."
             )
             new_turn = model.generate_content(last_turn + "\n\n" + reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
