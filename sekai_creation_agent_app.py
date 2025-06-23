@@ -28,37 +28,43 @@ st.subheader("1. Define Your Sekai World")
 col1, col2 = st.columns([3, 1])
 with col1:
     world_idea = st.text_input("Describe your world idea (or leave blank to write manually)", "Midnight Library")
-    default_genres = st.session_state.get("world_genre", ["Fantasy"])
-    selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre")
 
     if st.button("🤖 AI: Suggest World & Character", key="suggest_world_btn"):
-        suggestion = generate_field(
-            f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
-            "Please generate a structured Sekai concept with:\n\n"
-            "**Title:** (a short and poetic title)\n"
-            "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
-            "**World Setting:** (2-3 sentence description)\n"
-            "**Player Character Name:** (a human name)\n"
-            "**Character Traits:** (1-2 short traits only)\n\n"
-            "Respond in markdown format using ** for bolded labels."
-        )
-        title = re.search(r'\*\*Title:\*\*\s*(.*?)\n', suggestion)
-        genre = re.search(r'\*\*Genre:\*\*\s*(.*?)\n', suggestion)
-        setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
-        name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
-        traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
+        with st.spinner("Generating suggestions..."):
+            suggestion = generate_field(
+                f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
+                "Please generate a structured Sekai concept with:\n\n"
+                "**Title:** (a short and poetic title)\n"
+                "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
+                "**World Setting:** (2-3 sentence description)\n"
+                "**Player Character Name:** (a human name)\n"
+                "**Character Traits:** (1-2 short traits only)\n\n"
+                "Respond in markdown format using ** for bolded labels."
+            )
+            title = re.search(r'\*\*Title:\*\*\s*(.*?)\n', suggestion)
+            genre = re.search(r'\*\*Genre:\*\*\s*(.*?)\n', suggestion)
+            setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
+            name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
+            traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
 
-        if title:
-            st.session_state["world_title"] = title.group(1).strip()
-        st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-        st.session_state["user_name"] = name.group(1).strip() if name else ""
-        st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
+            if title:
+                st.session_state["world_title"] = title.group(1).strip()
+            if setting:
+                st.session_state["world_setting"] = setting.group(1).strip()
+            if name:
+                st.session_state["user_name"] = name.group(1).strip()
+            if traits:
+                st.session_state["user_traits"] = traits.group(1).strip()
+            
+            new_genres = extract_genres(genre)
+            if new_genres:
+                st.session_state["world_genre"] = new_genres
+            
+            st.rerun()
 
-        # Safe update of multiselect key
-        new_genres = extract_genres(genre) or default_genres
-        if st.session_state.get("world_genre") != new_genres:
-            st.session_state["world_genre"] = new_genres
-            st.experimental_rerun()
+    default_genres = st.session_state.get("world_genre", ["Fantasy"])
+    selected_genres = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=default_genres, key="world_genre_multiselect")
+    st.session_state["world_genre"] = selected_genres
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
     world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
