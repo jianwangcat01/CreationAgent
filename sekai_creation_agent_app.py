@@ -56,7 +56,7 @@ Respond in markdown format using ** for bolded labels.
     world_setting = st.text_area("World Setting", st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120)
     world_genre = st.multiselect("Genre(s)", ["Fantasy", "Romance", "Mystery", "Sci-fi", "Horror"], default=st.session_state.get("world_genre", ["Fantasy"]))
     user_name = st.text_input("Your Character Name (You will be part of the story)", st.session_state.get("user_name", "Alex"))
-    user_traits = st.text_area("Your Character Traits", st.session_state.get("user_traits", "Curious"), height=100)
+    user_traits = st.text_area("Your Character Traits", st.session_state.get("user_traits", "Curious, brave, and a quick thinker"), height=100)
 
 
 # --- Step 2: Define Characters ---
