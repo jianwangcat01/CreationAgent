@@ -44,7 +44,12 @@ with col1:
 
         st.session_state["world_title"] = title.group(1).strip() if title else ""
         st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-        st.session_state["world_genre"] = [g.strip() for g in genre.group(1).split("/") if g.strip()] if genre else []
+        def extract_genres(genre_match):
+    if genre_match and genre_match.group(1):
+        return [g.strip() for g in genre_match.group(1).split("/") if g.strip()]
+    return []
+
+st.session_state["world_genre"] = extract_genres(genre)
         st.session_state["user_name"] = name.group(1).strip() if name else ""
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
 
