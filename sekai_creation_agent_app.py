@@ -1,3 +1,4 @@
+
 import streamlit as st
 import google.generativeai as genai
 import json
@@ -47,7 +48,7 @@ Respond in markdown format using ** for bolded labels.
 
         st.session_state["world_title"] = title.group(1).strip() if title else ""
         st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-        st.session_state["world_genre"] = [g.strip() for g in genre.group(1).split("/")] if genre else []
+        st.session_state["world_genre"] = [g.strip() for g in genre.group(1).split("/") if g.strip()] if genre else []
         st.session_state["user_name"] = name.group(1).strip() if name else ""
         st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
 
