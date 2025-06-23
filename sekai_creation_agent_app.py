@@ -49,11 +49,17 @@ with col1:
         name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
         traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
 
-        st.session_state["world_title"] = title.group(1).strip() if title else ""
-        st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
-        st.session_state["user_name"] = name.group(1).strip() if name else ""
-        st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
-        st.session_state["world_genre"] = extract_genres(genre) or default_genres
+st.session_state["world_title"] = title.group(1).strip() if title else ""
+st.session_state["world_setting"] = setting.group(1).strip() if setting else ""
+st.session_state["user_name"] = name.group(1).strip() if name else ""
+st.session_state["user_traits"] = traits.group(1).strip() if traits else ""
+
+# Safe update of multiselect key
+new_genres = extract_genres(genre) or default_genres
+if st.session_state.get("world_genre") != new_genres:
+    st.session_state["world_genre"] = new_genres
+    st.experimental_rerun()
+
 
     world_title = st.text_input("Sekai Title", value=st.session_state.get("world_title", "Midnight Library"), key="world_title")
     world_setting = st.text_area("World Setting", value=st.session_state.get("world_setting", "A magical library that only appears at midnight, where books come alive."), height=120, key="world_setting")
