@@ -120,10 +120,11 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_name_clicked" not in st.session_state:
                 st.session_state["random_name_clicked"] = False
             
-            # Set default value based on random click
-            default_name = ""
+            # Set default value based on random click or existing session state
+            default_name = st.session_state.get("char_name_input", "")
             if st.session_state["random_name_clicked"]:
                 default_name = get_random_example("name")
+                st.session_state["char_name_input"] = default_name
                 st.session_state["random_name_clicked"] = False
             
             char_name = st.text_input(
@@ -148,10 +149,11 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_role_clicked" not in st.session_state:
                 st.session_state["random_role_clicked"] = False
             
-            # Set default value based on random click
-            default_role = ""
+            # Set default value based on random click or existing session state
+            default_role = st.session_state.get("char_role_input", "")
             if st.session_state["random_role_clicked"]:
                 default_role = get_random_example("role")
+                st.session_state["char_role_input"] = default_role
                 st.session_state["random_role_clicked"] = False
             
             char_role = st.text_input(
@@ -199,10 +201,11 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_traits_clicked" not in st.session_state:
                 st.session_state["random_traits_clicked"] = False
             
-            # Set default value based on random click
-            default_traits = ""
+            # Set default value based on random click or existing session state
+            default_traits = st.session_state.get("char_traits_input", "")
             if st.session_state["random_traits_clicked"]:
                 default_traits = get_random_example("traits")
+                st.session_state["char_traits_input"] = default_traits
                 st.session_state["random_traits_clicked"] = False
             
             char_traits = st.text_area(
@@ -278,10 +281,11 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_opening_clicked" not in st.session_state:
                 st.session_state["random_opening_clicked"] = False
             
-            # Set default value based on random click
-            default_opening = ""
+            # Set default value based on random click or existing session state
+            default_opening = st.session_state.get("opening_line_input", "")
             if st.session_state["random_opening_clicked"]:
                 default_opening = get_random_example("opening")
+                st.session_state["opening_line_input"] = default_opening
                 st.session_state["random_opening_clicked"] = False
             
             opening_line = st.text_area(
