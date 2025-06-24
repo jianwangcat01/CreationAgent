@@ -1071,16 +1071,17 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.subheader("🪐 Step 4: Generate Sekai Story Template")
         st.info("Let's bring everything together and create your story template!")
 
-        # Get values from previous steps
-        world_title = st.session_state.get("world_title_temp", "Your Sekai World")
-        world_setting = st.session_state.get("world_setting_temp", "A magical world")
-        world_keywords = st.session_state.get("world_keywords_input_temp", "")
-        selected_genres = st.session_state.get("world_genre_temp", [])
-        # Use locked-in values for user character
-        user_name = st.session_state.get("user_name", st.session_state.get("user_name_input_temp", "Alex"))
-        user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input_temp", "Curious and brave"))
+        # Get values from previous steps - use the actual user input, not defaults
+        world_title = st.session_state.get("world_title_temp", st.session_state.get("world_title", "Your Sekai World"))
+        world_setting = st.session_state.get("world_setting_temp", st.session_state.get("world_setting", "A magical world"))
+        world_keywords = st.session_state.get("world_keywords_input_temp", st.session_state.get("world_keywords_input", ""))
+        selected_genres = st.session_state.get("world_genre_temp", st.session_state.get("world_genre", []))
         
-        # Build characters list
+        # Use locked-in values for user character, fallback to input values
+        user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
+        user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input", "Curious and brave"))
+        
+        # Build characters list from Step 3
         num_characters = st.session_state.get("num_characters_slider", 2)
         characters = []
         for i in range(num_characters):
@@ -1133,6 +1134,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         # Generate Template Button
         if st.button("🧙 Generate Template", type="primary"):
             with st.spinner("Talking to Gemini AI..."):
+                # Debug: Show what values we're using
+                st.info(f"Using world info: Title='{world_title}', Setting='{world_setting}', Keywords='{world_keywords}'")
+                st.info(f"Using user character: Name='{user_name}', Traits='{user_traits}'")
+                st.info(f"Using {len(characters)} characters from Step 3")
+                
                 prompt = f"""
 You are an AI for building JSON-based interactive stories.
 Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
