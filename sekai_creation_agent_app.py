@@ -39,7 +39,7 @@ if st.session_state["app_mode"] == "character":
     if st.button("⬅️ Go Back to Menu", key="back_to_menu_char"):
         st.session_state["app_mode"] = None
         st.experimental_rerun()
-    st.stop()
+        st.stop()
 
 # --- Page Config ---
 st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
