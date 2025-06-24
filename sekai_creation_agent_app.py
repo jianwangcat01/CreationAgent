@@ -868,9 +868,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         with col3:
             if user_name.strip() and user_traits.strip():
                 if st.button("➡️ Next: Main Characters", type="primary"):
-                    # Lock in the values when proceeding
-                    st.session_state["user_name"] = user_name.strip()
-                    st.session_state["user_traits"] = user_traits.strip()
                     st.session_state["roleplay_step"] = 3
                     st.rerun()
             else:
@@ -1024,9 +1021,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         world_title = st.session_state.get("world_title", "Your Sekai World")
         world_setting = st.session_state.get("world_setting", "A magical world")
         selected_genres = st.session_state.get("world_genre", [])
-        # Use locked-in values for user character
-        user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
-        user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input", "Curious and brave"))
+        user_name = st.session_state.get("user_name", "Alex")
+        user_traits = st.session_state.get("user_traits", "Curious and brave")
         
         # Build characters list
         num_characters = st.session_state.get("num_characters_slider", 2)
