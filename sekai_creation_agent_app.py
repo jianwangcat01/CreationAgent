@@ -945,17 +945,17 @@ Generate only the 3 choices, nothing else.
         # Dynamic feedback based on input
         inspiration_lower = world_inspiration.lower()
         if any(word in inspiration_lower for word in ["zoo", "animal", "creature"]):
-            st.markdown('<div class="feedback-animation">🦁 <span class="emoji-sparkle">Ooooh, a zoo world!</span> That sounds fascinating! Let\'s shape it into something magical together.</div>', unsafe_allow_html=True)
+            st.success("🦁 Ooooh, a zoo world! That sounds fascinating! Let's shape it into something magical together.")
         elif any(word in inspiration_lower for word in ["library", "book", "story"]):
-            st.markdown('<div class="feedback-animation">📚 <span class="emoji-sparkle">A library world!</span> That sounds fascinating! Let\'s shape it into something magical together.</div>', unsafe_allow_html=True)
+            st.success("📚 A library world! That sounds fascinating! Let's shape it into something magical together.")
         elif any(word in inspiration_lower for word in ["sunset", "sun", "light"]):
-            st.markdown('<div class="feedback-animation">🌅 <span class="emoji-sparkle">A sunset world!</span> That sounds fascinating! Let\'s shape it into something magical together.</div>', unsafe_allow_html=True)
+            st.success("🌅 A sunset world! That sounds fascinating! Let's shape it into something magical together.")
         elif any(word in inspiration_lower for word in ["music", "song", "melody"]):
-            st.markdown('<div class="feedback-animation">🎵 <span class="emoji-sparkle">A music world!</span> That sounds fascinating! Let\'s shape it into something magical together.</div>', unsafe_allow_html=True)
+            st.success("🎵 A music world! That sounds fascinating! Let's shape it into something magical together.")
         elif any(word in inspiration_lower for word in ["dream", "sleep", "night"]):
-            st.markdown('<div class="feedback-animation">💭 <span class="emoji-sparkle">A dream world!</span> That sounds fascinating! Let\'s shape it into something magical together.</div>', unsafe_allow_html=True)
+            st.success("💭 A dream world! That sounds fascinating! Let's shape it into something magical together.")
         else:
-            st.markdown('<div class="feedback-animation">✨ <span class="emoji-sparkle">Ooooh, that sounds fascinating!</span> Let\'s shape it into something magical together.</div>', unsafe_allow_html=True)
+            st.success("✨ Ooooh, that sounds fascinating! Let's shape it into something magical together.")
 
     # --- Environment / Setting ---
     st.markdown("### 🌍 Environment / Setting")
@@ -975,15 +975,15 @@ Generate only the 3 choices, nothing else.
         # Dynamic feedback based on input
         environment_lower = world_environment.lower()
         if any(word in environment_lower for word in ["floating", "sky", "air", "cloud"]):
-            st.markdown('<div class="feedback-animation">☁️ <span class="emoji-sparkle">I can already picture it!</span> A floating world is full of wonder and potential.</div>', unsafe_allow_html=True)
+            st.success("☁️ I can already picture it! A floating world is full of wonder and potential.")
         elif any(word in environment_lower for word in ["underwater", "ocean", "sea", "water"]):
-            st.markdown('<div class="feedback-animation">🌊 <span class="emoji-sparkle">I can already picture it!</span> An underwater world is full of wonder and potential.</div>', unsafe_allow_html=True)
+            st.success("🌊 I can already picture it! An underwater world is full of wonder and potential.")
         elif any(word in environment_lower for word in ["forest", "tree", "nature"]):
-            st.markdown('<div class="feedback-animation">🌳 <span class="emoji-sparkle">I can already picture it!</span> A forest world is full of wonder and potential.</div>', unsafe_allow_html=True)
+            st.success("🌳 I can already picture it! A forest world is full of wonder and potential.")
         elif any(word in environment_lower for word in ["garden", "flower", "plant"]):
-            st.markdown('<div class="feedback-animation">🌸 <span class="emoji-sparkle">I can already picture it!</span> A garden world is full of wonder and potential.</div>', unsafe_allow_html=True)
+            st.success("🌸 I can already picture it! A garden world is full of wonder and potential.")
         else:
-            st.markdown('<div class="feedback-animation">🏞️ <span class="emoji-sparkle">I can already picture it!</span> That setting is full of wonder and potential.</div>', unsafe_allow_html=True)
+            st.success("🏞️ I can already picture it! That setting is full of wonder and potential.")
 
     # --- Mood / Vibe ---
     st.markdown("### 🎭 Mood / Vibe")
@@ -1003,15 +1003,15 @@ Generate only the 3 choices, nothing else.
         # Dynamic feedback based on input
         mood_lower = world_mood.lower()
         if any(word in mood_lower for word in ["serene", "peaceful", "calm", "tranquil"]):
-            st.markdown('<div class="feedback-animation">🧘 <span class="emoji-sparkle">Such a beautiful mood!</span> This world is going to feel unforgettable.</div>', unsafe_allow_html=True)
+            st.success("🧘 Such a beautiful mood! This world is going to feel unforgettable.")
         elif any(word in mood_lower for word in ["cozy", "warm", "comfortable", "homey"]):
-            st.markdown('<div class="feedback-animation">🏠 <span class="emoji-sparkle">Such a beautiful mood!</span> This world is going to feel unforgettable.</div>', unsafe_allow_html=True)
+            st.success("🏠 Such a beautiful mood! This world is going to feel unforgettable.")
         elif any(word in mood_lower for word in ["mysterious", "dark", "enigmatic", "secret"]):
-            st.markdown('<div class="feedback-animation">🔮 <span class="emoji-sparkle">Such a beautiful mood!</span> This world is going to feel unforgettable.</div>', unsafe_allow_html=True)
+            st.success("🔮 Such a beautiful mood! This world is going to feel unforgettable.")
         elif any(word in mood_lower for word in ["epic", "adventurous", "heroic", "grand"]):
-            st.markdown('<div class="feedback-animation">⚔️ <span class="emoji-sparkle">Such a beautiful mood!</span> This world is going to feel unforgettable.</div>', unsafe_allow_html=True)
+            st.success("⚔️ Such a beautiful mood! This world is going to feel unforgettable.")
         else:
-            st.markdown('<div class="feedback-animation">💫 <span class="emoji-sparkle">Such a beautiful mood!</span> This world is going to feel unforgettable.</div>', unsafe_allow_html=True)
+            st.success("💫 Such a beautiful mood! This world is going to feel unforgettable.")
 
     # --- Magical Rule or Twist ---
     st.markdown("### 🧬 Magical Rule or Twist")
@@ -1031,13 +1031,13 @@ Generate only the 3 choices, nothing else.
         # Dynamic feedback based on input
         magic_lower = world_magic.lower()
         if any(word in magic_lower for word in ["time", "clock", "hour", "minute"]):
-            st.markdown('<div class="feedback-animation">⏰ <span class="emoji-sparkle">Whoa… that\'s such a cool twist!</span> Your world just got even more unique.</div>', unsafe_allow_html=True)
+            st.success("⏰ Whoa… that's such a cool twist! Your world just got even more unique.")
         elif any(word in magic_lower for word in ["gravity", "float", "fall", "weight"]):
-            st.markdown('<div class="feedback-animation">🌌 <span class="emoji-sparkle">Whoa… that\'s such a cool twist!</span> Your world just got even more unique.</div>', unsafe_allow_html=True)
+            st.success("🌌 Whoa… that's such a cool twist! Your world just got even more unique.")
         elif any(word in magic_lower for word in ["memory", "remember", "forget", "mind"]):
-            st.markdown('<div class="feedback-animation">🧠 <span class="emoji-sparkle">Whoa… that\'s such a cool twist!</span> Your world just got even more unique.</div>', unsafe_allow_html=True)
+            st.success("🧠 Whoa… that's such a cool twist! Your world just got even more unique.")
         else:
-            st.markdown('<div class="feedback-animation">🌀 <span class="emoji-sparkle">Whoa… that\'s such a cool twist!</span> Your world just got even more unique.</div>', unsafe_allow_html=True)
+            st.success("🌀 Whoa… that's such a cool twist! Your world just got even more unique.")
 
     # --- Genre Tags ---
     st.markdown("### 🎬 Optional Genre Tags")
@@ -1061,15 +1061,15 @@ Generate only the 3 choices, nothing else.
         # Dynamic feedback based on genre selection
         genre_names = [g.split(' ', 1)[0] for g in selected_genres]
         if "Slice of Life" in genre_names:
-            st.markdown('<div class="feedback-animation">📚 <span class="emoji-sparkle">Great choice!</span> Your Sekai will have a warm, reflective vibe with that genre.</div>', unsafe_allow_html=True)
+            st.success("📚 Great choice! Your Sekai will have a warm, reflective vibe with that genre.")
         elif "Fantasy" in genre_names:
-            st.markdown('<div class="feedback-animation">🧙‍♀️ <span class="emoji-sparkle">Great choice!</span> Your Sekai will have a magical, wondrous vibe with that genre.</div>', unsafe_allow_html=True)
+            st.success("🧙‍♀️ Great choice! Your Sekai will have a magical, wondrous vibe with that genre.")
         elif "Sci-Fi" in genre_names:
-            st.markdown('<div class="feedback-animation">🚀 <span class="emoji-sparkle">Great choice!</span> Your Sekai will have a futuristic, innovative vibe with that genre.</div>', unsafe_allow_html=True)
+            st.success("🚀 Great choice! Your Sekai will have a futuristic, innovative vibe with that genre.")
         elif "Romance" in genre_names:
-            st.markdown('<div class="feedback-animation">💕 <span class="emoji-sparkle">Great choice!</span> Your Sekai will have a heartfelt, emotional vibe with that genre.</div>', unsafe_allow_html=True)
+            st.success("💕 Great choice! Your Sekai will have a heartfelt, emotional vibe with that genre.")
         else:
-            st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Great choice!</span> Your Sekai will have an amazing vibe with that genre.</div>', unsafe_allow_html=True)
+            st.success("🌟 Great choice! Your Sekai will have an amazing vibe with that genre.")
 
     # --- AI World Generation Button ---
     if st.button("🔮 Generate My Magical World", type="primary"):
