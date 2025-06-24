@@ -808,7 +808,7 @@ Generate only the 3 choices, nothing else.
     selected_genres = st.multiselect(
         "Your Sekai's Genre(s)",
         genre_options,
-        default=st.session_state['world_genre_temp'],
+        value=st.session_state['world_genre_temp'],
         key="world_genre_temp",
         on_change=update_genres
     )
@@ -1048,7 +1048,9 @@ Please provide {num_characters} character descriptions separated by '---'.
 Each character description must follow this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
-Traits: <Personality traits and special abilities>"""
+Traits: <Personality traits and special abilities>
+Voice Style: <How do they speak?>
+Opening Line: <What do they say when first met?>"""
             
             response_text = generate_field(prompt)
             generated_characters = response_text.strip().split("\n---\n")
@@ -1107,22 +1109,47 @@ Create a character that:
 Respond in this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
-Traits: <Personality traits and special abilities>"""
+Traits: <Personality traits and special abilities>
+Voice Style: <How do they speak?>
+Opening Line: <What do they say when first met?>"""
                 
                 result = generate_field(prompt)
+                # Parse the result
+                parsed_name, parsed_role, parsed_traits, parsed_voice, parsed_opening = "", "", "", "", ""
+                try:
+                    # Use regex for robust parsing
+                    name_match = re.search(r'Name\s*[:：\-]\s*(.*)', result)
+                    role_match = re.search(r'Role\s*[:：\-]\s*(.*)', result)
+                    traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', result)
+                    voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', result)
+                    opening_match = re.search(r'Opening Line\s*[:：\-]\s*(.*)', result)
+                    if name_match:
+                        parsed_name = name_match.group(1).strip()
+                    if role_match:
+                        parsed_role = role_match.group(1).strip()
+                    if traits_match:
+                        parsed_traits = traits_match.group(1).strip()
+                    if voice_match:
+                        parsed_voice = voice_match.group(1).strip()
+                    if opening_match:
+                        parsed_opening = opening_match.group(1).strip()
+                except Exception:
+                    pass
                 st.session_state[f"char_{i}"] = result
+                st.session_state[f"name_{i}"] = parsed_name
+                st.session_state[f"role_{i}"] = parsed_role
+                st.session_state[f"trait_{i}"] = parsed_traits
+                st.session_state[f"voice_style_{i}"] = parsed_voice
+                st.session_state[f"opening_line_{i}"] = parsed_opening
                 st.rerun()
         
         # Parse generated character
         default_text = st.session_state.get(f"char_{i}", "")
-        parsed_name, parsed_role, parsed_traits = "", "", ""
-        if "Name:" in default_text and "Role:" in default_text and "Traits:" in default_text:
-            try:
-                parsed_name = default_text.split("Name:")[1].split("Role:")[0].strip()
-                parsed_role = default_text.split("Role:")[1].split("Traits:")[0].strip()
-                parsed_traits = default_text.split("Traits:")[1].strip()
-            except Exception:
-                parsed_name, parsed_role, parsed_traits = "", "", ""
+        parsed_name = st.session_state.get(f"name_{i}", "")
+        parsed_role = st.session_state.get(f"role_{i}", "")
+        parsed_traits = st.session_state.get(f"trait_{i}", "")
+        parsed_voice = st.session_state.get(f"voice_style_{i}", "")
+        parsed_opening = st.session_state.get(f"opening_line_{i}", "")
 
         # Character Details
         name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
@@ -1133,14 +1160,15 @@ Traits: <Personality traits and special abilities>"""
         with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
             col1, col2 = st.columns(2)
             with col1:
-                voice_style = st.selectbox(
+                voice_style = st.text_input(
                     f"Voice Style",
-                    ["Default", "Cute", "Serious", "Snarky", "Mysterious", "Energetic", "Calm"],
+                    value=parsed_voice,
                     key=f"voice_style_{i}"
                 )
             with col2:
                 opening_line = st.text_input(
                     f"AI Opening Line (or leave blank to auto-gen)",
+                    value=parsed_opening,
                     placeholder="What should they say when you first meet?",
                     key=f"opening_line_{i}"
                 )
