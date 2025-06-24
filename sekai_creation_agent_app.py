@@ -36,6 +36,9 @@ if st.session_state["app_mode"] == "character":
     st.set_page_config(page_title="Character Creation", layout="wide")
     st.title("Character Creation Mode")
     st.info("Character creation coming soon!")
+    if st.button("⬅️ Go Back to Menu", key="back_to_menu_char"):
+        st.session_state["app_mode"] = None
+        st.experimental_rerun()
     st.stop()
 
 # --- Page Config ---
@@ -347,3 +350,13 @@ st.button("🔄 Send", on_click=handle_send)
 
 # Footer
 st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
+
+if st.session_state["app_mode"] == "roleplay":
+    # --- Page Config ---
+    st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
+    st.title("Sekai AI Creation Agent")
+    # ... rest of your roleplay code ...
+    if st.button("⬅️ Go Back to Menu", key="back_to_menu_roleplay"):
+        st.session_state["app_mode"] = None
+        st.experimental_rerun()
+    # ... rest of your roleplay code ...
