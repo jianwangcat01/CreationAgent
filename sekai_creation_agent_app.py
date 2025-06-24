@@ -670,23 +670,114 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.session_state["story_colors"].append(new_color)
             # st.rerun is implicit with on_click callback
 
+    def handle_choice_click(choice_text):
+        st.session_state.reply_input = choice_text
+        handle_send()
+
+    def generate_choices():
+        """Generate 3 choice options for the player"""
+        if "game_state" in st.session_state and st.session_state["game_state"]:
+            last_turn = st.session_state["game_state"][-1]
+            player_name = st.session_state.get("user_name", "the player")
+            
+            choice_prompt = f"""
+Based on the current story situation, generate 3 different action choices for {player_name}.
+
+Current story context:
+{last_turn}
+
+Generate 3 distinct choices that would make sense for the player character in this situation. 
+Each choice should be:
+- 1-2 sentences maximum
+- Specific and actionable
+- Different from each other
+- Appropriate for the story context
+
+Format as:
+1. [First choice]
+2. [Second choice] 
+3. [Third choice]
+
+Generate only the 3 choices, nothing else.
+"""
+            
+            try:
+                response = model.generate_content(choice_prompt)
+                choices_text = response.text.strip()
+                
+                # Parse the choices
+                choices = []
+                lines = choices_text.split('\n')
+                for line in lines:
+                    line = line.strip()
+                    if line and (line.startswith('1.') or line.startswith('2.') or line.startswith('3.')):
+                        choice = line.split('.', 1)[1].strip()
+                        if choice:
+                            choices.append(choice)
+                
+                # Ensure we have exactly 3 choices
+                while len(choices) < 3:
+                    choices.append(f"Continue exploring the area")
+                if len(choices) > 3:
+                    choices = choices[:3]
+                
+                return choices
+            except Exception as e:
+                # Fallback choices
+                return [
+                    "Continue exploring the area",
+                    "Talk to someone nearby", 
+                    "Investigate something interesting"
+                ]
+        return [
+            "Continue exploring the area",
+            "Talk to someone nearby", 
+            "Investigate something interesting"
+        ]
+
     # --- Quick Navigation Links ---
     st.markdown("---")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        st.markdown("**[🌍 Step 1: World](#step-1)**")
+        if st.button("🌍 Step 1: World", key="nav_step1", use_container_width=True):
+            st.markdown("""
+            <script>
+            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            </script>
+            """, unsafe_allow_html=True)
     with col2:
-        st.markdown("**[👤 Step 2: You](#step-2)**")
+        if st.button("👤 Step 2: You", key="nav_step2", use_container_width=True):
+            st.markdown("""
+            <script>
+            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            </script>
+            """, unsafe_allow_html=True)
     with col3:
-        st.markdown("**[👥 Step 3: Characters](#step-3)**")
+        if st.button("👥 Step 3: Characters", key="nav_step3", use_container_width=True):
+            st.markdown("""
+            <script>
+            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            </script>
+            """, unsafe_allow_html=True)
     with col4:
-        st.markdown("**[📜 Step 4: Template](#step-4)**")
+        if st.button("📜 Step 4: Template", key="nav_step4", use_container_width=True):
+            st.markdown("""
+            <script>
+            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            </script>
+            """, unsafe_allow_html=True)
     with col5:
-        st.markdown("**[🎮 Step 5: Play](#step-5)**")
+        if st.button("🎮 Step 5: Play", key="nav_step5", use_container_width=True):
+            st.markdown("""
+            <script>
+            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            </script>
+            """, unsafe_allow_html=True)
     st.markdown("---")
 
     # ===== STEP 1: CREATE YOUR SEKAI WORLD =====
     st.markdown("## 🌍 Step 1: Create Your Sekai World")
+    st.markdown('<div id="step-1"></div>', unsafe_allow_html=True)
     st.info("Let's start with your spark of inspiration! Don't overthink it — just share a mood, a moment, or a single word! We'll turn it into magic together 💫")
 
     # --- World Spark (Seed Idea) ---
@@ -818,6 +909,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
 
     # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
     st.markdown("## 👤 Step 2: Create Your Character")
+    st.markdown('<div id="step-2"></div>', unsafe_allow_html=True)
     st.info("Now let's meet you! You'll be the heart of this world, so tell us about yourself.")
 
     # --- AI Character Generation Button ---
@@ -910,6 +1002,7 @@ Respond with:
 
     # ===== STEP 3: CREATE MAIN CHARACTERS =====
     st.markdown("## 👥 Step 3: Create Main Characters")
+    st.markdown('<div id="step-3"></div>', unsafe_allow_html=True)
     st.info("Now let's meet the other characters who will join your story!")
 
     # Get values from previous steps
@@ -1052,12 +1145,19 @@ Traits: <Personality traits and special abilities>"""
                     key=f"opening_line_{i}"
                 )
         
-        characters.append({"name": name, "role": role, "traits": trait})
+        characters.append({
+            "name": name, 
+            "role": role, 
+            "traits": trait,
+            "voice_style": voice_style if 'voice_style' in locals() else "Default",
+            "opening_line": opening_line if 'opening_line' in locals() else ""
+        })
 
     st.markdown("---")
 
     # ===== STEP 4: GENERATE SEKAI STORY TEMPLATE =====
     st.markdown("## 📜 Step 4: Generate Sekai Story Template")
+    st.markdown('<div id="step-4"></div>', unsafe_allow_html=True)
     st.info("Let's bring everything together and create your story template!")
 
     # Opening Line Setup
@@ -1162,9 +1262,20 @@ Generate only the opening scene description, nothing else.
             st.info(f"Using user character: Name='{user_name}', Traits='{user_traits}'")
             st.info(f"Using {len(characters)} characters from Step 3")
             
+            # Build comprehensive character information including optional add-ons
+            character_details = []
+            for c in characters:
+                if c['name'].strip() and c['traits'].strip():
+                    char_info = f"- {c['name']} ({c['role']}): {c['traits']}"
+                    if c.get('voice_style') and c['voice_style'] != "Default":
+                        char_info += f" | Voice: {c['voice_style']}"
+                    if c.get('opening_line'):
+                        char_info += f" | Opening: {c['opening_line']}"
+                    character_details.append(char_info)
+            
             prompt = f"""
 You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style, opening_line), and openingScene.
 
 Title: {world_title}
 Setting: {world_setting}
@@ -1173,9 +1284,8 @@ Keywords: {world_keywords}
 Characters:
 - {user_name} (Player): {user_traits}
 """
-            for c in characters:
-                if c['name'].strip() and c['traits'].strip():
-                    prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+            for char_detail in character_details:
+                prompt += f"{char_detail}\n"
             
             # Add opening scene if provided
             if opening_scene.strip():
@@ -1214,6 +1324,7 @@ Characters:
 
     # ===== STEP 5: PLAY / START THE STORY =====
     st.markdown("## 🎮 Step 5: Start Your Sekai Journey!")
+    st.markdown('<div id="step-5"></div>', unsafe_allow_html=True)
     
     # Get values
     user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
@@ -1316,6 +1427,46 @@ Write the opening scene below, making sure to introduce one or more characters:
 
         # Game input (only appears when game is active)
         st.markdown("### 🎮 Your Turn")
+        
+        # Generate 3 choice options
+        choices = generate_choices()
+        
+        # Display choice buttons
+        st.markdown("**Choose an action or write your own:**")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button(f"🎯 {choices[0][:30]}{'...' if len(choices[0]) > 30 else ''}", 
+                        key=f"choice_1_{len(st.session_state['game_state'])}", 
+                        on_click=handle_choice_click, args=(choices[0],)):
+                pass
+        
+        with col2:
+            if st.button(f"🎯 {choices[1][:30]}{'...' if len(choices[1]) > 30 else ''}", 
+                        key=f"choice_2_{len(st.session_state['game_state'])}", 
+                        on_click=handle_choice_click, args=(choices[1],)):
+                pass
+        
+        with col3:
+            if st.button(f"🎯 {choices[2][:30]}{'...' if len(choices[2]) > 30 else ''}", 
+                        key=f"choice_3_{len(st.session_state['game_state'])}", 
+                        on_click=handle_choice_click, args=(choices[2],)):
+                pass
+        
+        # Show full choice text on hover (using tooltips)
+        st.markdown(f"""
+        <details>
+        <summary>📋 View full choice descriptions</summary>
+        <ul>
+        <li><strong>Choice 1:</strong> {choices[0]}</li>
+        <li><strong>Choice 2:</strong> {choices[1]}</li>
+        <li><strong>Choice 3:</strong> {choices[2]}</li>
+        </ul>
+        </details>
+        """, unsafe_allow_html=True)
+        
+        # Freeform input
+        st.markdown("**Or write your own action/dialogue:**")
         st.text_input("Enter your next action or dialogue", key="reply_input")
         st.button("🔄 Send", on_click=handle_send)
 
