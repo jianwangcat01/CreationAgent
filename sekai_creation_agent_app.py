@@ -19,13 +19,13 @@ if st.session_state["app_mode"] is None:
     
     with col1:
         try:
-            st.image("https://i.postimg.cc/YhMC4Tg4/1.png", width=320, height=240)
+            st.image("https://i.postimg.cc/YGrdLrpn/1.png", width=320, height=240)
         except Exception:
             st.warning("Character image not found.")
     
     with col2:
         try:
-            st.image("https://i.postimg.cc/z3nfGqLZ/2.png", width=320, height=240)
+            st.image("https://i.postimg.cc/G8XqkWtc/2.png", width=320, height=240)
         except Exception:
             st.warning("Roleplay image not found.")
     
