@@ -90,8 +90,12 @@ The AI will take on the personality you describe and respond accordingly.
             st.image(char_image, use_container_width=False, width=200, caption=f"{char_name}'s Avatar")
         for i, entry in enumerate(st.session_state["chat_history"]):
             st.markdown(f"**You:** {entry['user']}")
-            st.markdown(f"**{char_name}:** {entry['bot']}")
-            st.markdown("---")
+            # Remove double character name if present
+            bot_reply = entry['bot']
+            prefix = f"{char_name}:"
+            if bot_reply.strip().lower().startswith(prefix.lower()):
+                bot_reply = bot_reply.strip()[len(prefix):].lstrip()
+            st.markdown(f"**{char_name}:** {bot_reply}")
         user_input = st.text_input("Your Message", key="char_chat_input")
         if st.button("📩 Send"):
             model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
@@ -101,6 +105,10 @@ The AI will take on the personality you describe and respond accordingly.
             full_prompt += f"You: {user_input}\n{char_name}:"
             response = model.generate_content(full_prompt)
             reply = response.text.strip()
+            # Remove double character name if present in reply before saving
+            prefix = f"{char_name}:"
+            if reply.lower().startswith(prefix.lower()):
+                reply = reply[len(prefix):].lstrip()
             st.session_state["chat_history"].append({
                 "user": user_input,
                 "bot": reply
