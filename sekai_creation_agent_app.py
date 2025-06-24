@@ -161,16 +161,20 @@ The AI will take on the personality you describe and respond accordingly.
         st.markdown("### 👤 Character Name")
         col1, col2 = st.columns([3, 1])
         with col1:
+            # Get random name if button was clicked
             if "random_name_clicked" not in st.session_state:
                 st.session_state["random_name_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_name = st.session_state.get("char_name_input", "")
             if st.session_state["random_name_clicked"]:
-                st.session_state["char_name_input"] = get_random_example("name")
+                default_name = get_random_example("name")
+                st.session_state["char_name_input"] = default_name
                 st.session_state["random_name_clicked"] = False
-            if "char_name_input" not in st.session_state:
-                st.session_state["char_name_input"] = ""
+            
             char_name = st.text_input(
                 "What's their name?",
-                value=st.session_state["char_name_input"],
+                value=default_name,
                 placeholder="Eliora / Jack the Brave / Neko-chan",
                 key="char_name_input"
             )
@@ -186,16 +190,20 @@ The AI will take on the personality you describe and respond accordingly.
         st.markdown("### 🎭 Role / Occupation")
         col1, col2 = st.columns([3, 1])
         with col1:
+            # Get random role if button was clicked
             if "random_role_clicked" not in st.session_state:
                 st.session_state["random_role_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_role = st.session_state.get("char_role_input", "")
             if st.session_state["random_role_clicked"]:
-                st.session_state["char_role_input"] = get_random_example("role")
+                default_role = get_random_example("role")
+                st.session_state["char_role_input"] = default_role
                 st.session_state["random_role_clicked"] = False
-            if "char_role_input" not in st.session_state:
-                st.session_state["char_role_input"] = ""
+            
             char_role = st.text_input(
                 "What do they do? What's their role?",
-                value=st.session_state["char_role_input"],
+                value=default_role,
                 placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
                 key="char_role_input"
             )
@@ -234,16 +242,20 @@ The AI will take on the personality you describe and respond accordingly.
         st.markdown("### 💫 Personality Traits & Background")
         col1, col2 = st.columns([3, 1])
         with col1:
+            # Get random traits if button was clicked
             if "random_traits_clicked" not in st.session_state:
                 st.session_state["random_traits_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_traits = st.session_state.get("char_traits_input", "")
             if st.session_state["random_traits_clicked"]:
-                st.session_state["char_traits_input"] = get_random_example("traits")
+                default_traits = get_random_example("traits")
+                st.session_state["char_traits_input"] = default_traits
                 st.session_state["random_traits_clicked"] = False
-            if "char_traits_input" not in st.session_state:
-                st.session_state["char_traits_input"] = ""
+            
             char_traits = st.text_area(
                 "Tell us about their personality, background, and how they behave:",
-                value=st.session_state["char_traits_input"],
+                value=default_traits,
                 placeholder="She's soft-spoken but bold when protecting loved ones. She speaks like an ancient priestess.",
                 height=120,
                 key="char_traits_input"
@@ -261,16 +273,20 @@ The AI will take on the personality you describe and respond accordingly.
             st.markdown("#### 🗣️ Voice Style / Speech Quirks")
             col1, col2 = st.columns([3, 1])
             with col1:
+                # Get random voice style if button was clicked
                 if "random_voice_clicked" not in st.session_state:
                     st.session_state["random_voice_clicked"] = False
+                
+                # Set default value based on random click or existing session state
+                default_voice = st.session_state.get("voice_style_input", "")
                 if st.session_state["random_voice_clicked"]:
-                    st.session_state["voice_style_input"] = get_random_example("voice_style")
+                    default_voice = get_random_example("voice_style")
+                    st.session_state["voice_style_input"] = default_voice
                     st.session_state["random_voice_clicked"] = False
-                if "voice_style_input" not in st.session_state:
-                    st.session_state["voice_style_input"] = ""
+                
                 voice_style = st.text_input(
                     "How do they speak? Any unique speech patterns?",
-                    value=st.session_state["voice_style_input"],
+                    value=default_voice,
                     placeholder="Always says 'nya~' like a cat girl / Ends every sentence with 'my dear'",
                     key="voice_style_input"
                 )
@@ -282,16 +298,20 @@ The AI will take on the personality you describe and respond accordingly.
             st.markdown("#### 💕 Emotional Style / Relationship Style")
             col1, col2 = st.columns([3, 1])
             with col1:
+                # Get random emotional style if button was clicked
                 if "random_emotional_clicked" not in st.session_state:
                     st.session_state["random_emotional_clicked"] = False
+                
+                # Set default value based on random click or existing session state
+                default_emotional = st.session_state.get("emotional_style_input", "")
                 if st.session_state["random_emotional_clicked"]:
-                    st.session_state["emotional_style_input"] = get_random_example("emotional_style")
+                    default_emotional = get_random_example("emotional_style")
+                    st.session_state["emotional_style_input"] = default_emotional
                     st.session_state["random_emotional_clicked"] = False
-                if "emotional_style_input" not in st.session_state:
-                    st.session_state["emotional_style_input"] = ""
+                
                 emotional_style = st.text_input(
                     "How do they treat the user emotionally?",
-                    value=st.session_state["emotional_style_input"],
+                    value=default_emotional,
                     placeholder="Protective big brother energy / Tsundere (hot and cold flirty) / Gentle supportive best friend",
                     key="emotional_style_input"
                 )
@@ -303,16 +323,20 @@ The AI will take on the personality you describe and respond accordingly.
             st.markdown("#### 📖 Memory or Lore Snippets")
             col1, col2 = st.columns([3, 1])
             with col1:
+                # Get random lore if button was clicked
                 if "random_lore_clicked" not in st.session_state:
                     st.session_state["random_lore_clicked"] = False
+                
+                # Set default value based on random click or existing session state
+                default_lore = st.session_state.get("lore_snippets_input", "")
                 if st.session_state["random_lore_clicked"]:
-                    st.session_state["lore_snippets_input"] = get_random_example("lore_snippets")
+                    default_lore = get_random_example("lore_snippets")
+                    st.session_state["lore_snippets_input"] = default_lore
                     st.session_state["random_lore_clicked"] = False
-                if "lore_snippets_input" not in st.session_state:
-                    st.session_state["lore_snippets_input"] = ""
+                
                 lore_snippets = st.text_area(
                     "Any personal backstory or shared memories?",
-                    value=st.session_state["lore_snippets_input"],
+                    value=default_lore,
                     placeholder="They once lost someone they loved, and still carry the necklace. / You and the character used to play in the forest as kids.",
                     height=80,
                     key="lore_snippets_input"
@@ -352,16 +376,20 @@ The AI will take on the personality you describe and respond accordingly.
         
         col1, col2 = st.columns([3, 1])
         with col1:
+            # Get random opening if button was clicked
             if "random_opening_clicked" not in st.session_state:
                 st.session_state["random_opening_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_opening = st.session_state.get("opening_line_input", "")
             if st.session_state["random_opening_clicked"]:
-                st.session_state["opening_line_input"] = get_random_example("opening")
+                default_opening = get_random_example("opening")
+                st.session_state["opening_line_input"] = default_opening
                 st.session_state["random_opening_clicked"] = False
-            if "opening_line_input" not in st.session_state:
-                st.session_state["opening_line_input"] = ""
+            
             opening_line = st.text_area(
                 "What should they say to start the conversation?",
-                value=st.session_state["opening_line_input"],
+                value=default_opening,
                 placeholder="Hey, it's you again! I've been waiting forever, dummy!",
                 height=80,
                 key="opening_line_input"
@@ -397,7 +425,7 @@ The AI will take on the personality you describe and respond accordingly.
             else:
                 # Default avatar placeholder
                 st.markdown(f"""
-                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \
+                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                 border-radius: 10px; color: white;">
                     <h3>🎭 {char_name}</h3>
                     <p>✨ Character Avatar</p>
@@ -686,11 +714,16 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         # --- World Spark (Seed Idea) ---
         if 'world_idea_input' not in st.session_state:
             st.session_state['world_idea_input'] = ''
+        if 'world_idea_input_temp' not in st.session_state:
+            st.session_state['world_idea_input_temp'] = st.session_state['world_idea_input']
+        def update_world_idea():
+            st.session_state['world_idea_input'] = st.session_state['world_idea_input_temp']
         world_idea = st.text_input(
             "Your world spark",
-            value=st.session_state['world_idea_input'],
+            value=st.session_state['world_idea_input_temp'],
             placeholder="A city where dreams are currency / Cyberpunk witches at high school / Haunted aquarium / Post-apocalyptic tea shop",
-            key="world_idea_input"
+            key="world_idea_input_temp",
+            on_change=update_world_idea
         )
         if world_idea.strip():
             st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
@@ -699,11 +732,16 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
         if 'world_genre' not in st.session_state:
             st.session_state['world_genre'] = []
+        if 'world_genre_temp' not in st.session_state:
+            st.session_state['world_genre_temp'] = [g for g in st.session_state['world_genre'] if g in genre_options]
+        def update_genres():
+            st.session_state['world_genre'] = st.session_state['world_genre_temp']
         selected_genres = st.multiselect(
             "Your Sekai's Genre(s)",
             genre_options,
-            default=st.session_state['world_genre'],
-            key="world_genre"
+            default=st.session_state['world_genre_temp'],
+            key="world_genre_temp",
+            on_change=update_genres
         )
         
         if selected_genres:
@@ -715,8 +753,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if st.button("✨ AI: Turn My Idea into a World", type="primary"):
             st.toast("Working magic... Generating your Sekai world ✨")
             # Compose the prompt based on available fields
-            idea = st.session_state['world_idea_input'].strip()
-            genres = st.session_state['world_genre']
+            idea = st.session_state['world_idea_input_temp'].strip()
+            genres = st.session_state['world_genre_temp']
             genre_str = ', '.join([g.split(' ', 1)[0] for g in genres]) if genres else ''
             if idea and genre_str:
                 prompt = f"Generate a creative Sekai world concept based on the following idea and genres.\n\nIdea: {idea}\nGenres: {genre_str}\n\nRespond with:\n- Sekai Title\n- World Setting (2-3 vivid sentences)\n- Keywords (comma separated, 3-6 words)"
@@ -745,31 +783,44 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             if title:
                 clean_title = strip_stars(title.group(1))
                 st.session_state["world_title"] = clean_title
+                st.session_state["world_title_temp"] = clean_title
             if setting:
                 clean_setting = strip_stars(setting.group(1))
                 st.session_state["world_setting"] = clean_setting
+                st.session_state["world_setting_temp"] = clean_setting
             if keywords:
                 clean_keywords = strip_stars(keywords.group(1))
                 st.session_state["world_keywords_input"] = clean_keywords
+                st.session_state["world_keywords_input_temp"] = clean_keywords
             st.rerun()
 
         # --- Title + Setting Description ---
         if 'world_title' not in st.session_state:
             st.session_state['world_title'] = ''
+        if 'world_title_temp' not in st.session_state:
+            st.session_state['world_title_temp'] = st.session_state['world_title']
+        def update_world_title():
+            st.session_state['world_title'] = st.session_state['world_title_temp']
         world_title = st.text_input(
             "Sekai Title",
-            value=st.session_state['world_title'],
+            value=st.session_state['world_title_temp'],
             placeholder="The Midnight Library / Dream Currency City / Cyber Witch Academy",
-            key="world_title"
+            key="world_title_temp",
+            on_change=update_world_title
         )
         if 'world_setting' not in st.session_state:
             st.session_state['world_setting'] = ''
+        if 'world_setting_temp' not in st.session_state:
+            st.session_state['world_setting_temp'] = st.session_state['world_setting']
+        def update_world_setting():
+            st.session_state['world_setting'] = st.session_state['world_setting_temp']
         world_setting = st.text_area(
             "Describe the World Setting",
-            value=st.session_state['world_setting'],
+            value=st.session_state['world_setting_temp'],
             placeholder="A magical library that only appears at midnight, where books come alive and stories write themselves...",
             height=100,
-            key="world_setting"
+            key="world_setting_temp",
+            on_change=update_world_setting
         )
         if world_setting.strip():
             st.success("📝 This already feels so vivid! We're almost ready to meet your characters…")
@@ -777,11 +828,16 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         # --- World Keywords/Tags (optional) ---
         if 'world_keywords_input' not in st.session_state:
             st.session_state['world_keywords_input'] = ''
+        if 'world_keywords_input_temp' not in st.session_state:
+            st.session_state['world_keywords_input_temp'] = st.session_state['world_keywords_input']
+        def update_keywords():
+            st.session_state['world_keywords_input'] = st.session_state['world_keywords_input_temp']
         world_keywords = st.text_input(
             "Keywords",
-            value=st.session_state['world_keywords_input'],
+            value=st.session_state['world_keywords_input_temp'],
             placeholder="dreams, magic library, talking animals, steampunk, time travel",
-            key="world_keywords_input"
+            key="world_keywords_input_temp",
+            on_change=update_keywords
         )
 
         # Navigation
@@ -805,9 +861,9 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
 
         # --- AI Character Generation Button (now above name input) ---
         if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
-            world_title = st.session_state.get('world_title', '')
-            world_setting = st.session_state.get('world_setting', '')
-            world_keywords = st.session_state.get('world_keywords_input', '')
+            world_title = st.session_state.get('world_title_temp', '')
+            world_setting = st.session_state.get('world_setting_temp', '')
+            world_keywords = st.session_state.get('world_keywords_input_temp', '')
             prompt = f"Generate a player character for the following Sekai world.\n\nTitle: {world_title}\nSetting: {world_setting}\nKeywords: {world_keywords}\n\nRespond with:\n- Name (a human name)\n- Traits (1-2 sentences about personality, quirks, or magical powers)"
             suggestion = generate_field(prompt)
             # Parse the response
@@ -838,22 +894,32 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         # --- Character Name ---
         if 'user_name_input' not in st.session_state:
             st.session_state['user_name_input'] = ''
+        if 'user_name_input_temp' not in st.session_state:
+            st.session_state['user_name_input_temp'] = st.session_state['user_name_input']
+        def update_user_name():
+            st.session_state['user_name_input'] = st.session_state['user_name_input_temp']
         user_name = st.text_input(
             "Your Character's Name",
-            value=st.session_state['user_name_input'],
+            value=st.session_state['user_name_input_temp'],
             placeholder="Alex / Luna / Kai / Your real name",
-            key="user_name_input"
+            key="user_name_input_temp",
+            on_change=update_user_name
         )
 
         # --- Character Traits ---
         if 'user_traits_input' not in st.session_state:
             st.session_state['user_traits_input'] = ''
+        if 'user_traits_input_temp' not in st.session_state:
+            st.session_state['user_traits_input_temp'] = st.session_state['user_traits_input']
+        def update_user_traits():
+            st.session_state['user_traits_input'] = st.session_state['user_traits_input_temp']
         user_traits = st.text_area(
             "Your Character's Traits",
-            value=st.session_state['user_traits_input'],
+            value=st.session_state['user_traits_input_temp'],
             placeholder="Brave but impulsive, always rushing to help others / A quiet artist who sees spirits / Invented a tea that lets people relive memories",
             height=100,
-            key="user_traits_input"
+            key="user_traits_input_temp",
+            on_change=update_user_traits
         )
         
         if user_traits.strip():
@@ -879,18 +945,16 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.info("Now let's meet the other characters who will join your story!")
 
         # Get values from previous steps
-        world_title = st.session_state.get("world_title", "Your Sekai World")
-        world_setting = st.session_state.get("world_setting", "A magical world")
-        world_keywords = st.session_state.get("world_keywords_input", "")
+        world_title = st.session_state.get("world_title_temp", "Your Sekai World")
+        world_setting = st.session_state.get("world_setting_temp", "A magical world")
+        world_keywords = st.session_state.get("world_keywords_input_temp", "")
         user_name = st.session_state.get("user_name_input", "Alex")
         user_traits = st.session_state.get("user_traits_input", "Curious and brave")
 
         # Number of Characters
         st.markdown("### 🎭 How many characters will join your story?")
         st.markdown("Choose between 1 and 5 to start.")
-        if "num_characters_slider" not in st.session_state:
-            st.session_state["num_characters_slider"] = 2
-        num_characters = st.slider("Number of Characters", 1, 5, st.session_state["num_characters_slider"], key="num_characters_slider")
+        num_characters = st.slider("Number of Characters", 1, 5, 2, key="num_characters_slider")
         
         if num_characters > 1:
             st.success(f"🎉 Great! {num_characters} characters will make this story even more exciting!")
@@ -925,8 +989,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.markdown(f"### Character {i+1}")
             
             # Character Idea
-            if f"idea_{i}" not in st.session_state:
-                st.session_state[f"idea_{i}"] = ""
             idea = st.text_input(
                 f"Character Idea {i+1}",
                 placeholder="Knight with amnesia who might be evil / Librarian who hides a secret / Rival time mage",
@@ -965,31 +1027,20 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                     parsed_name, parsed_role, parsed_traits = "", "", ""
 
             # Character Details
-            if f"name_{i}" not in st.session_state:
-                st.session_state[f"name_{i}"] = parsed_name
-            if f"role_{i}" not in st.session_state:
-                st.session_state[f"role_{i}"] = parsed_role
-            if f"trait_{i}" not in st.session_state:
-                st.session_state[f"trait_{i}"] = parsed_traits
-            name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=st.session_state[f"name_{i}"])
-            role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=st.session_state[f"role_{i}"])
-            trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=st.session_state[f"trait_{i}"], height=100, placeholder="Describe their personality, abilities, and backstory...")
+            name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
+            role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=parsed_role, placeholder="Librarian who hides a secret / Rival time mage")
+            trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
             
             # Optional Add-ons
             with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
                 col1, col2 = st.columns(2)
                 with col1:
-                    if f"voice_style_{i}" not in st.session_state:
-                        st.session_state[f"voice_style_{i}"] = "Default"
                     voice_style = st.selectbox(
                         f"Voice Style",
                         ["Default", "Cute", "Serious", "Snarky", "Mysterious", "Energetic", "Calm"],
-                        key=f"voice_style_{i}",
-                        index=["Default", "Cute", "Serious", "Snarky", "Mysterious", "Energetic", "Calm"].index(st.session_state[f"voice_style_{i}"]) if st.session_state[f"voice_style_{i}"] in ["Default", "Cute", "Serious", "Snarky", "Mysterious", "Energetic", "Calm"] else 0
+                        key=f"voice_style_{i}"
                     )
                 with col2:
-                    if f"opening_line_{i}" not in st.session_state:
-                        st.session_state[f"opening_line_{i}"] = ""
                     opening_line = st.text_input(
                         f"AI Opening Line (or leave blank to auto-gen)",
                         placeholder="What should they say when you first meet?",
@@ -1038,38 +1089,26 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         with st.expander("🧙‍♂️ Advanced Settings (Optional)", expanded=False):
             col1, col2 = st.columns(2)
             with col1:
-                if "story_tone" not in st.session_state:
-                    st.session_state["story_tone"] = "Balanced"
                 story_tone = st.selectbox(
                     "Story Tone",
                     ["Balanced", "Light", "Serious", "Romantic", "Chaotic", "Mysterious"],
-                    key="story_tone",
-                    index=["Balanced", "Light", "Serious", "Romantic", "Chaotic", "Mysterious"].index(st.session_state["story_tone"]) if st.session_state["story_tone"] in ["Balanced", "Light", "Serious", "Romantic", "Chaotic", "Mysterious"] else 0
+                    key="story_tone"
                 )
-                if "pacing" not in st.session_state:
-                    st.session_state["pacing"] = "Balanced"
                 pacing = st.selectbox(
                     "Pacing",
                     ["Balanced", "Slow burn", "Fast plot twists", "Episodic"],
-                    key="pacing",
-                    index=["Balanced", "Slow burn", "Fast plot twists", "Episodic"].index(st.session_state["pacing"]) if st.session_state["pacing"] in ["Balanced", "Slow burn", "Fast plot twists", "Episodic"] else 0
+                    key="pacing"
                 )
             with col2:
-                if "pov" not in st.session_state:
-                    st.session_state["pov"] = "Third person"
                 pov = st.selectbox(
                     "Point of View",
                     ["Third person", "First person", "Omniscient"],
-                    key="pov",
-                    index=["Third person", "First person", "Omniscient"].index(st.session_state["pov"]) if st.session_state["pov"] in ["Third person", "First person", "Omniscient"] else 0
+                    key="pov"
                 )
-                if "narration_style" not in st.session_state:
-                    st.session_state["narration_style"] = "Balanced"
                 narration_style = st.selectbox(
                     "Narration Style",
                     ["Balanced", "Minimal (chat only)", "Vivid prose", "Light storytelling"],
-                    key="narration_style",
-                    index=["Balanced", "Minimal (chat only)", "Vivid prose", "Light storytelling"].index(st.session_state["narration_style"]) if st.session_state["narration_style"] in ["Balanced", "Minimal (chat only)", "Vivid prose", "Light storytelling"] else 0
+                    key="narration_style"
                 )
 
         # Generate Template Button
