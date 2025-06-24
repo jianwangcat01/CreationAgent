@@ -764,10 +764,16 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("*Try combining Romance + Horror for something like vampire dating!*")
         
         genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
+        
+        # Get default values and ensure they're valid
+        default_genres = st.session_state.get("world_genre", [])
+        # Filter out any invalid values that might exist in session state
+        valid_default_genres = [genre for genre in default_genres if genre in genre_options]
+        
         selected_genres = st.multiselect(
             "Your Sekai's Genre(s)", 
             genre_options, 
-            default=st.session_state.get("world_genre", []),
+            default=valid_default_genres,
             key="world_genre"
         )
         
