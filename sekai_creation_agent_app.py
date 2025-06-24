@@ -1236,12 +1236,15 @@ Generate only the opening scene description, nothing else.
                 st.info(f"Using user character: Name='{user_name}', Traits='{user_traits}'")
                 st.info(f"Using {len(characters)} characters from Step 3")
                 
+<<<<<<< HEAD
                 # Build character list for prompt
                 character_list = f"- {user_name} (Player): {user_traits}\n"
                 for c in characters:
                     if c['name'].strip() and c['traits'].strip():
                         character_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
                 
+=======
+>>>>>>> parent of c1ae86e (update creationagent py file)
                 prompt = f"""
 You are an AI for building JSON-based interactive stories.
 Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
@@ -1250,6 +1253,7 @@ Title: {world_title}
 Setting: {world_setting}
 Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
 Keywords: {world_keywords}
+<<<<<<< HEAD
 Opening Scene: {opening_scene}
 
 Characters to include (use all of these, in this order):
@@ -1258,6 +1262,31 @@ Characters to include (use all of these, in this order):
 The JSON must include all of the above characters in the 'characters' array, with their name, role, and a description based on the info above.
 """
                 
+=======
+Characters:
+- {user_name} (Player): {user_traits}
+"""
+                for c in characters:
+                    if c['name'].strip() and c['traits'].strip():
+                        prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
+                # Add opening scene if provided
+                if opening_scene.strip():
+                    prompt += f"\nOpening Scene: {opening_scene}\n"
+                
+                # Add advanced settings to prompt
+                if story_tone != "Balanced":
+                    prompt += f"\nTone: {story_tone}\n"
+                if pacing != "Balanced":
+                    prompt += f"Pacing: {pacing}\n"
+                if pov != "Third person":
+                    prompt += f"POV: {pov}\n"
+                if narration_style != "Balanced":
+                    prompt += f"Narration: {narration_style}\n"
+                
+                prompt += "\nRespond with raw JSON only."
+
+>>>>>>> parent of c1ae86e (update creationagent py file)
                 response = model.generate_content(prompt)
                 output = response.text.strip()
 
