@@ -618,6 +618,9 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             return [g.strip() for g in genre_match.group(1).split("/") if g.strip()]
         return []
 
+    def strip_stars(s):
+        return s.strip().strip('*').strip()
+
     def handle_send():
         user_input = st.session_state.get("reply_input", "")
         if user_input.strip():
@@ -812,14 +815,17 @@ Generate only the 3 choices, nothing else.
         st.success(f"🌟 Awesome! Your world will have a {', '.join(selected_genres)} vibe!")
 
     # --- AI World Generation Button ---
-    def strip_stars(s):
-        return s.strip().strip('*').strip()
     if st.button("✨ AI: Turn My Idea into a World", type="primary"):
         st.toast("Working magic... Generating your Sekai world ✨")
         # Compose the prompt based on available fields
-        idea = st.session_state['world_idea_input'].strip()
-        genres = st.session_state['world_genre']
-        genre_str = ', '.join([g.split(' ', 1)[0] for g in genres]) if genres else ''
+        idea = st.session_state.get('world_idea_input', '').strip()
+        genres = st.session_state.get('world_genre', [])
+        
+        # Safety check for genres
+        if not isinstance(genres, list):
+            genres = []
+        
+        genre_str = ', '.join([g.split(' ', 1)[0] for g in genres if g]) if genres else ''
         if idea and genre_str:
             prompt = f"Generate a creative Sekai world concept based on the following idea and genres.\n\nIdea: {idea}\nGenres: {genre_str}\n\nRespond with:\n- Sekai Title\n- World Setting (2-3 vivid sentences)\n- Keywords (comma separated, 3-6 words)"
         elif idea:
@@ -901,11 +907,15 @@ Generate only the 3 choices, nothing else.
         world_keywords = st.session_state.get('world_keywords_input', '')
         world_genres = st.session_state.get('world_genre', [])
         
+        # Safety check for genres
+        if not isinstance(world_genres, list):
+            world_genres = []
+        
         if not (world_title and world_setting):
             st.warning("Please complete Step 1 (Sekai World) before generating your character.")
         else:
             # Build a comprehensive prompt with all available world information
-            genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
+            genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
             world_context = f"Title: {world_title}\nSetting: {world_setting}"
             if world_keywords:
                 world_context += f"\nKeywords: {world_keywords}"
@@ -933,8 +943,6 @@ Respond with:
                         name = re.match(r'^(.*)$', lines[0])
                     if not traits:
                         traits = re.match(r'^(.*)$', lines[1])
-            def strip_stars(s):
-                return s.strip().strip('*').strip()
             valid = False
             if name and traits:
                 clean_name = strip_stars(name.group(1))
@@ -983,6 +991,11 @@ Respond with:
     world_setting = st.session_state.get("world_setting", "A magical world")
     world_keywords = st.session_state.get("world_keywords_input", "")
     world_genres = st.session_state.get("world_genre", [])
+    
+    # Safety check for genres
+    if not isinstance(world_genres, list):
+        world_genres = []
+    
     user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
     user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input", "Curious and brave"))
 
@@ -998,7 +1011,10 @@ Respond with:
     if st.button("✨ AI: Generate All Characters", type="primary"):
         with st.spinner(f"Creating {num_characters} unique characters..."):
             # Build comprehensive world context
-            genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
+            # Safety check for genres
+            if not isinstance(world_genres, list):
+                world_genres = []
+            genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
             world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
             if world_keywords:
                 world_context += f"\nKeywords: {world_keywords}"
@@ -1054,8 +1070,11 @@ Opening Line: <What do they say when first met?>"""
         with col1:
             if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
                 # Get complete world and user information
-                world_genres = st.session_state.get("world_genre") or st.session_state.get("world_genre", [])
-                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
+                world_genres = st.session_state.get("world_genre", [])
+                # Safety check for genres
+                if not isinstance(world_genres, list):
+                    world_genres = []
+                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
                 world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
                 if world_keywords:
                     world_context += f"\nKeywords: {world_keywords}"
@@ -1184,7 +1203,7 @@ World Information:
 - Title: {world_title}
 - Setting: {world_setting}
 - Keywords: {world_keywords}
-- Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
+- Genre: {', '.join(selected_genres) if selected_genres and isinstance(selected_genres, list) else 'Fantasy'}
 
 Characters:
 {char_list}
@@ -1269,7 +1288,7 @@ Generate a story JSON with: title, setting, genre, keywords, characters (array o
 
 Title: {world_title}
 Setting: {world_setting}
-Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
+Genre: {', '.join(selected_genres) if selected_genres and isinstance(selected_genres, list) else 'Fantasy'}
 Keywords: {world_keywords}
 Characters:
 - {user_name} (Player): {user_traits}
