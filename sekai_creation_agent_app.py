@@ -87,7 +87,7 @@ The AI will take on the personality you describe and respond accordingly.
     if st.session_state.get("chat_started"):
         st.subheader(f"🗨️ Chat with {char_name}")
         if char_image:
-            st.image(char_image, use_column_width=False, width=200, caption=f"{char_name}'s Avatar")
+            st.image(char_image, use_container_width=False, width=200, caption=f"{char_name}'s Avatar")
         for i, entry in enumerate(st.session_state["chat_history"]):
             st.markdown(f"**You:** {entry['user']}")
             st.markdown(f"**{char_name}:** {entry['bot']}")
@@ -105,7 +105,6 @@ The AI will take on the personality you describe and respond accordingly.
                 "user": user_input,
                 "bot": reply
             })
-            st.session_state["char_chat_input"] = ""
             st.rerun()
     st.stop()
 
