@@ -717,6 +717,22 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.session_state["go_to_step2"] = False
         st.rerun()
 
+    if "go_to_step4" in st.session_state and st.session_state["go_to_step4"]:
+        # Save all character data to session state before moving to Step 4
+        num_characters = st.session_state.get("num_characters_slider", 2)
+        for i in range(num_characters):
+            # Get the current values from the widgets and save them
+            name_key = f"name_{i}"
+            role_key = f"role_{i}"
+            trait_key = f"trait_{i}"
+            if name_key in st.session_state and trait_key in st.session_state:
+                st.session_state[name_key] = st.session_state[name_key].strip()
+                st.session_state[role_key] = st.session_state.get(role_key, "").strip()
+                st.session_state[trait_key] = st.session_state[trait_key].strip()
+        st.session_state["roleplay_step"] = 4
+        st.session_state["go_to_step4"] = False
+        st.rerun()
+
     # Step 1: Create Your Sekai World
     if st.session_state["roleplay_step"] == 1:
         st.subheader("🌍 Step 1: Create Your Sekai World")
@@ -1089,8 +1105,7 @@ Traits: <Personality traits and special abilities>"""
         with col3:
             if all(char["name"].strip() and char["traits"].strip() for char in characters):
                 if st.button("➡️ Next: Generate Template", type="primary"):
-                    st.session_state["roleplay_step"] = 4
-                    st.rerun()
+                    st.session_state["go_to_step4"] = True
             else:
                 st.button("➡️ Next: Generate Template", disabled=True)
 
@@ -1100,10 +1115,10 @@ Traits: <Personality traits and special abilities>"""
         st.info("Let's bring everything together and create your story template!")
 
         # Get values from previous steps - use the actual user input, not defaults
-        world_title = st.session_state.get("world_title")
-        world_setting = st.session_state.get("world_setting")
-        world_keywords = st.session_state.get("world_keywords_input")
-        selected_genres = st.session_state.get("world_genre") or []
+        world_title = st.session_state.get("world_title", "")
+        world_setting = st.session_state.get("world_setting", "")
+        world_keywords = st.session_state.get("world_keywords_input", "")
+        selected_genres = st.session_state.get("world_genre", [])
         
         # Use locked-in values for user character, fallback to input values
         user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
@@ -1112,10 +1127,22 @@ Traits: <Personality traits and special abilities>"""
         # Build characters list from Step 3
         num_characters = st.session_state.get("num_characters_slider", 2)
         characters = []
+        
+        # Debug: Show what we're reading from session state
+        st.markdown("### 🔍 Debug: Session State Values")
+        st.write(f"**World Title:** '{world_title}'")
+        st.write(f"**World Setting:** '{world_setting}'")
+        st.write(f"**World Keywords:** '{world_keywords}'")
+        st.write(f"**User Name:** '{user_name}'")
+        st.write(f"**User Traits:** '{user_traits}'")
+        st.write(f"**Number of Characters:** {num_characters}")
+        
+        # Collect characters from session state
         for i in range(num_characters):
             name = st.session_state.get(f"name_{i}", "")
             role = st.session_state.get(f"role_{i}", "")
             traits = st.session_state.get(f"trait_{i}", "")
+            st.write(f"**Character {i+1}:** Name='{name}', Role='{role}', Traits='{traits}'")
             if name and traits:
                 characters.append({"name": name, "role": role, "traits": traits})
 
