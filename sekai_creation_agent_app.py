@@ -1194,3 +1194,614 @@ Respond with:
     )
 
     st.markdown("---")
+
+    # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
+    st.markdown("## 👤 Step 2: Create Your Character")
+    st.markdown('<div id="step-2"></div>', unsafe_allow_html=True)
+    st.info("Now let's meet you! You'll be the heart of this world, so tell us about yourself.")
+
+    # --- AI Character Generation Button ---
+    if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
+        # Get complete world information from Step 1
+        world_title = st.session_state.get('world_title', '')
+        world_setting = st.session_state.get('world_setting', '')
+        world_keywords = st.session_state.get('world_keywords_input', '')
+        world_genres = st.session_state.get('world_genre', [])
+        
+        # Safety check for genres
+        if not isinstance(world_genres, list):
+            world_genres = []
+        
+        if not (world_title and world_setting):
+            st.warning("Please complete Step 1 (Sekai World) before generating your character.")
+        else:
+            # Build a comprehensive prompt with all available world information
+            genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
+            world_context = f"Title: {world_title}\nSetting: {world_setting}"
+            if world_keywords:
+                world_context += f"\nKeywords: {world_keywords}"
+            
+            prompt = f"""Generate a player character for the following Sekai world.
+
+{world_context}
+
+Create a character that would fit naturally into this world and could be the protagonist of an interactive story. The character should have a compelling personality and abilities that make sense for this setting.
+
+Respond with:
+- Name (a human name)
+- Traits (1-2 sentences about personality, quirks, or magical powers)"""
+            
+            suggestion = generate_field(prompt)
+            # Parse the response
+            name = re.search(r'[Nn]ame\s*[:：\-]\s*(.*)', suggestion)
+            traits = re.search(r'[Tt]raits?\s*[:：\-]\s*(.*)', suggestion)
+            # Fallback: try to split lines if not matched
+            if not name or not traits:
+                lines = [l.strip() for l in suggestion.split('\n') if l.strip()]
+                if len(lines) >= 2:
+                    if not name:
+                        name = re.match(r'^(.*)$', lines[0])
+                    if not traits:
+                        traits = re.match(r'^(.*)$', lines[1])
+            valid = False
+            if name and traits:
+                clean_name = strip_stars(name.group(1))
+                clean_traits = strip_stars(traits.group(1))
+                if clean_name and clean_traits and not clean_name.lower().startswith("let's craft"):
+                    st.session_state['user_name_input'] = clean_name
+                    st.session_state['user_traits_input'] = clean_traits
+                    valid = True
+            if not valid:
+                st.error("AI could not generate a valid character. Please check your world info in Step 1 and try again.")
+            else:
+                st.rerun()
+
+    # --- Character Name ---
+    if 'user_name_input' not in st.session_state:
+        st.session_state['user_name_input'] = ''
+    
+    user_name = st.text_input(
+        "Your Character's Name",
+        value=st.session_state['user_name_input'],
+        key="user_name_input"
+    )
+
+    # --- Character Traits ---
+    if 'user_traits_input' not in st.session_state:
+        st.session_state['user_traits_input'] = ''
+    
+    user_traits = st.text_area(
+        "Your Character's Traits",
+        value=st.session_state['user_traits_input'],
+        key="user_traits_input"
+    )
+    
+    if user_traits.strip():
+        st.success("🌟 Perfect! You're going to be the heart of this world.")
+
+    st.markdown("---")
+
+    # ===== STEP 3: CREATE MAIN CHARACTERS =====
+    st.markdown("## 👥 Step 3: Create Main Characters")
+    st.markdown('<div id="step-3"></div>', unsafe_allow_html=True)
+    st.info("Now let's meet the other characters who will join your story!")
+
+    # Get values from previous steps
+    world_title = st.session_state.get("world_title", "Your Sekai World")
+    world_setting = st.session_state.get("world_setting", "A magical world")
+    world_keywords = st.session_state.get("world_keywords_input", "")
+    world_genres = st.session_state.get("world_genre", [])
+    
+    # Safety check for genres
+    if not isinstance(world_genres, list):
+        world_genres = []
+    
+    user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
+    user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input", "Curious and brave"))
+
+    # Number of Characters
+    st.markdown("### 🎭 How many characters will join your story?")
+    st.markdown("Choose between 1 and 5 to start.")
+    num_characters = st.slider("Number of Characters", 1, 5, 2, key="num_characters_slider")
+    
+    if num_characters > 1:
+        st.success(f"🎉 Great! {num_characters} characters will make this story even more exciting!")
+
+    # Generate All Characters Button
+    if st.button("✨ AI: Generate All Characters", type="primary"):
+        with st.spinner(f"Creating {num_characters} unique characters..."):
+            # Build comprehensive world context
+            # Safety check for genres
+            if not isinstance(world_genres, list):
+                world_genres = []
+            genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
+            world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
+            if world_keywords:
+                world_context += f"\nKeywords: {world_keywords}"
+            
+            prompt = f"""Generate {num_characters} completely unique and different characters for the following world:
+
+{world_context}
+
+Player Character: {user_name} ({user_traits})
+
+Create {num_characters} supporting characters that:
+- Are distinct from each other and from the player character
+- Would naturally exist in this world
+- Have interesting personalities and abilities
+- Could interact meaningfully with the player character
+- Fit the genre and tone of the world
+
+Please provide {num_characters} character descriptions separated by '---'.
+
+Each character description must follow this format:
+Name: <A standard first name and optional last name only, no titles or descriptions>
+Role: <Character Role>
+Traits: <Personality traits and special abilities>
+Voice Style: <How do they speak?>"""
+            
+            response_text = generate_field(prompt)
+            generated_characters = response_text.strip().split("\n---\n")
+
+            for i in range(num_characters):
+                if i < len(generated_characters):
+                    char_text = generated_characters[i].strip()
+                    st.session_state[f"char_{i}"] = char_text
+                    
+                    # Parse the character text into individual fields
+                    parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
+                    try:
+                        # Use regex for robust parsing
+                        name_match = re.search(r'Name\s*[:：\-]\s*(.*)', char_text)
+                        role_match = re.search(r'Role\s*[:：\-]\s*(.*)', char_text)
+                        traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', char_text)
+                        voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', char_text)
+                        if name_match:
+                            parsed_name = name_match.group(1).strip()
+                        if role_match:
+                            parsed_role = role_match.group(1).strip()
+                        if traits_match:
+                            parsed_traits = traits_match.group(1).strip()
+                        if voice_match:
+                            parsed_voice = voice_match.group(1).strip()
+                    except Exception:
+                        pass
+                    
+                    # Store parsed fields in session state
+                    st.session_state[f"name_{i}"] = parsed_name
+                    st.session_state[f"role_{i}"] = parsed_role
+                    st.session_state[f"trait_{i}"] = parsed_traits
+                    st.session_state[f"voice_style_{i}"] = parsed_voice
+                else:
+                    st.session_state[f"char_{i}"] = ""
+                    st.session_state[f"name_{i}"] = ""
+                    st.session_state[f"role_{i}"] = ""
+                    st.session_state[f"trait_{i}"] = ""
+                    st.session_state[f"voice_style_{i}"] = ""
+            st.rerun()
+
+    # Character Forms
+    characters = []
+    for i in range(num_characters):
+        st.markdown(f"### Character {i+1}")
+        
+        # Character Idea
+        if f"idea_{i}" not in st.session_state:
+            st.session_state[f"idea_{i}"] = ""
+        idea = st.text_input(
+            f"Character Idea {i+1}",
+            placeholder="Knight with amnesia who might be evil / Librarian who hides a secret / Rival time mage",
+            key=f"idea_{i}"
+        )
+        
+        # Generate Individual Character Button
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
+                # Get complete world and user information
+                world_genres = st.session_state.get("world_genre", [])
+                # Safety check for genres
+                if not isinstance(world_genres, list):
+                    world_genres = []
+                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
+                world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
+                if world_keywords:
+                    world_context += f"\nKeywords: {world_keywords}"
+                
+                other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
+                existing_chars_text = "\n".join(other_chars) if other_chars else "None"
+                
+                prompt = f"""Create a new character for the following world:
+
+{world_context}
+
+Player Character: {user_name} ({user_traits})
+
+Existing Characters:
+{existing_chars_text}
+
+Create a character that:
+- Is clearly different from the player character and any existing characters
+- Would naturally exist in this world
+- Has an interesting personality and abilities
+- Could interact meaningfully with the player character
+- Fits the genre and tone of the world
+
+Respond in this format:
+Name: <A standard first name and optional last name only, no titles or descriptions>
+Role: <Character Role>
+Traits: <Personality traits and special abilities>
+Voice Style: <How do they speak?>"""
+                
+                result = generate_field(prompt)
+                # Parse the result
+                parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
+                try:
+                    # Use regex for robust parsing
+                    name_match = re.search(r'Name\s*[:：\-]\s*(.*)', result)
+                    role_match = re.search(r'Role\s*[:：\-]\s*(.*)', result)
+                    traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', result)
+                    voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', result)
+                    if name_match:
+                        parsed_name = name_match.group(1).strip()
+                    if role_match:
+                        parsed_role = role_match.group(1).strip()
+                    if traits_match:
+                        parsed_traits = traits_match.group(1).strip()
+                    if voice_match:
+                        parsed_voice = voice_match.group(1).strip()
+                except Exception:
+                    pass
+                st.session_state[f"char_{i}"] = result
+                st.session_state[f"name_{i}"] = parsed_name
+                st.session_state[f"role_{i}"] = parsed_role
+                st.session_state[f"trait_{i}"] = parsed_traits
+                st.session_state[f"voice_style_{i}"] = parsed_voice
+                st.rerun()
+        
+        # Parse generated character
+        default_text = st.session_state.get(f"char_{i}", "")
+        parsed_name = st.session_state.get(f"name_{i}", "")
+        parsed_role = st.session_state.get(f"role_{i}", "")
+        parsed_traits = st.session_state.get(f"trait_{i}", "")
+        parsed_voice = st.session_state.get(f"voice_style_{i}", "")
+
+        # Character Details
+        name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
+        role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=parsed_role, placeholder="Librarian who hides a secret / Rival time mage")
+        trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
+        
+        # Optional Add-ons
+        with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
+            voice_style = st.text_input(
+                f"Voice Style",
+                value=parsed_voice,
+                key=f"voice_style_{i}"
+            )
+        
+        characters.append({
+            "name": name, 
+            "role": role, 
+            "traits": trait,
+            "voice_style": voice_style if 'voice_style' in locals() else "Default"
+        })
+
+    st.markdown("---")
+
+    # ===== STEP 4: GENERATE SEKAI STORY TEMPLATE =====
+    st.markdown("## 📜 Step 4: Generate Sekai Story Template")
+    st.markdown('<div id="step-4"></div>', unsafe_allow_html=True)
+    st.info("Let's bring everything together and create your story template!")
+
+    # Opening Line Setup
+    st.markdown("### 💬 Opening Scene Setup")
+    st.markdown("**💡 Tip:** This will be the first scene of your story!")
+    
+    # Initialize session state for opening scene
+    if "opening_scene_input" not in st.session_state:
+        st.session_state["opening_scene_input"] = ""
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # AI button is now above the text area
+        if st.button("✨ AI: Generate Opening Scene", key="generate_opening_scene"):
+            with st.spinner("Creating an engaging opening scene..."):
+                char_list = f"Player: {user_name} ({user_traits})\n"
+                for c in characters:
+                    char_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
+                # Get advanced settings for opening scene generation
+                story_tone = st.session_state.get("story_tone", "Balanced")
+                pacing = st.session_state.get("pacing", "Balanced")
+                pov = st.session_state.get("pov", "Third person")
+                narration_style = st.session_state.get("narration_style", "Balanced")
+                
+                prompt = f"""
+Generate an engaging opening scene for an interactive story.
+
+World Information:
+- Title: {world_title}
+- Setting: {world_setting}
+- Keywords: {world_keywords}
+- Genre: {', '.join(selected_genres) if selected_genres and isinstance(selected_genres, list) else 'Fantasy'}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {pov}
+- Narration Style: {narration_style}
+
+Characters:
+{char_list}
+
+Create a vivid opening scene that:
+- Introduces the world and setting
+- Establishes the player character's situation
+- Hints at the story to come
+- Is 2-3 sentences maximum
+- Feels immersive and engaging
+- Matches the story tone: {story_tone}
+- Uses appropriate pacing: {pacing}
+- Written from the specified point of view: {pov}
+- Applies the narration style: {narration_style}
+
+Generate only the opening scene description, nothing else.
+"""
+                try:
+                    response = model.generate_content(prompt)
+                    generated_opening = response.text.strip()
+                    if generated_opening.startswith('"') and generated_opening.endswith(
+                        '"'
+                    ):
+                        generated_opening = generated_opening[1:-1]
+                    st.session_state["opening_scene_input"] = generated_opening
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate opening scene: {e}")
+        opening_scene = st.text_area(
+            "Describe the opening scene (optional - leave blank for AI generation)",
+            value=st.session_state["opening_scene_input"],
+            placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
+            height=100,
+            key="opening_scene_input"
+        )
+
+    if opening_scene.strip():
+        st.success("🎭 Perfect! This opening scene will set the tone for your adventure!")
+
+    # Advanced Settings (collapsed by default)
+    with st.expander("🧙‍♂️ Advanced Settings (Optional)", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            story_tone = st.selectbox(
+                "Story Tone",
+                ["Balanced", "Light", "Serious", "Romantic", "Chaotic", "Mysterious"],
+                key="story_tone"
+            )
+            pacing = st.selectbox(
+                "Pacing",
+                ["Balanced", "Slow burn", "Fast plot twists", "Episodic"],
+                key="pacing"
+            )
+        with col2:
+            pov = st.selectbox(
+                "Point of View",
+                ["Third person", "First person", "Omniscient"],
+                key="pov"
+            )
+            narration_style = st.selectbox(
+                "Narration Style",
+                ["Balanced", "Minimal (chat only)", "Vivid prose", "Light storytelling"],
+                key="narration_style"
+            )
+
+    # Generate Template Button
+    if st.button("🧙 Generate Template", type="primary"):
+        with st.spinner("Talking to Gemini AI..."):
+            # Debug: Show what values we're using
+            st.info(f"Using world info: Title='{world_title}', Setting='{world_setting}', Keywords='{world_keywords}'")
+            st.info(f"Using {len(characters)} characters from Step 3")
+            
+            # Build comprehensive character information including optional add-ons
+            character_details = []
+            for c in characters:
+                if c['name'].strip() and c['traits'].strip():
+                    char_info = f"- {c['name']} ({c['role']}): {c['traits']}"
+                    if c.get('voice_style') and c['voice_style'] != "Default":
+                        char_info += f" | Voice: {c['voice_style']}"
+                    character_details.append(char_info)
+            
+            prompt = f"""
+You are an AI for building JSON-based interactive stories.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style), openingScene, storyTone, pacing, pointOfView, and narrationStyle.
+
+Title: {world_title}
+Setting: {world_setting}
+Genre: {', '.join(selected_genres) if selected_genres and isinstance(selected_genres, list) else 'Fantasy'}
+Keywords: {world_keywords}
+Characters:
+- {user_name} (Player): {user_traits}
+"""
+            for char_detail in character_details:
+                prompt += f"{char_detail}\n"
+            
+            # Add opening scene if provided
+            if opening_scene.strip():
+                prompt += f"\nOpening Scene: {opening_scene}\n"
+            
+            # Add advanced settings to prompt and specify they should be included in JSON
+            prompt += "\nAdvanced Settings (include these as JSON fields):\n"
+            prompt += f"storyTone: {story_tone}\n"
+            prompt += f"pacing: {pacing}\n"
+            prompt += f"pointOfView: {pov}\n"
+            prompt += f"narrationStyle: {narration_style}\n"
+            
+            prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style field. Include all the advanced settings fields in the JSON output."
+
+            response = model.generate_content(prompt)
+            output = response.text.strip()
+
+            if output.startswith("```json"):
+                output = output.replace("```json", "").strip()
+            if output.endswith("```"):
+                output = output[:-3].strip()
+
+            try:
+                sekai_json = json.loads(output)
+                # Remove 'choices' if present
+                if 'choices' in sekai_json:
+                    del sekai_json['choices']
+                # Remove 'voice_style' from player (assume first character is player)
+                if 'characters' in sekai_json and len(sekai_json['characters']) > 0:
+                    if 'voice_style' in sekai_json['characters'][0]:
+                        del sekai_json['characters'][0]['voice_style']
+                st.session_state["sekai_json"] = sekai_json
+                st.success("🎉 Sekai story template generated successfully!")
+                st.json(sekai_json)
+            except json.JSONDecodeError:
+                st.error("Failed to parse JSON. Please try again.")
+                st.code(output)
+
+    st.markdown("---")
+
+    # ===== STEP 5: PLAY / START THE STORY =====
+    st.markdown("## 🎮 Step 5: Start Your Sekai Journey!")
+    st.markdown('<div id="step-5"></div>', unsafe_allow_html=True)
+    
+    # Get values
+    user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
+    world_title = st.session_state.get("world_title", "Your Sekai World")
+    
+    st.success(f"🎉 You're all set! Ready to begin your Sekai journey with {user_name} in {world_title}? Let's go!")
+    
+    st.markdown("""
+📜 **How to play:**
+- Type your character's **dialogue** normally: e.g., `What are you doing here?`
+- Type your character's **actions** with asterisks: e.g., `*run away from the library*`
+- The AI will narrate the story and have other characters respond!
+    """)
+
+    # Check if template is generated
+    if "sekai_json" not in st.session_state:
+        st.warning("⚠️ You need to generate a story template first!")
+        st.markdown("""
+**To start the game, you need to:**
+1. Complete **Step 4: Generate Sekai Story Template** above
+2. Click **"🧙 Generate Template"** to create your story
+3. Then return here to start playing!
+        """)
+    else:
+        if st.button("🎮 Start Game", type="primary"):
+            # Get advanced settings from the JSON template
+            sekai_json = st.session_state['sekai_json']
+            story_tone = sekai_json.get('storyTone', 'Balanced')
+            pacing = sekai_json.get('pacing', 'Balanced')
+            point_of_view = sekai_json.get('pointOfView', 'Third person')
+            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            
+            story_prompt = f"""
+You are an interactive fiction narrator for a visual novel.
+Begin the story using the following JSON world structure.
+
+Story Style Guidelines:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {point_of_view}
+- Narration Style: {narration_style}
+
+Write the story in the following script format:
+
+narrator "<scene description>"
+character (expression) "<dialogue or thoughts>"
+
+Rules:
+- Use narrator and character lines as shown.
+- Focus on character dialogue and internal thoughts.
+- Avoid long narration.
+- You must introduce all main characters from the JSON within the first 3 story turns.
+- Do NOT offer multiple choice options or suggestions.
+- End with: **"What do you do?"**
+- Match the story tone: {story_tone}
+- Use the specified pacing: {pacing}
+- Write from the specified point of view: {point_of_view}
+- Apply the narration style: {narration_style}
+
+JSON:
+{json.dumps(st.session_state['sekai_json'], indent=2)}
+
+Write the opening scene below, making sure to introduce one or more characters:
+"""
+            first_turn = model.generate_content(story_prompt).text.strip()
+
+            if first_turn.startswith("{") or first_turn.startswith('"title"'):
+                st.error("Model returned raw JSON instead of story text. Please retry.")
+            else:
+                st.session_state["game_state"] = [first_turn]
+                st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
+                st.session_state["user_inputs"] = [""]
+                st.rerun()
+
+    # --- Game UI (only appears after game starts) ---
+    if "game_state" in st.session_state:
+        st.markdown("---")
+        st.subheader("🚀 Game In Progress")
+
+        for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+            color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
+            user_reply_html = f'<p style="margin-bottom:4px;"><b>Your input:</b> {user_input}</p>' if user_input.strip() else ""
+
+            # Format each line on a new line with spacing
+            formatted_block = ""
+            for line in block.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Use regex to find speaker and dialogue
+                match = re.match(r'^(.*?)\s*(".*")', line, re.DOTALL)
+                if match:
+                    speaker = match.group(1).strip()
+                    dialogue = match.group(2)  # Keep original with quotes for characters
+
+                    if speaker.lower() == "narrator":
+                        # For narrator, remove quotes and italicize the content
+                        dialogue_content = dialogue.strip()
+                        if dialogue_content.startswith('"') and dialogue_content.endswith(
+                            '"'
+                        ):
+                            dialogue_content = dialogue_content[1:-1]
+                        formatted_line = f"<i>{dialogue_content}</i>"
+                    else:
+                        # For characters, bold the speaker and show the dialogue
+                        formatted_line = f"<b>{speaker}</b> {dialogue}"
+
+                    formatted_block += f"<p style='margin:4px 0;'>{formatted_line}</p>"
+                else:
+                    # Handle lines without a speaker, like "**What do you do?**"
+                    formatted_block += f"<p style='margin:4px 0;'>{line}</p>"
+
+            st.markdown(
+                f'<div style="background-color:{color}; padding:10px; border-radius:8px">{user_reply_html}{formatted_block}</div>',
+                unsafe_allow_html=True,
+            )
+
+        # Game input (only appears when game is active)
+        st.markdown("### 🎮 Your Turn")
+        
+        # Generate 3 choice options
+        choices = generate_choices()
+        
+        # Display choice buttons vertically with full description
+        st.markdown("**Choose an action or write your own:**")
+        for idx, choice in enumerate(choices):
+            btn_label = f"Choice {idx+1}: {choice}"
+            if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
+                pass
+        
+        # Freeform input
+        st.markdown("**Or write your own action/dialogue:**")
+        st.text_input("Enter your next action or dialogue", key="reply_input")
+        st.button("Send", on_click=handle_send)
+
+    # Footer
+    st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
