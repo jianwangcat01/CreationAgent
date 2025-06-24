@@ -1156,16 +1156,25 @@ Traits: <Personality traits and special abilities>"""
         st.markdown("### 💬 Opening Scene Setup")
         st.markdown("**💡 Tip:** This will be the first scene of your story!")
         
+        # Initialize session state for opening scene
+        if "opening_scene_input" not in st.session_state:
+            st.session_state["opening_scene_input"] = ""
+        if "opening_scene_temp" not in st.session_state:
+            st.session_state["opening_scene_temp"] = ""
+        
+        # Callback to update opening scene from temp
+        def update_opening_scene():
+            st.session_state["opening_scene_input"] = st.session_state["opening_scene_temp"]
+        
         col1, col2 = st.columns([3, 1])
         with col1:
-            if "opening_scene_input" not in st.session_state:
-                st.session_state["opening_scene_input"] = ""
             opening_scene = st.text_area(
                 "Describe the opening scene (optional - leave blank for AI generation)",
-                value=st.session_state["opening_scene_input"],
+                value=st.session_state["opening_scene_temp"],
                 placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
                 height=100,
-                key="opening_scene_input"
+                key="opening_scene_temp",
+                on_change=update_opening_scene
             )
         with col2:
             if st.button("✨ AI: Generate Opening Scene", key="generate_opening_scene"):
@@ -1202,7 +1211,7 @@ Generate only the opening scene description, nothing else.
                         # Clean up any extra formatting
                         if generated_opening.startswith('"') and generated_opening.endswith('"'):
                             generated_opening = generated_opening[1:-1]
-                        st.session_state["opening_scene_input"] = generated_opening
+                        st.session_state["opening_scene_temp"] = generated_opening
                         st.rerun()
                     except Exception as e:
                         st.error(f"Failed to generate opening scene: {e}")
