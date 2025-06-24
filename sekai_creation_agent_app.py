@@ -894,15 +894,17 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                         traits = re.match(r'^(.*)$', lines[1])
             def strip_stars(s):
                 return s.strip().strip('*').strip()
+            rerun_needed = False
             if name:
                 clean_name = strip_stars(name.group(1))
                 st.session_state['user_name_input'] = clean_name
-                st.session_state['user_name_input_temp'] = clean_name
+                rerun_needed = True
             if traits:
                 clean_traits = strip_stars(traits.group(1))
                 st.session_state['user_traits_input'] = clean_traits
-                st.session_state['user_traits_input_temp'] = clean_traits
-            st.rerun()
+                rerun_needed = True
+            if rerun_needed:
+                st.rerun()
 
         # --- Character Traits ---
         if 'user_traits_input' not in st.session_state:
