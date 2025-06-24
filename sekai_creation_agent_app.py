@@ -800,12 +800,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_title_temp' not in st.session_state:
             st.session_state['world_title_temp'] = ''
         def update_world_title():
-            st.session_state['world_title'] = st.session_state['world_title_temp']
+            st.session_state['world_title'] = st.session_state['world_title']
         world_title = st.text_input(
             "Sekai Title",
-            value=st.session_state['world_title_temp'],
-            placeholder="The Midnight Library / Dream Currency City / Cyber Witch Academy",
-            key="world_title_temp",
+            value=st.session_state['world_title'],
+            key="world_title",
             on_change=update_world_title
         )
         if 'world_setting' not in st.session_state:
@@ -813,13 +812,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_setting_temp' not in st.session_state:
             st.session_state['world_setting_temp'] = ''
         def update_world_setting():
-            st.session_state['world_setting'] = st.session_state['world_setting_temp']
+            st.session_state['world_setting'] = st.session_state['world_setting']
         world_setting = st.text_area(
             "Describe the World Setting",
-            value=st.session_state['world_setting_temp'],
-            placeholder="A magical library that only appears at midnight, where books come alive and stories write themselves...",
-            height=100,
-            key="world_setting_temp",
+            value=st.session_state['world_setting'],
+            key="world_setting",
             on_change=update_world_setting
         )
         if world_setting.strip():
@@ -831,12 +828,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_keywords_input_temp' not in st.session_state:
             st.session_state['world_keywords_input_temp'] = ''
         def update_keywords():
-            st.session_state['world_keywords_input'] = st.session_state['world_keywords_input_temp']
+            st.session_state['world_keywords_input'] = st.session_state['world_keywords_input']
         world_keywords = st.text_input(
             "Keywords",
-            value=st.session_state['world_keywords_input_temp'],
-            placeholder="dreams, magic library, talking animals, steampunk, time travel",
-            key="world_keywords_input_temp",
+            value=st.session_state['world_keywords_input'],
+            key="world_keywords_input",
             on_change=update_keywords
         )
 
@@ -925,7 +921,6 @@ Respond with:
         user_name = st.text_input(
             "Your Character's Name",
             value=st.session_state['user_name_input_temp'],
-            placeholder="Alex / Luna / Kai / Your real name",
             key="user_name_input_temp",
             on_change=update_user_name
         )
@@ -940,8 +935,6 @@ Respond with:
         user_traits = st.text_area(
             "Your Character's Traits",
             value=st.session_state['user_traits_input_temp'],
-            placeholder="Brave but impulsive, always rushing to help others / A quiet artist who sees spirits / Invented a tea that lets people relive memories",
-            height=100,
             key="user_traits_input_temp",
             on_change=update_user_traits
         )
