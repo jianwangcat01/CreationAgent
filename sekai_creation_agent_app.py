@@ -603,6 +603,58 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             return [g.strip() for g in genre_match.group(1).split("/") if g.strip()]
         return []
 
+    def handle_send():
+        user_input = st.session_state.get("reply_input", "")
+        if user_input.strip():
+            last_turn = st.session_state["game_state"][-1]
+
+            introduction_instruction = ""
+            # Ensure all characters are introduced within the first 3 turns
+            if len(st.session_state["game_state"]) < 3:
+                full_story_text = "".join(st.session_state["game_state"])
+                all_characters_in_json = st.session_state["sekai_json"].get(
+                    "characters", []
+                )
+                character_names = [
+                    c.get("name") for c in all_characters_in_json if c.get("name")
+                ]
+                unintroduced_characters = [
+                    name
+                    for name in character_names
+                    if name.lower() not in full_story_text.lower()
+                ]
+                if unintroduced_characters:
+                    char_list = ", ".join(unintroduced_characters)
+                    introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
+
+            player_name = st.session_state.get("user_name", "the player")
+            reply_prompt = (
+                f"You are an interactive fiction narrator. The player character is {player_name}.\n"
+                f"The player's input (action or dialogue) is: '{user_input}'.\n"
+                f"Your role is to describe what happens next. Narrate the scene and have other non-player characters react.\n"
+                f"IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_name}. Their input is already given.\n"
+                f"{introduction_instruction}"
+                f"Continue the story in script format. Keep narration brief. Do not give choices."
+            )
+            new_turn = model.generate_content(
+                last_turn + "\n\n" + reply_prompt
+            ).text.strip()
+            st.session_state["game_state"].append(new_turn)
+            st.session_state["user_inputs"].append(user_input.strip())
+
+            # Clear the input box for the next turn
+            st.session_state.reply_input = ""
+
+            existing_colors = st.session_state.get("story_colors", [])
+            available_colors = [
+                c
+                for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
+                if c != existing_colors[-1]
+            ]
+            new_color = random.choice(available_colors)
+            st.session_state["story_colors"].append(new_color)
+            # st.rerun is implicit with on_click callback
+
     # Step 1: Create Your Sekai World
     if st.session_state["roleplay_step"] == 1:
         st.subheader("🌍 Step 1: Create Your Sekai World")
@@ -997,8 +1049,22 @@ Characters:
 - The AI will narrate the story and have other characters respond!
         """)
 
-        if st.button("🎮 Start Game", type="primary"):
-            story_prompt = f"""
+        # Check if template is generated
+        if "sekai_json" not in st.session_state:
+            st.warning("⚠️ You need to generate a story template first!")
+            st.markdown("""
+**To start the game, you need to:**
+1. Go back to **Step 4: Generate Sekai Story Template**
+2. Click **"🧙 Generate Template"** to create your story
+3. Then return here to start playing!
+            """)
+            
+            if st.button("⬅️ Back to Step 4", type="primary"):
+                st.session_state["roleplay_step"] = 4
+                st.rerun()
+        else:
+            if st.button("🎮 Start Game", type="primary"):
+                story_prompt = f"""
 You are an interactive fiction narrator for a visual novel.
 Begin the story using the following JSON world structure.
 Write the story in the following script format:
@@ -1019,22 +1085,17 @@ JSON:
 
 Write the opening scene below, making sure to introduce one or more characters:
 """
-            first_turn = model.generate_content(story_prompt).text.strip()
+                first_turn = model.generate_content(story_prompt).text.strip()
 
-            if first_turn.startswith("{") or first_turn.startswith('"title"'):
-                st.error("Model returned raw JSON instead of story text. Please retry.")
-            else:
-                st.session_state["game_state"] = [first_turn]
-                st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
-                st.session_state["user_inputs"] = [""]
-                st.rerun()
+                if first_turn.startswith("{") or first_turn.startswith('"title"'):
+                    st.error("Model returned raw JSON instead of story text. Please retry.")
+                else:
+                    st.session_state["game_state"] = [first_turn]
+                    st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
+                    st.session_state["user_inputs"] = [""]
+                    st.rerun()
 
-        # Navigation
-        if st.button("⬅️ Back"):
-            st.session_state["roleplay_step"] = 4
-            st.rerun()
-
-    # --- Game UI (after Start) ---
+    # --- Game UI (only appears after game starts) ---
     if "game_state" in st.session_state:
         st.markdown("---")
         st.subheader("🚀 Game In Progress")
@@ -1078,60 +1139,10 @@ Write the opening scene below, making sure to introduce one or more characters:
                 unsafe_allow_html=True,
             )
 
-    def handle_send():
-        user_input = st.session_state.get("reply_input", "")
-        if user_input.strip():
-            last_turn = st.session_state["game_state"][-1]
-
-            introduction_instruction = ""
-            # Ensure all characters are introduced within the first 3 turns
-            if len(st.session_state["game_state"]) < 3:
-                full_story_text = "".join(st.session_state["game_state"])
-                all_characters_in_json = st.session_state["sekai_json"].get(
-                    "characters", []
-                )
-                character_names = [
-                    c.get("name") for c in all_characters_in_json if c.get("name")
-                ]
-                unintroduced_characters = [
-                    name
-                    for name in character_names
-                    if name.lower() not in full_story_text.lower()
-                ]
-                if unintroduced_characters:
-                    char_list = ", ".join(unintroduced_characters)
-                    introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
-
-            player_name = st.session_state.get("user_name", "the player")
-            reply_prompt = (
-                f"You are an interactive fiction narrator. The player character is {player_name}.\n"
-                f"The player's input (action or dialogue) is: '{user_input}'.\n"
-                f"Your role is to describe what happens next. Narrate the scene and have other non-player characters react.\n"
-                f"IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_name}. Their input is already given.\n"
-                f"{introduction_instruction}"
-                f"Continue the story in script format. Keep narration brief. Do not give choices."
-            )
-            new_turn = model.generate_content(
-                last_turn + "\n\n" + reply_prompt
-            ).text.strip()
-            st.session_state["game_state"].append(new_turn)
-            st.session_state["user_inputs"].append(user_input.strip())
-
-            # Clear the input box for the next turn
-            st.session_state.reply_input = ""
-
-            existing_colors = st.session_state.get("story_colors", [])
-            available_colors = [
-                c
-                for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
-                if c != existing_colors[-1]
-            ]
-            new_color = random.choice(available_colors)
-            st.session_state["story_colors"].append(new_color)
-            # st.rerun is implicit with on_click callback
-
-    st.text_input("Enter your next action or dialogue", key="reply_input")
-    st.button("🔄 Send", on_click=handle_send)
+        # Game input (only appears when game is active)
+        st.markdown("### 🎮 Your Turn")
+        st.text_input("Enter your next action or dialogue", key="reply_input")
+        st.button("🔄 Send", on_click=handle_send)
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
