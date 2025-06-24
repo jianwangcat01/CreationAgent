@@ -715,7 +715,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_idea_input' not in st.session_state:
             st.session_state['world_idea_input'] = ''
         if 'world_idea_input_temp' not in st.session_state:
-            st.session_state['world_idea_input_temp'] = st.session_state['world_idea_input']
+            st.session_state['world_idea_input_temp'] = ''
         def update_world_idea():
             st.session_state['world_idea_input'] = st.session_state['world_idea_input_temp']
         world_idea = st.text_input(
@@ -733,7 +733,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_genre' not in st.session_state:
             st.session_state['world_genre'] = []
         if 'world_genre_temp' not in st.session_state:
-            st.session_state['world_genre_temp'] = [g for g in st.session_state['world_genre'] if g in genre_options]
+            st.session_state['world_genre_temp'] = []
         def update_genres():
             st.session_state['world_genre'] = st.session_state['world_genre_temp']
         selected_genres = st.multiselect(
@@ -798,7 +798,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_title' not in st.session_state:
             st.session_state['world_title'] = ''
         if 'world_title_temp' not in st.session_state:
-            st.session_state['world_title_temp'] = st.session_state['world_title']
+            st.session_state['world_title_temp'] = ''
         def update_world_title():
             st.session_state['world_title'] = st.session_state['world_title_temp']
         world_title = st.text_input(
@@ -811,7 +811,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_setting' not in st.session_state:
             st.session_state['world_setting'] = ''
         if 'world_setting_temp' not in st.session_state:
-            st.session_state['world_setting_temp'] = st.session_state['world_setting']
+            st.session_state['world_setting_temp'] = ''
         def update_world_setting():
             st.session_state['world_setting'] = st.session_state['world_setting_temp']
         world_setting = st.text_area(
@@ -829,7 +829,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'world_keywords_input' not in st.session_state:
             st.session_state['world_keywords_input'] = ''
         if 'world_keywords_input_temp' not in st.session_state:
-            st.session_state['world_keywords_input_temp'] = st.session_state['world_keywords_input']
+            st.session_state['world_keywords_input_temp'] = ''
         def update_keywords():
             st.session_state['world_keywords_input'] = st.session_state['world_keywords_input_temp']
         world_keywords = st.text_input(
@@ -850,12 +850,12 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             if world_title.strip() and world_setting.strip():
                 if st.button("➡️ Next: Your Character", type="primary"):
                     # Sync world info to both temp and non-temp keys
-                    st.session_state['world_title'] = st.session_state.get('world_title_temp', world_title)
-                    st.session_state['world_title_temp'] = st.session_state['world_title']
-                    st.session_state['world_setting'] = st.session_state.get('world_setting_temp', world_setting)
-                    st.session_state['world_setting_temp'] = st.session_state['world_setting']
-                    st.session_state['world_keywords_input'] = st.session_state.get('world_keywords_input_temp', world_keywords)
-                    st.session_state['world_keywords_input_temp'] = st.session_state['world_keywords_input']
+                    st.session_state['world_title'] = world_title.strip()
+                    st.session_state['world_title_temp'] = world_title.strip()
+                    st.session_state['world_setting'] = world_setting.strip()
+                    st.session_state['world_setting_temp'] = world_setting.strip()
+                    st.session_state['world_keywords_input'] = world_keywords.strip()
+                    st.session_state['world_keywords_input_temp'] = world_keywords.strip()
                     st.session_state["roleplay_step"] = 2
                     st.rerun()
             else:
@@ -907,7 +907,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'user_name_input' not in st.session_state:
             st.session_state['user_name_input'] = ''
         if 'user_name_input_temp' not in st.session_state:
-            st.session_state['user_name_input_temp'] = st.session_state['user_name_input']
+            st.session_state['user_name_input_temp'] = ''
         def update_user_name():
             st.session_state['user_name_input'] = st.session_state['user_name_input_temp']
         user_name = st.text_input(
@@ -922,7 +922,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if 'user_traits_input' not in st.session_state:
             st.session_state['user_traits_input'] = ''
         if 'user_traits_input_temp' not in st.session_state:
-            st.session_state['user_traits_input_temp'] = st.session_state['user_traits_input']
+            st.session_state['user_traits_input_temp'] = ''
         def update_user_traits():
             st.session_state['user_traits_input'] = st.session_state['user_traits_input_temp']
         user_traits = st.text_area(
