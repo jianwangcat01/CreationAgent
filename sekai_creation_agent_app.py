@@ -874,6 +874,36 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             on_change=update_user_name
         )
 
+        # --- AI Character Generation Button ---
+        if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
+            world_title = st.session_state.get('world_title_temp', '')
+            world_setting = st.session_state.get('world_setting_temp', '')
+            world_keywords = st.session_state.get('world_keywords_input_temp', '')
+            prompt = f"Generate a player character for the following Sekai world.\n\nTitle: {world_title}\nSetting: {world_setting}\nKeywords: {world_keywords}\n\nRespond with:\n- Name (a human name)\n- Traits (1-2 sentences about personality, quirks, or magical powers)"
+            suggestion = generate_field(prompt)
+            # Parse the response
+            name = re.search(r'[Nn]ame\s*[:：\-]\s*(.*)', suggestion)
+            traits = re.search(r'[Tt]raits?\s*[:：\-]\s*(.*)', suggestion)
+            # Fallback: try to split lines if not matched
+            if not name or not traits:
+                lines = [l.strip() for l in suggestion.split('\n') if l.strip()]
+                if len(lines) >= 2:
+                    if not name:
+                        name = re.match(r'^(.*)$', lines[0])
+                    if not traits:
+                        traits = re.match(r'^(.*)$', lines[1])
+            def strip_stars(s):
+                return s.strip().strip('*').strip()
+            if name:
+                clean_name = strip_stars(name.group(1))
+                st.session_state['user_name_input'] = clean_name
+                st.session_state['user_name_input_temp'] = clean_name
+            if traits:
+                clean_traits = strip_stars(traits.group(1))
+                st.session_state['user_traits_input'] = clean_traits
+                st.session_state['user_traits_input_temp'] = clean_traits
+            st.rerun()
+
         # --- Character Traits ---
         if 'user_traits_input' not in st.session_state:
             st.session_state['user_traits_input'] = ''
