@@ -70,6 +70,11 @@ The AI will take on the personality you describe and respond accordingly.
     char_role = st.text_input("Role / Occupation", "Time-traveling librarian")
     char_traits = st.text_area("Personality Traits / Background", 
         "Luna is calm, mysterious, and always speaks in riddles. She has knowledge of the past and future.")
+    # Opening lines setup (optional)
+    opening_line = st.text_area(
+        "Opening Lines (optional, what the character says to start the chat)",
+        "Greetings, traveler. I am Luna, keeper of the Midnight Library. What story brings you here tonight?"
+    )
     char_image = st.file_uploader("Upload a profile image (optional)", type=["png", "jpg", "jpeg"])
 
     # --- Start Chat Button ---
@@ -83,6 +88,11 @@ The AI will take on the personality you describe and respond accordingly.
             "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
             "Start the conversation by introducing yourself."
         )
+        # Add the opening line as the first message from the character
+        st.session_state["chat_history"].append({
+            "user": "",
+            "bot": opening_line.strip() if opening_line.strip() else "Hello."
+        })
 
     # --- Chat UI (after Start) ---
     if st.session_state.get("chat_started"):
@@ -90,7 +100,8 @@ The AI will take on the personality you describe and respond accordingly.
         if char_image:
             st.image(char_image, use_container_width=False, width=200, caption=f"{char_name}'s Avatar")
         for i, entry in enumerate(st.session_state["chat_history"]):
-            st.markdown(f"**You:** {entry['user']}")
+            if entry['user']:
+                st.markdown(f"**You:** {entry['user']}")
             # Remove double character name if present
             bot_reply = entry['bot']
             prefix = f"{char_name}:"
@@ -102,7 +113,10 @@ The AI will take on the personality you describe and respond accordingly.
             model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
             full_prompt = st.session_state["character_prompt"] + "\n\n"
             for entry in st.session_state["chat_history"]:
-                full_prompt += f"You: {entry['user']}\n{char_name}: {entry['bot']}\n"
+                if entry['user']:
+                    full_prompt += f"You: {entry['user']}\n{char_name}: {entry['bot']}\n"
+                else:
+                    full_prompt += f"{char_name}: {entry['bot']}\n"
             full_prompt += f"You: {user_input}\n{char_name}:"
             response = model.generate_content(full_prompt)
             reply = response.text.strip()
