@@ -924,9 +924,31 @@ Generate only the 3 choices, nothing else.
     st.markdown("---")
 
     # ===== STEP 1: CREATE YOUR SEKAI WORLD =====
-    st.markdown("## 🌍 Step 1: Create Your Sekai World")
-    st.markdown('<div id="step-1"></div>', unsafe_allow_html=True)
-    st.info("🌟 Let's create your magical world together! Each little detail will make it uniquely yours 💫")
+    st.markdown("---")
+    st.markdown("## 🌍 Step 1: Your Sekai World")
+    if 'world_title' not in st.session_state:
+        st.session_state['world_title'] = ''
+    world_title = st.text_input(
+        "Sekai Title",
+        value=st.session_state['world_title'],
+        key="world_title_edit"
+    )
+    if 'world_setting' not in st.session_state:
+        st.session_state['world_setting'] = ''
+    world_setting = st.text_area(
+        "Describe the World Setting",
+        value=st.session_state['world_setting'],
+        key="world_setting_edit"
+    )
+    if 'world_keywords_input' not in st.session_state:
+        st.session_state['world_keywords_input'] = ''
+    world_keywords = st.text_input(
+        "Keywords",
+        value=st.session_state['world_keywords_input'],
+        key="world_keywords_edit"
+    )
+    if st.session_state.get("world_title") or st.session_state.get("world_setting"):
+        st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
 
     # --- World Inspiration ---
     st.markdown("### 🌈 World Inspiration")
