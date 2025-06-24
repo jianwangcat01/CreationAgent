@@ -882,11 +882,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             rerun_needed = False
             if name:
                 clean_name = strip_stars(name.group(1))
-                st.session_state['user_name_input'] = clean_name
+                st.session_state['user_name_input_temp'] = clean_name
                 rerun_needed = True
             if traits:
                 clean_traits = strip_stars(traits.group(1))
-                st.session_state['user_traits_input'] = clean_traits
+                st.session_state['user_traits_input_temp'] = clean_traits
                 rerun_needed = True
             if rerun_needed:
                 st.rerun()
@@ -934,6 +934,9 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         with col3:
             if user_name.strip() and user_traits.strip():
                 if st.button("➡️ Next: Main Characters", type="primary"):
+                    # Lock in the values when proceeding
+                    st.session_state["user_name"] = user_name.strip()
+                    st.session_state["user_traits"] = user_traits.strip()
                     st.session_state["roleplay_step"] = 3
                     st.rerun()
             else:
@@ -948,8 +951,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         world_title = st.session_state.get("world_title_temp", "Your Sekai World")
         world_setting = st.session_state.get("world_setting_temp", "A magical world")
         world_keywords = st.session_state.get("world_keywords_input_temp", "")
-        user_name = st.session_state.get("user_name_input", "Alex")
-        user_traits = st.session_state.get("user_traits_input", "Curious and brave")
+        user_name = st.session_state.get("user_name", "Alex")
+        user_traits = st.session_state.get("user_traits", "Curious and brave")
 
         # Number of Characters
         st.markdown("### 🎭 How many characters will join your story?")
@@ -1069,11 +1072,13 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.info("Let's bring everything together and create your story template!")
 
         # Get values from previous steps
-        world_title = st.session_state.get("world_title", "Your Sekai World")
-        world_setting = st.session_state.get("world_setting", "A magical world")
-        selected_genres = st.session_state.get("world_genre", [])
-        user_name = st.session_state.get("user_name", "Alex")
-        user_traits = st.session_state.get("user_traits", "Curious and brave")
+        world_title = st.session_state.get("world_title_temp", "Your Sekai World")
+        world_setting = st.session_state.get("world_setting_temp", "A magical world")
+        world_keywords = st.session_state.get("world_keywords_input_temp", "")
+        selected_genres = st.session_state.get("world_genre_temp", [])
+        # Use locked-in values for user character
+        user_name = st.session_state.get("user_name", st.session_state.get("user_name_input_temp", "Alex"))
+        user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input_temp", "Curious and brave"))
         
         # Build characters list
         num_characters = st.session_state.get("num_characters_slider", 2)
@@ -1084,6 +1089,20 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             traits = st.session_state.get(f"trait_{i}", "")
             if name and traits:
                 characters.append({"name": name, "role": role, "traits": traits})
+
+        # Opening Line Setup (before advanced options)
+        st.markdown("### 💬 Opening Scene Setup")
+        st.markdown("**💡 Tip:** This will be the first scene of your story!")
+        
+        if "opening_scene_input" not in st.session_state:
+            st.session_state["opening_scene_input"] = ""
+        opening_scene = st.text_area(
+            "Describe the opening scene (optional - leave blank for AI generation)",
+            value=st.session_state["opening_scene_input"],
+            placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
+            height=100,
+            key="opening_scene_input"
+        )
 
         # Advanced Settings (collapsed by default)
         with st.expander("🧙‍♂️ Advanced Settings (Optional)", expanded=False):
@@ -1116,16 +1135,21 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             with st.spinner("Talking to Gemini AI..."):
                 prompt = f"""
 You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, characters (array of name, role, description), and openingScene.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
 
 Title: {world_title}
 Setting: {world_setting}
 Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
+Keywords: {world_keywords}
 Characters:
 - {user_name} (Player): {user_traits}
 """
                 for c in characters:
                     prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
+                # Add opening scene if provided
+                if opening_scene.strip():
+                    prompt += f"\nOpening Scene: {opening_scene}\n"
                 
                 # Add advanced settings to prompt
                 if story_tone != "Balanced":
