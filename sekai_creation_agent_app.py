@@ -862,14 +862,32 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
 
         # --- AI Character Generation Button (now above name input) ---
         if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
-            # Try both temp and non-temp keys for world info
+            # Get complete world information from Step 1
             world_title = st.session_state.get('world_title_temp') or st.session_state.get('world_title', '')
             world_setting = st.session_state.get('world_setting_temp') or st.session_state.get('world_setting', '')
             world_keywords = st.session_state.get('world_keywords_input_temp') or st.session_state.get('world_keywords_input', '')
-            if not (world_title and world_setting and world_keywords):
+            world_genres = st.session_state.get('world_genre_temp') or st.session_state.get('world_genre', [])
+            
+            if not (world_title and world_setting):
                 st.warning("Please complete Step 1 (Sekai World) before generating your character.")
             else:
-                prompt = f"Generate a player character for the following Sekai world.\n\nTitle: {world_title}\nSetting: {world_setting}\nKeywords: {world_keywords}\n\nRespond with:\n- Name (a human name)\n- Traits (1-2 sentences about personality, quirks, or magical powers)"
+                # Build a comprehensive prompt with all available world information
+                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
+                world_context = f"Title: {world_title}\nSetting: {world_setting}"
+                if world_keywords:
+                    world_context += f"\nKeywords: {world_keywords}"
+                world_context += f"\nGenre: {genre_str}"
+                
+                prompt = f"""Generate a player character for the following Sekai world.
+
+{world_context}
+
+Create a character that would fit naturally into this world and could be the protagonist of an interactive story. The character should have a compelling personality and abilities that make sense for this setting.
+
+Respond with:
+- Name (a human name)
+- Traits (1-2 sentences about personality, quirks, or magical powers)"""
+                
                 suggestion = generate_field(prompt)
                 # Parse the response
                 name = re.search(r'[Nn]ame\s*[:：\-]\s*(.*)', suggestion)
@@ -957,6 +975,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         world_title = st.session_state.get("world_title_temp", "Your Sekai World")
         world_setting = st.session_state.get("world_setting_temp", "A magical world")
         world_keywords = st.session_state.get("world_keywords_input_temp", "")
+        world_genres = st.session_state.get("world_genre_temp") or st.session_state.get("world_genre", [])
         user_name = st.session_state.get("user_name", "Alex")
         user_traits = st.session_state.get("user_traits", "Curious and brave")
 
@@ -971,17 +990,32 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         # Generate All Characters Button
         if st.button("✨ AI: Generate All Characters", type="primary"):
             with st.spinner(f"Creating {num_characters} unique characters..."):
-                prompt = (
-                    f"Generate {num_characters} completely unique and different characters for the world: {world_setting}.\n"
-                    f"World Title: {world_title}\nKeywords: {world_keywords}\n"
-                    f"The player's character is named '{user_name}' with traits: {user_traits}. Do not use this name for any of the generated characters.\n"
-                    f"Ensure the names, personalities, and abilities are distinct from each other and from the player.\n"
-                    f"Please provide {num_characters} character descriptions separated by '---'.\n\n"
-                    "Each character description must follow this format:\n"
-                    "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
-                    "Role: <Character Role>\n"
-                    "Traits: <Personality traits and special abilities>"
-                )
+                # Build comprehensive world context
+                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
+                world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
+                if world_keywords:
+                    world_context += f"\nKeywords: {world_keywords}"
+                
+                prompt = f"""Generate {num_characters} completely unique and different characters for the following world:
+
+{world_context}
+
+Player Character: {user_name} ({user_traits})
+
+Create {num_characters} supporting characters that:
+- Are distinct from each other and from the player character
+- Would naturally exist in this world
+- Have interesting personalities and abilities
+- Could interact meaningfully with the player character
+- Fit the genre and tone of the world
+
+Please provide {num_characters} character descriptions separated by '---'.
+
+Each character description must follow this format:
+Name: <A standard first name and optional last name only, no titles or descriptions>
+Role: <Character Role>
+Traits: <Personality traits and special abilities>"""
+                
                 response_text = generate_field(prompt)
                 generated_characters = response_text.strip().split("\n---\n")
 
@@ -1010,18 +1044,37 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             col1, col2 = st.columns([3, 1])
             with col1:
                 if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
+                    # Get complete world and user information
+                    world_genres = st.session_state.get("world_genre_temp") or st.session_state.get("world_genre", [])
+                    genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
+                    world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
+                    if world_keywords:
+                        world_context += f"\nKeywords: {world_keywords}"
+                    
                     other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
-                    prompt = (
-                        f"Create a new character for the following world: {world_setting}. "
-                        f"World Title: {world_title}\nKeywords: {world_keywords}\n"
-                        f"The player's character is named '{user_name}' with traits: {user_traits}. Do not use this name.\n"
-                        f"Ensure this character is clearly different from the player and any existing characters:\n"
-                        + "\n".join(other_chars) +
-                        "\n\nRespond in this format:\n"
-                        "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
-                        "Role: <Character Role>\n"
-                        "Traits: <Personality traits and special abilities>"
-                    )
+                    existing_chars_text = "\n".join(other_chars) if other_chars else "None"
+                    
+                    prompt = f"""Create a new character for the following world:
+
+{world_context}
+
+Player Character: {user_name} ({user_traits})
+
+Existing Characters:
+{existing_chars_text}
+
+Create a character that:
+- Is clearly different from the player character and any existing characters
+- Would naturally exist in this world
+- Has an interesting personality and abilities
+- Could interact meaningfully with the player character
+- Fits the genre and tone of the world
+
+Respond in this format:
+Name: <A standard first name and optional last name only, no titles or descriptions>
+Role: <Character Role>
+Traits: <Personality traits and special abilities>"""
+                    
                     result = generate_field(prompt)
                     st.session_state[f"char_{i}"] = result
                     st.rerun()
