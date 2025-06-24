@@ -1046,9 +1046,44 @@ Opening Line: <What do they say when first met?>"""
 
             for i in range(num_characters):
                 if i < len(generated_characters):
-                    st.session_state[f"char_{i}"] = generated_characters[i].strip()
+                    char_text = generated_characters[i].strip()
+                    st.session_state[f"char_{i}"] = char_text
+                    
+                    # Parse the character text into individual fields
+                    parsed_name, parsed_role, parsed_traits, parsed_voice, parsed_opening = "", "", "", "", ""
+                    try:
+                        # Use regex for robust parsing
+                        name_match = re.search(r'Name\s*[:：\-]\s*(.*)', char_text)
+                        role_match = re.search(r'Role\s*[:：\-]\s*(.*)', char_text)
+                        traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', char_text)
+                        voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', char_text)
+                        opening_match = re.search(r'Opening Line\s*[:：\-]\s*(.*)', char_text)
+                        if name_match:
+                            parsed_name = name_match.group(1).strip()
+                        if role_match:
+                            parsed_role = role_match.group(1).strip()
+                        if traits_match:
+                            parsed_traits = traits_match.group(1).strip()
+                        if voice_match:
+                            parsed_voice = voice_match.group(1).strip()
+                        if opening_match:
+                            parsed_opening = opening_match.group(1).strip()
+                    except Exception:
+                        pass
+                    
+                    # Store parsed fields in session state
+                    st.session_state[f"name_{i}"] = parsed_name
+                    st.session_state[f"role_{i}"] = parsed_role
+                    st.session_state[f"trait_{i}"] = parsed_traits
+                    st.session_state[f"voice_style_{i}"] = parsed_voice
+                    st.session_state[f"opening_line_{i}"] = parsed_opening
                 else:
                     st.session_state[f"char_{i}"] = ""
+                    st.session_state[f"name_{i}"] = ""
+                    st.session_state[f"role_{i}"] = ""
+                    st.session_state[f"trait_{i}"] = ""
+                    st.session_state[f"voice_style_{i}"] = ""
+                    st.session_state[f"opening_line_{i}"] = ""
             st.rerun()
 
     # Character Forms
