@@ -1140,7 +1140,8 @@ Respond with:
     # --- Display Generated World (if available) ---
     if st.session_state.get("world_title") or st.session_state.get("world_setting"):
         st.markdown("---")
-        st.markdown("### 🌟 Your Generated Sekai World")
+        st.markdown("### 🌟 Your Sekai World Details")
+        st.markdown("**Review and edit your world details below:**")
         # Only show the editable fields, pre-filled with generated values
         if 'world_title' not in st.session_state:
             st.session_state['world_title'] = ''
@@ -1164,6 +1165,36 @@ Respond with:
             key="world_keywords_display"
         )
         st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
+    else:
+        # Show manual input fields if no world has been generated yet
+        st.markdown("---")
+        st.markdown("### 🌟 Your Sekai World Details")
+        st.markdown("**Fill in your world details below, or use the guided creation above:**")
+        
+        if 'world_title' not in st.session_state:
+            st.session_state['world_title'] = ''
+        world_title = st.text_input(
+            "Sekai Title",
+            value=st.session_state['world_title'],
+            key="world_title_manual"
+        )
+        if 'world_setting' not in st.session_state:
+            st.session_state['world_setting'] = ''
+        world_setting = st.text_area(
+            "Describe the World Setting",
+            value=st.session_state['world_setting'],
+            key="world_setting_manual"
+        )
+        if 'world_keywords_input' not in st.session_state:
+            st.session_state['world_keywords_input'] = ''
+        world_keywords = st.text_input(
+            "Keywords",
+            value=st.session_state['world_keywords_input'],
+            key="world_keywords_manual"
+        )
+        
+        if world_title.strip() or world_setting.strip():
+            st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is taking shape!</span> Ready to move to the next step!</div>', unsafe_allow_html=True)
 
     # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
     st.markdown("## 👤 Step 2: Create Your Character")
