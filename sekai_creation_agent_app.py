@@ -222,12 +222,18 @@ The AI will take on the personality you describe and respond accordingly.
                 st.session_state["app_mode"] = None
                 st.rerun()
         with col2:
-            if char_name.strip() and char_role.strip():
-                if st.button("➡️ Next: Personality", type="primary"):
-                    st.session_state["char_creation_step"] = 2
+            # Always get the latest values from the input widgets
+            current_world_title = st.session_state.get('world_title', '')
+            current_world_setting = st.session_state.get('world_setting', '')
+            if current_world_title.strip() and current_world_setting.strip():
+                if st.button("➡️ Next: Your Character", type="primary"):
+                    # Save the latest values from the widgets (not just session_state)
+                    st.session_state["world_title"] = current_world_title.strip()
+                    st.session_state["world_setting"] = current_world_setting.strip()
+                    st.session_state["roleplay_step"] = 2
                     st.rerun()
             else:
-                st.button("➡️ Next: Personality", disabled=True)
+                st.button("➡️ Next: Your Character", disabled=True)
 
     # Step 2: Personality
     elif st.session_state["char_creation_step"] == 2:
@@ -816,8 +822,14 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                 st.session_state["app_mode"] = None
                 st.rerun()
         with col2:
-            if world_title.strip() and world_setting.strip():
+            # Always get the latest values from the input widgets
+            current_world_title = st.session_state.get('world_title', '')
+            current_world_setting = st.session_state.get('world_setting', '')
+            if current_world_title.strip() and current_world_setting.strip():
                 if st.button("➡️ Next: Your Character", type="primary"):
+                    # Save the latest values from the widgets (not just session_state)
+                    st.session_state["world_title"] = current_world_title.strip()
+                    st.session_state["world_setting"] = current_world_setting.strip()
                     st.session_state["roleplay_step"] = 2
                     st.rerun()
             else:
