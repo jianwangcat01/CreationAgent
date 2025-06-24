@@ -30,6 +30,7 @@ if st.session_state["app_mode"] is None:
         if st.button("Roleplay Creation", key="roleplay_mode_btn"):
             st.session_state["app_mode"] = "roleplay"
             st.experimental_rerun()
+            st.stop()
     st.stop()
 
 if st.session_state["app_mode"] == "character":
