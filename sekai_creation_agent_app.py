@@ -21,6 +21,7 @@ if st.session_state["app_mode"] is None:
         if st.button("Character Creation", key="char_mode_btn"):
             st.session_state["app_mode"] = "character"
             st.experimental_rerun()
+            st.stop()
     with col2:
         try:
             st.image("https://i.postimg.cc/z3nfGqLZ/2.png", width=320)
