@@ -849,13 +849,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         with col2:
             if world_title.strip() and world_setting.strip():
                 if st.button("➡️ Next: Your Character", type="primary"):
-                    # Sync world info to both temp and non-temp keys
-                    st.session_state['world_title'] = world_title.strip()
-                    st.session_state['world_title_temp'] = world_title.strip()
-                    st.session_state['world_setting'] = world_setting.strip()
-                    st.session_state['world_setting_temp'] = world_setting.strip()
-                    st.session_state['world_keywords_input'] = world_keywords.strip()
-                    st.session_state['world_keywords_input_temp'] = world_keywords.strip()
+                    # Only set the essential values to avoid session state conflicts
                     st.session_state["roleplay_step"] = 2
                     st.rerun()
             else:
