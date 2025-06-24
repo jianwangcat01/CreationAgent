@@ -15,17 +15,17 @@ if st.session_state["app_mode"] is None:
     col1, col2 = st.columns(2)
     with col1:
         try:
-            st.image("1.png", use_container_width=True)
+            st.image("https://i.postimg.cc/YGrdLrpn/1.png", use_container_width=True)
         except Exception:
-            st.warning("Character image (1.png) not found.")
+            st.warning("Character image not found.")
         if st.button("Character Creation", key="char_mode_btn"):
             st.session_state["app_mode"] = "character"
             st.experimental_rerun()
     with col2:
         try:
-            st.image("2.png", use_container_width=True)
+            st.image("https://i.postimg.cc/G8XqkWtc/2.png", use_container_width=True)
         except Exception:
-            st.warning("Roleplay image (2.png) not found.")
+            st.warning("Roleplay image not found.")
         if st.button("Roleplay Creation", key="roleplay_mode_btn"):
             st.session_state["app_mode"] = "roleplay"
             st.experimental_rerun()
