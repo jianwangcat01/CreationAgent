@@ -1315,9 +1315,6 @@ Respond with:
             value=st.session_state['world_title'],
             key="world_title_display"
         )
-        # Update session state with the edited value
-        st.session_state['world_title'] = world_title
-        
         if 'world_setting' not in st.session_state:
             st.session_state['world_setting'] = ''
         world_setting = st.text_area(
@@ -1325,9 +1322,6 @@ Respond with:
             value=st.session_state['world_setting'],
             key="world_setting_display"
         )
-        # Update session state with the edited value
-        st.session_state['world_setting'] = world_setting
-        
         if 'world_keywords_input' not in st.session_state:
             st.session_state['world_keywords_input'] = ''
         world_keywords = st.text_input(
@@ -1335,10 +1329,7 @@ Respond with:
             value=st.session_state['world_keywords_input'],
             key="world_keywords_display"
         )
-        # Update session state with the edited value
-        st.session_state['world_keywords_input'] = world_keywords
-        
-        st.success("🌟 Your world is born! It already feels so real… Let's meet your characters next!")
+        st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
     else:
         # Show manual input fields if no world has been generated yet
         st.markdown("---")
@@ -1352,9 +1343,6 @@ Respond with:
             value=st.session_state['world_title'],
             key="world_title_manual"
         )
-        # Update session state with the edited value
-        st.session_state['world_title'] = world_title
-        
         if 'world_setting' not in st.session_state:
             st.session_state['world_setting'] = ''
         world_setting = st.text_area(
@@ -1362,9 +1350,6 @@ Respond with:
             value=st.session_state['world_setting'],
             key="world_setting_manual"
         )
-        # Update session state with the edited value
-        st.session_state['world_setting'] = world_setting
-        
         if 'world_keywords_input' not in st.session_state:
             st.session_state['world_keywords_input'] = ''
         world_keywords = st.text_input(
@@ -1372,11 +1357,9 @@ Respond with:
             value=st.session_state['world_keywords_input'],
             key="world_keywords_manual"
         )
-        # Update session state with the edited value
-        st.session_state['world_keywords_input'] = world_keywords
         
         if world_title.strip() or world_setting.strip():
-            st.success("🌟 Your world is taking shape! Ready to move to the next step!")
+            st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is taking shape!</span> Ready to move to the next step!</div>', unsafe_allow_html=True)
 
     # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
     st.markdown("## 👤 Step 2: Create Your Character")
