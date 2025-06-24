@@ -13,23 +13,35 @@ if st.session_state["app_mode"] is None:
     st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
     st.title("Sekai AI Creation Agent")
     st.subheader("Choose a mode to get started:")
+    
+    # Create two columns with equal width
     col1, col2 = st.columns(2)
+    
     with col1:
         try:
-            st.image("https://i.postimg.cc/YhMC4Tg4/1.png", width=320)
+            st.image("https://i.postimg.cc/YhMC4Tg4/1.png", width=320, height=240)
         except Exception:
             st.warning("Character image not found.")
-        if st.button("Character Creation", key="char_mode_btn"):
-            st.session_state["app_mode"] = "character"
-            st.rerun()
+    
     with col2:
         try:
-            st.image("https://i.postimg.cc/z3nfGqLZ/2.png", width=320)
+            st.image("https://i.postimg.cc/z3nfGqLZ/2.png", width=320, height=240)
         except Exception:
             st.warning("Roleplay image not found.")
-        if st.button("Roleplay Creation", key="roleplay_mode_btn"):
+    
+    # Create another row for buttons to ensure they're aligned
+    col1_btn, col2_btn = st.columns(2)
+    
+    with col1_btn:
+        if st.button("Character Creation", key="char_mode_btn", use_container_width=True):
+            st.session_state["app_mode"] = "character"
+            st.rerun()
+    
+    with col2_btn:
+        if st.button("Roleplay Creation", key="roleplay_mode_btn", use_container_width=True):
             st.session_state["app_mode"] = "roleplay"
             st.rerun()
+    
     st.stop()
 
 # --- Character Creation Mode ---
