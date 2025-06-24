@@ -120,10 +120,6 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_name_clicked" not in st.session_state:
                 st.session_state["random_name_clicked"] = False
             
-            if st.button("🎲 Random", key="random_name"):
-                st.session_state["random_name_clicked"] = True
-                st.rerun()
-            
             # Set default value based on random click
             default_name = ""
             if st.session_state["random_name_clicked"]:
@@ -136,6 +132,10 @@ The AI will take on the personality you describe and respond accordingly.
                 placeholder="Eliora / Jack the Brave / Neko-chan",
                 key="char_name_input"
             )
+        with col2:
+            if st.button("🎲 Random", key="random_name"):
+                st.session_state["random_name_clicked"] = True
+                st.rerun()
         
         if char_name.strip():
             st.success(f"✨ That name is full of charm! Can't wait to meet {char_name}!")
@@ -147,10 +147,6 @@ The AI will take on the personality you describe and respond accordingly.
             # Get random role if button was clicked
             if "random_role_clicked" not in st.session_state:
                 st.session_state["random_role_clicked"] = False
-            
-            if st.button("🎲 Random", key="random_role"):
-                st.session_state["random_role_clicked"] = True
-                st.rerun()
             
             # Set default value based on random click
             default_role = ""
@@ -164,6 +160,10 @@ The AI will take on the personality you describe and respond accordingly.
                 placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
                 key="char_role_input"
             )
+        with col2:
+            if st.button("🎲 Random", key="random_role"):
+                st.session_state["random_role_clicked"] = True
+                st.rerun()
         
         if char_role.strip():
             st.success("🎉 Ooooh! That's an exciting role — this is gonna be fun!")
@@ -199,10 +199,6 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_traits_clicked" not in st.session_state:
                 st.session_state["random_traits_clicked"] = False
             
-            if st.button("🎲 Random", key="random_traits"):
-                st.session_state["random_traits_clicked"] = True
-                st.rerun()
-            
             # Set default value based on random click
             default_traits = ""
             if st.session_state["random_traits_clicked"]:
@@ -216,6 +212,10 @@ The AI will take on the personality you describe and respond accordingly.
                 height=120,
                 key="char_traits_input"
             )
+        with col2:
+            if st.button("🎲 Random", key="random_traits"):
+                st.session_state["random_traits_clicked"] = True
+                st.rerun()
 
         if char_traits.strip():
             st.success("🎨 Wow, that's such a vivid personality. You're a worldbuilder already!")
@@ -278,10 +278,6 @@ The AI will take on the personality you describe and respond accordingly.
             if "random_opening_clicked" not in st.session_state:
                 st.session_state["random_opening_clicked"] = False
             
-            if st.button("🎲 Random", key="random_opening"):
-                st.session_state["random_opening_clicked"] = True
-                st.rerun()
-            
             # Set default value based on random click
             default_opening = ""
             if st.session_state["random_opening_clicked"]:
@@ -295,6 +291,10 @@ The AI will take on the personality you describe and respond accordingly.
                 height=80,
                 key="opening_line_input"
             )
+        with col2:
+            if st.button("🎲 Random", key="random_opening"):
+                st.session_state["random_opening_clicked"] = True
+                st.rerun()
 
         if opening_line.strip():
             st.success("🎭 Got it! That's a perfect way to start the conversation!")
