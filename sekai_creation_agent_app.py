@@ -90,6 +90,21 @@ The AI will take on the personality you describe and respond accordingly.
             st.rerun()
     st.markdown("---")
 
+    # Clear button
+    if st.button("🗑️ Clear All & Start Over", type="secondary", use_container_width=True):
+        # Clear all character creation related session state
+        keys_to_clear = [
+            "char_creation_step", "char_feedback", "char_name_input", "char_role_input", 
+            "char_traits_input", "voice_style_input", "emotional_style_input", "lore_snippets_input",
+            "opening_line_input", "char_image_upload", "chat_started", "chat_history", 
+            "character_prompt", "random_name_clicked", "random_role_clicked", "random_traits_clicked",
+            "random_voice_clicked", "random_emotional_clicked", "random_lore_clicked", "random_opening_clicked"
+        ]
+        for key in keys_to_clear:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.rerun()
+
     # Helper function for random examples
     def get_random_example(field_type):
         examples = {
@@ -603,6 +618,26 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.session_state["roleplay_step"] = 5
             st.rerun()
     st.markdown("---")
+
+    # Clear button
+    if st.button("🗑️ Clear All & Start Over", type="secondary", use_container_width=True):
+        # Clear all roleplay creation related session state
+        keys_to_clear = [
+            "roleplay_step", "roleplay_feedback", "world_idea_input", "world_title", "world_setting", 
+            "world_title_input", "world_setting_input", "world_keywords_input", "world_genre",
+            "user_name", "user_traits", "user_name_input", "user_traits_input", "num_characters_slider",
+            "sekai_json", "game_state", "story_colors", "user_inputs", "story_tone", "pacing", "pov", "narration_style"
+        ]
+        # Clear character-specific keys (up to 5 characters)
+        for i in range(5):
+            keys_to_clear.extend([
+                f"char_{i}", f"idea_{i}", f"name_{i}", f"role_{i}", f"trait_{i}", 
+                f"voice_style_{i}", f"opening_line_{i}", f"gen_{i}"
+            ])
+        for key in keys_to_clear:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.rerun()
 
     # --- Gemini API Setup (from secrets) ---
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
