@@ -20,7 +20,7 @@ if st.session_state["app_mode"] is None:
             st.warning("Character image not found.")
         if st.button("Character Creation", key="char_mode_btn"):
             st.session_state["app_mode"] = "character"
-            st.experimental_rerun()
+            st.rerun()
             st.stop()
     with col2:
         try:
@@ -29,7 +29,7 @@ if st.session_state["app_mode"] is None:
             st.warning("Roleplay image not found.")
         if st.button("Roleplay Creation", key="roleplay_mode_btn"):
             st.session_state["app_mode"] = "roleplay"
-            st.experimental_rerun()
+            st.rerun()
             st.stop()
     st.stop()
 
@@ -39,7 +39,7 @@ if st.session_state["app_mode"] == "character":
     st.info("Character creation coming soon!")
     if st.button("⬅️ Go Back to Menu", key="back_to_menu_char"):
         st.session_state["app_mode"] = None
-        st.experimental_rerun()
+        st.rerun()
         st.stop()
 
 # --- Page Config ---
@@ -359,5 +359,5 @@ if st.session_state["app_mode"] == "roleplay":
     # ... rest of your roleplay code ...
     if st.button("⬅️ Go Back to Menu", key="back_to_menu_roleplay"):
         st.session_state["app_mode"] = None
-        st.experimental_rerun()
+        st.rerun()
     # ... rest of your roleplay code ...
