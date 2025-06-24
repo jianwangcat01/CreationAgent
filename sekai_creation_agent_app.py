@@ -53,14 +53,60 @@ if st.session_state["app_mode"] is None:
 
 # --- Character Creation Mode ---
 if st.session_state["app_mode"] == "character":
-    st.set_page_config(page_title="Character Creation", layout="wide")
-    st.title("Character Creation")
-    
+    st.set_page_config(page_title="Chat with Your Character", layout="wide")
+    st.title("💬 Chat with Your Own Character")
+    st.markdown("""
+Design a unique character, then chat with them as if they were real!  
+The AI will take on the personality you describe and respond accordingly.
+""")
+
     if st.button("⬅️ Go Back to Menu", key="back_to_menu_char"):
         st.session_state["app_mode"] = None
         st.rerun()
-    
-    st.info("Character creation coming soon!")
+
+    # --- Character Design Form ---
+    st.subheader("🎭 Design Your Character")
+    char_name = st.text_input("Character Name", "Luna")
+    char_role = st.text_input("Role / Occupation", "Time-traveling librarian")
+    char_traits = st.text_area("Personality Traits / Background", 
+        "Luna is calm, mysterious, and always speaks in riddles. She has knowledge of the past and future.")
+    char_image = st.file_uploader("Upload a profile image (optional)", type=["png", "jpg", "jpeg"])
+
+    # --- Start Chat Button ---
+    if st.button("🔮 Start Chat with Character"):
+        st.session_state["chat_started"] = True
+        st.session_state["chat_history"] = []
+        st.session_state["character_prompt"] = (
+            f"You are roleplaying as a fictional character named {char_name}. "
+            f"Your role is: {char_role}. Your personality and background: {char_traits}.\n\n"
+            "Speak naturally as this character would. Stay in character and never say you're an AI.\n"
+            "Start the conversation by introducing yourself."
+        )
+
+    # --- Chat UI (after Start) ---
+    if st.session_state.get("chat_started"):
+        st.subheader(f"🗨️ Chat with {char_name}")
+        if char_image:
+            st.image(char_image, use_column_width=False, width=200, caption=f"{char_name}'s Avatar")
+        for i, entry in enumerate(st.session_state["chat_history"]):
+            st.markdown(f"**You:** {entry['user']}")
+            st.markdown(f"**{char_name}:** {entry['bot']}")
+            st.markdown("---")
+        user_input = st.text_input("Your Message", key="char_chat_input")
+        if st.button("📩 Send"):
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            full_prompt = st.session_state["character_prompt"] + "\n\n"
+            for entry in st.session_state["chat_history"]:
+                full_prompt += f"You: {entry['user']}\n{char_name}: {entry['bot']}\n"
+            full_prompt += f"You: {user_input}\n{char_name}:"
+            response = model.generate_content(full_prompt)
+            reply = response.text.strip()
+            st.session_state["chat_history"].append({
+                "user": user_input,
+                "bot": reply
+            })
+            st.session_state["char_chat_input"] = ""
+            st.rerun()
     st.stop()
 
 # --- Roleplay Creation Mode ---
