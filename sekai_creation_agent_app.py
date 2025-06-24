@@ -88,10 +88,44 @@ The AI will take on the personality you describe and respond accordingly.
             "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
             "Start the conversation by introducing yourself."
         )
+        
+        # Generate opening line if user didn't provide one
+        if not opening_line.strip():
+            # Configure Gemini API for generating opening line
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            opening_prompt = f"""
+Generate an engaging opening line for a character in a chat conversation.
+
+Character Name: {char_name}
+Role/Occupation: {char_role}
+Personality/Background: {char_traits}
+
+The opening line should:
+- Be in character and reflect their personality
+- Be welcoming and engaging
+- Be 1-2 sentences maximum
+- Feel natural and conversational
+- Not mention being an AI or fictional character
+
+Generate only the opening line, nothing else.
+"""
+            try:
+                response = model.generate_content(opening_prompt)
+                generated_opening = response.text.strip()
+                # Clean up any extra formatting
+                if generated_opening.startswith('"') and generated_opening.endswith('"'):
+                    generated_opening = generated_opening[1:-1]
+                opening_line = generated_opening
+            except Exception as e:
+                # Fallback to a simple greeting if generation fails
+                opening_line = f"Hello! I'm {char_name}."
+        
         # Add the opening line as the first message from the character
         st.session_state["chat_history"].append({
             "user": "",
-            "bot": opening_line.strip() if opening_line.strip() else "Hello."
+            "bot": opening_line.strip()
         })
 
     # --- Chat UI (after Start) ---
