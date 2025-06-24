@@ -711,103 +711,79 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.subheader("🌍 Step 1: Create Your Sekai World")
         st.info("Let's start with your spark of inspiration! Don't overthink it — just share a mood, a moment, or a single word! We'll turn it into magic together 💫")
 
-        # World Spark (Seed Idea)
-        st.markdown("### 💡 What's your initial idea or vibe?")
+        # --- World Spark (Seed Idea) ---
+        def update_world_idea():
+            st.session_state['world_idea_input'] = st.session_state['world_idea_input_temp']
+        if 'world_idea_input' not in st.session_state:
+            st.session_state['world_idea_input'] = ''
         world_idea = st.text_input(
             "Your world spark",
-            value=st.session_state.get("world_idea_input", ""),
+            value=st.session_state['world_idea_input'],
             placeholder="A city where dreams are currency / Cyberpunk witches at high school / Haunted aquarium / Post-apocalyptic tea shop",
-            key="world_idea_input"
+            key="world_idea_input_temp",
+            on_change=update_world_idea
         )
         
         if world_idea.strip():
             st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
 
-        # AI Suggestion Button
-        if st.button("✨ AI: Turn My Idea into a World", type="primary"):
-            st.toast("Working magic... Generating your Sekai world ✨")
-            suggestion = generate_field(
-                f"Let's craft a compelling concept around the '{world_idea}' idea.\n\n"
-                "Please generate a structured Sekai concept with:\n\n"
-                "**Title:** (a short and poetic title)\n"
-                "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
-                "**World Setting:** (2-3 sentence vivid description)\n"
-                "**Player Character Name:** (a human name)\n"
-                "**Character Traits:** (1-2 short traits only)\n\n"
-                "Respond in markdown format using ** for bolded labels."
-            )
-            title = re.search(r'\*\*Title:\*\*\s*(.*?)\n', suggestion)
-            genre = re.search(r'\*\*Genre:\*\*\s*(.*?)\n', suggestion)
-            setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
-            name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
-            traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
-
-            if title:
-                st.session_state["world_title"] = title.group(1).strip()
-            if setting:
-                st.session_state["world_setting"] = setting.group(1).strip()
-            if name:
-                st.session_state["user_name"] = name.group(1).strip()
-            if traits:
-                st.session_state["user_traits"] = traits.group(1).strip()
-            new_genres = extract_genres(genre)
-            genre_options = ["Fantasy", "Sci-Fi", "Romance", "Slice of Life", "Mystery", "Horror", "Comedy", "Action", "Historical"]
-            if new_genres:
-                valid_genres = [g for g in new_genres if g in genre_options]
-                if valid_genres:
-                    st.session_state["world_genre"] = valid_genres
-            st.rerun()
-
-        # Genre Picker
-        st.markdown("### 📚 Pick a Genre")
-        st.markdown("Choose one or two — feel free to mix for unique vibes!")
-        st.markdown("*Try combining Romance + Horror for something like vampire dating!*")
-        
+        # --- Genre Picker ---
+        def update_genres():
+            st.session_state['world_genre'] = st.session_state['world_genre_temp']
         genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
-        
-        # Get default values and ensure they're valid
-        default_genres = st.session_state.get("world_genre", [])
-        # Filter out any invalid values that might exist in session state
-        valid_default_genres = [genre for genre in default_genres if genre in genre_options]
-        
+        if 'world_genre' not in st.session_state:
+            st.session_state['world_genre'] = []
+        # Validate default genres
+        valid_default_genres = [g for g in st.session_state['world_genre'] if g in genre_options]
         selected_genres = st.multiselect(
-            "Your Sekai's Genre(s)", 
-            genre_options, 
+            "Your Sekai's Genre(s)",
+            genre_options,
             default=valid_default_genres,
-            key="world_genre"
+            key="world_genre_temp",
+            on_change=update_genres
         )
         
         if selected_genres:
             st.success(f"🌟 Awesome! Your world will have a {', '.join(selected_genres)} vibe!")
 
-        # Title + Setting Description
-        st.markdown("### 📖 Title and World Description")
+        # --- Title + Setting Description ---
+        def update_world_title():
+            st.session_state['world_title'] = st.session_state['world_title_temp']
+        if 'world_title' not in st.session_state:
+            st.session_state['world_title'] = ''
         world_title = st.text_input(
-            "Sekai Title", 
-            value=st.session_state.get("world_title", ""),
+            "Sekai Title",
+            value=st.session_state['world_title'],
             placeholder="The Midnight Library / Dream Currency City / Cyber Witch Academy",
-            key="world_title_input"
+            key="world_title_temp",
+            on_change=update_world_title
         )
-        
+        def update_world_setting():
+            st.session_state['world_setting'] = st.session_state['world_setting_temp']
+        if 'world_setting' not in st.session_state:
+            st.session_state['world_setting'] = ''
         world_setting = st.text_area(
-            "Describe the World Setting", 
-            value=st.session_state.get("world_setting", ""),
+            "Describe the World Setting",
+            value=st.session_state['world_setting'],
             placeholder="A magical library that only appears at midnight, where books come alive and stories write themselves...",
             height=100,
-            key="world_setting_input"
+            key="world_setting_temp",
+            on_change=update_world_setting
         )
-        
         if world_setting.strip():
             st.success("📝 This already feels so vivid! We're almost ready to meet your characters…")
 
-        # World Keywords/Tags (optional)
-        st.markdown("### 🏷️ World Keywords/Tags (Optional)")
-        st.markdown("*These help AI generation later - add themes, elements, or vibes!*")
+        # --- World Keywords/Tags (optional) ---
+        def update_keywords():
+            st.session_state['world_keywords_input'] = st.session_state['world_keywords_input_temp']
+        if 'world_keywords_input' not in st.session_state:
+            st.session_state['world_keywords_input'] = ''
         world_keywords = st.text_input(
             "Keywords",
-            value=st.session_state.get("world_keywords_input", ""),
+            value=st.session_state['world_keywords_input'],
             placeholder="dreams, magic library, talking animals, steampunk, time travel",
-            key="world_keywords_input"
+            key="world_keywords_input_temp",
+            on_change=update_keywords
         )
 
         # Navigation
@@ -829,29 +805,31 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.subheader("👤 Step 2: Create Your Character")
         st.info("Now let's meet you! You'll be the heart of this world, so tell us about yourself.")
 
-        # Get values from previous step
-        world_title = st.session_state.get("world_title", "Your Sekai World")
-        world_setting = st.session_state.get("world_setting", "A magical world")
-
-        # Character Name
-        st.markdown("### 🏷️ Character Name")
-        st.markdown("Give yourself a name — or use your real one, it's up to you!")
+        # --- Character Name ---
+        def update_user_name():
+            st.session_state['user_name_input'] = st.session_state['user_name_input_temp']
+        if 'user_name_input' not in st.session_state:
+            st.session_state['user_name_input'] = ''
         user_name = st.text_input(
             "Your Character's Name",
-            value=st.session_state.get("user_name_input", ""),
+            value=st.session_state['user_name_input'],
             placeholder="Alex / Luna / Kai / Your real name",
-            key="user_name_input"
+            key="user_name_input_temp",
+            on_change=update_user_name
         )
 
-        # Character Traits
-        st.markdown("### 💫 Traits / Background")
-        st.markdown("Describe your personality, quirks, or even your magical powers 💫")
+        # --- Character Traits ---
+        def update_user_traits():
+            st.session_state['user_traits_input'] = st.session_state['user_traits_input_temp']
+        if 'user_traits_input' not in st.session_state:
+            st.session_state['user_traits_input'] = ''
         user_traits = st.text_area(
             "Your Character's Traits",
-            value=st.session_state.get("user_traits_input", ""),
+            value=st.session_state['user_traits_input'],
             placeholder="Brave but impulsive, always rushing to help others / A quiet artist who sees spirits / Invented a tea that lets people relive memories",
             height=100,
-            key="user_traits_input"
+            key="user_traits_input_temp",
+            on_change=update_user_traits
         )
         
         if user_traits.strip():
