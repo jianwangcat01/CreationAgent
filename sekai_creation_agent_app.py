@@ -4,6 +4,33 @@ import json
 import random
 import re
 
+# --- Mode Selection ---
+if "app_mode" not in st.session_state:
+    st.session_state["app_mode"] = None
+
+if st.session_state["app_mode"] is None:
+    st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
+    st.title("Sekai AI Creation Agent")
+    st.subheader("Choose a mode to get started:")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image("1.png", use_column_width=True)
+        if st.button("Character Creation", key="char_mode_btn"):
+            st.session_state["app_mode"] = "character"
+            st.experimental_rerun()
+    with col2:
+        st.image("2.png", use_column_width=True)
+        if st.button("Roleplay Creation", key="roleplay_mode_btn"):
+            st.session_state["app_mode"] = "roleplay"
+            st.experimental_rerun()
+    st.stop()
+
+if st.session_state["app_mode"] == "character":
+    st.set_page_config(page_title="Character Creation", layout="wide")
+    st.title("Character Creation Mode")
+    st.info("Character creation coming soon!")
+    st.stop()
+
 # --- Page Config ---
 st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
 st.title("Sekai AI Creation Agent")
