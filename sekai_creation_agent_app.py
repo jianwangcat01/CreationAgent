@@ -992,6 +992,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.markdown(f"### Character {i+1}")
             
             # Character Idea
+            if f"idea_{i}" not in st.session_state:
+                st.session_state[f"idea_{i}"] = ""
             idea = st.text_input(
                 f"Character Idea {i+1}",
                 placeholder="Knight with amnesia who might be evil / Librarian who hides a secret / Rival time mage",
@@ -1095,15 +1097,59 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("### 💬 Opening Scene Setup")
         st.markdown("**💡 Tip:** This will be the first scene of your story!")
         
-        if "opening_scene_input" not in st.session_state:
-            st.session_state["opening_scene_input"] = ""
-        opening_scene = st.text_area(
-            "Describe the opening scene (optional - leave blank for AI generation)",
-            value=st.session_state["opening_scene_input"],
-            placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
-            height=100,
-            key="opening_scene_input"
-        )
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            if "opening_scene_input" not in st.session_state:
+                st.session_state["opening_scene_input"] = ""
+            opening_scene = st.text_area(
+                "Describe the opening scene (optional - leave blank for AI generation)",
+                value=st.session_state["opening_scene_input"],
+                placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
+                height=100,
+                key="opening_scene_input"
+            )
+        with col2:
+            if st.button("✨ AI: Generate Opening Scene", key="generate_opening_scene"):
+                with st.spinner("Creating an engaging opening scene..."):
+                    # Build character list for the prompt
+                    char_list = f"Player: {user_name} ({user_traits})\n"
+                    for c in characters:
+                        char_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                    
+                    prompt = f"""
+Generate an engaging opening scene for an interactive story.
+
+World Information:
+- Title: {world_title}
+- Setting: {world_setting}
+- Keywords: {world_keywords}
+- Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
+
+Characters:
+{char_list}
+
+Create a vivid opening scene that:
+- Introduces the world and setting
+- Establishes the player character's situation
+- Hints at the story to come
+- Is 2-3 sentences maximum
+- Feels immersive and engaging
+
+Generate only the opening scene description, nothing else.
+"""
+                    try:
+                        response = model.generate_content(prompt)
+                        generated_opening = response.text.strip()
+                        # Clean up any extra formatting
+                        if generated_opening.startswith('"') and generated_opening.endswith('"'):
+                            generated_opening = generated_opening[1:-1]
+                        st.session_state["opening_scene_input"] = generated_opening
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Failed to generate opening scene: {e}")
+
+        if opening_scene.strip():
+            st.success("🎭 Perfect! This opening scene will set the tone for your adventure!")
 
         # Advanced Settings (collapsed by default)
         with st.expander("🧙‍♂️ Advanced Settings (Optional)", expanded=False):
