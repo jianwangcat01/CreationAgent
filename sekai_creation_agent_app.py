@@ -1878,6 +1878,7 @@ CRITICAL FORMATTING RULES:
   narrator description of what happens (no quotes, no italics)
   CharacterName (expression/mood) "dialogue or thoughts"
 - Keep narrator descriptions short and concise
+- CharacterName (expression/mood) should be bolded
 - Maintain consistent character voices and personalities
 - Do NOT write dialogue or thoughts for the player character
 - End with: **What do you do?**
