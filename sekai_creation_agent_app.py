@@ -745,18 +745,19 @@ The player character is {player_name}.
 The player's input (action or dialogue) is: '{user_input}'.
 
 CRITICAL FORMATTING RULES:
-- Write in script format with clear speaker identification
+- Write in visual novel script format
 - Use this exact format for each line:
-  narrator "description of what happens"
-  CharacterName "dialogue or thoughts"
-- Keep each line concise and focused
+  narrator description of what happens (no quotes, no italics)
+  CharacterName (expression/mood) "dialogue or thoughts"
+- Keep narrator descriptions short and concise
 - Maintain consistent character voices and personalities
 - Do NOT write dialogue or thoughts for the player character, {player_name}
-- End with: **"What do you do?"**
+- End with: **What do you do?**
 
 CONTENT GUIDELINES:
-- Stay true to character personalities and voice styles
+- Stay true to character personalities and voice styles from the template
 - Maintain story coherence and logical progression
+- Remember all character relationships and backstories from the template
 - Keep responses engaging but not overwhelming
 - {introduction_instruction}
 - Match the story tone: {story_tone}
@@ -764,7 +765,13 @@ CONTENT GUIDELINES:
 - Write from the specified point of view: {point_of_view}
 - Apply the narration style: {narration_style}
 
-Generate the next story turn in proper script format:
+MEMORY REQUIREMENTS:
+- Remember the complete story template and all character details
+- Maintain consistency with all previous interactions
+- Keep track of character relationships and story progression
+- Ensure character expressions and moods match their personalities
+
+Generate the next story turn in proper visual novel script format:
 """
             
             try:
@@ -791,7 +798,7 @@ Generate the next story turn in proper script format:
             except Exception as e:
                 st.error(f"Error generating story response: {e}")
                 # Fallback response
-                fallback_response = f'narrator "The story continues..."\n**"What do you do?"**'
+                fallback_response = f'narrator The story continues...\n**What do you do?**'
                 st.session_state["game_state"].append(fallback_response)
                 st.session_state["user_inputs"].append(user_input.strip())
                 st.session_state.reply_input = ""
@@ -809,7 +816,7 @@ Generate the next story turn in proper script format:
     def clean_story_response(response_text):
         """Clean and format the story response to ensure consistency"""
         if not response_text:
-            return 'narrator "The story continues..."\n**"What do you do?"**'
+            return 'narrator The story continues...\n**What do you do?**'
         
         # Split into lines and clean each line
         lines = response_text.split('\n')
@@ -827,7 +834,19 @@ Generate the next story turn in proper script format:
             elif '"' in line:
                 # Check if it's already in script format
                 if re.match(r'^[a-zA-Z\s]+["\']', line):
-                    cleaned_lines.append(line)
+                    # Convert to new format: CharacterName (expression) "dialogue"
+                    match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                    if match:
+                        speaker = match.group(1).strip()
+                        dialogue = match.group(2)
+                        if speaker.lower() == 'narrator':
+                            # Narrator without quotes
+                            cleaned_lines.append(f'narrator {dialogue}')
+                        else:
+                            # Character with expression
+                            cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
+                    else:
+                        cleaned_lines.append(line)
                 else:
                     # Try to convert to script format
                     match = re.match(r'^([^:]+):\s*["\'](.+)["\']', line)
@@ -835,26 +854,26 @@ Generate the next story turn in proper script format:
                         speaker = match.group(1).strip()
                         dialogue = match.group(2)
                         if speaker.lower() == 'narrator':
-                            cleaned_lines.append(f'narrator "{dialogue}"')
+                            cleaned_lines.append(f'narrator {dialogue}')
                         else:
-                            cleaned_lines.append(f'{speaker} "{dialogue}"')
+                            cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
                     else:
                         # Assume it's narration
-                        cleaned_lines.append(f'narrator "{line}"')
+                        cleaned_lines.append(f'narrator {line}')
             else:
                 # Assume it's narration
-                cleaned_lines.append(f'narrator "{line}"')
+                cleaned_lines.append(f'narrator {line}')
         
         # Ensure it ends with "What do you do?"
         if not any('What do you do?' in line for line in cleaned_lines):
-            cleaned_lines.append('**"What do you do?"**')
+            cleaned_lines.append('**What do you do?**')
         
         return '\n'.join(cleaned_lines)
 
     def format_story_block(block_text):
         """Format story block for consistent display"""
         if not block_text:
-            return '<p style="margin:4px 0; color:#666;"><i>Story continues...</i></p>'
+            return '<p style="margin:4px 0; color:#666;">Story continues...</p>'
         
         formatted_lines = []
         lines = block_text.split('\n')
@@ -866,26 +885,32 @@ Generate the next story turn in proper script format:
             
             # Handle "What do you do?" prompt
             if 'What do you do?' in line:
-                formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**"What do you do?"**</p>')
+                formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**What do you do?**</p>')
                 continue
             
-            # Handle narrator lines
-            if line.startswith('narrator "') and line.endswith('"'):
-                content = line[9:-1]  # Remove 'narrator "' and '"'
-                formatted_lines.append(f'<p style="margin:4px 0; color:#555; font-style:italic;">{content}</p>')
+            # Handle narrator lines (no quotes, no italics)
+            if line.startswith('narrator '):
+                content = line[9:]  # Remove 'narrator '
+                formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{content}</p>')
                 continue
             
-            # Handle character dialogue
+            # Handle character dialogue with expressions
             if '"' in line:
-                # Try to extract speaker and dialogue
+                # Try to extract speaker, expression, and dialogue
+                match = re.match(r'^([^(]+)\s*\(([^)]+)\)\s*"([^"]+)"', line)
+                if match:
+                    speaker = match.group(1).strip()
+                    expression = match.group(2).strip()
+                    dialogue = match.group(3)
+                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker} ({expression}):</b> "{dialogue}"</p>')
+                    continue
+                
+                # Fallback for character dialogue without expression
                 match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
                 if match:
                     speaker = match.group(1).strip()
                     dialogue = match.group(2)
-                    
-                    if speaker.lower() == 'narrator':
-                        formatted_lines.append(f'<p style="margin:4px 0; color:#555; font-style:italic;">{dialogue}</p>')
-                    else:
+                    if speaker.lower() != 'narrator':
                         formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
                     continue
             
@@ -896,7 +921,7 @@ Generate the next story turn in proper script format:
                 formatted_lines.append(f'<p style="margin:4px 0; font-weight:bold; color:#2c3e50;">{content}</p>')
             else:
                 # Assume it's narration
-                formatted_lines.append(f'<p style="margin:4px 0; color:#555; font-style:italic;">{line}</p>')
+                formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{line}</p>')
         
         return ''.join(formatted_lines)
 
@@ -1868,17 +1893,17 @@ Story Style Guidelines:
 - Narration Style: {narration_style}
 
 CRITICAL FORMATTING RULES:
-- Write in script format with clear speaker identification
+- Write in visual novel script format
 - Use this exact format for each line:
-  narrator "description of what happens"
-  CharacterName "dialogue or thoughts"
-- Keep each line concise and focused
+  narrator description of what happens (no quotes, no italics)
+  CharacterName (expression/mood) "dialogue or thoughts"
+- Keep narrator descriptions short and concise
 - Maintain consistent character voices and personalities
 - Do NOT write dialogue or thoughts for the player character
-- End with: **"What do you do?"**
+- End with: **What do you do?**
 
 CONTENT GUIDELINES:
-- Introduce the world and setting vividly
+- Introduce the world and setting vividly but concisely
 - Establish the player character's situation
 - Introduce at least one other character from the JSON
 - Keep the opening engaging but not overwhelming
@@ -1887,10 +1912,15 @@ CONTENT GUIDELINES:
 - Write from the specified point of view: {point_of_view}
 - Apply the narration style: {narration_style}
 
+MEMORY REQUIREMENTS:
+- Remember the complete story template and all character details
+- Set up character relationships and story elements for future interactions
+- Ensure character expressions and moods match their personalities from the template
+
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 
-Write the opening scene below in proper script format:
+Write the opening scene below in proper visual novel script format:
 """
             try:
                 first_turn = model.generate_content(story_prompt).text.strip()
@@ -1908,7 +1938,7 @@ Write the opening scene below in proper script format:
             except Exception as e:
                 st.error(f"Error starting the game: {e}")
                 # Fallback opening
-                fallback_opening = f'narrator "Welcome to {sekai_json.get("title", "your adventure")}!"\nnarrator "The story begins..."\n**"What do you do?"**'
+                fallback_opening = f'narrator Welcome to {sekai_json.get("title", "your adventure")}!\nnarrator The story begins...\n**What do you do?**'
                 st.session_state["game_state"] = [fallback_opening]
                 st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
                 st.session_state["user_inputs"] = [""]
