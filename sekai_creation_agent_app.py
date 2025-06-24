@@ -783,16 +783,12 @@ Generate only the 3 choices, nothing else.
     # --- World Spark (Seed Idea) ---
     if 'world_idea_input' not in st.session_state:
         st.session_state['world_idea_input'] = ''
-    if 'world_idea_input_temp' not in st.session_state:
-        st.session_state['world_idea_input_temp'] = ''
-    def update_world_idea():
-        st.session_state['world_idea_input'] = st.session_state['world_idea_input_temp']
+    
     world_idea = st.text_input(
         "Your world spark",
-        value=st.session_state['world_idea_input_temp'],
+        value=st.session_state['world_idea_input'],
         placeholder="A city where dreams are currency / Cyberpunk witches at high school / Haunted aquarium / Post-apocalyptic tea shop",
-        key="world_idea_input_temp",
-        on_change=update_world_idea
+        key="world_idea_input"
     )
     if world_idea.strip():
         st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
@@ -804,21 +800,12 @@ Generate only the 3 choices, nothing else.
     ]
     if 'world_genre' not in st.session_state:
         st.session_state['world_genre'] = []
-    if 'world_genre_temp' not in st.session_state or not isinstance(st.session_state['world_genre_temp'], list):
-        st.session_state['world_genre_temp'] = []
-
-    # Filter out any invalid genres
-    valid_genres = [g for g in st.session_state['world_genre_temp'] if g in genre_options]
-
-    def update_genres():
-        st.session_state['world_genre'] = st.session_state['world_genre_temp']
 
     selected_genres = st.multiselect(
         "Your Sekai's Genre(s)",
         genre_options,
-        value=valid_genres,
-        key="world_genre_temp",
-        on_change=update_genres
+        default=st.session_state['world_genre'],
+        key="world_genre"
     )
     
     if selected_genres:
@@ -830,8 +817,8 @@ Generate only the 3 choices, nothing else.
     if st.button("✨ AI: Turn My Idea into a World", type="primary"):
         st.toast("Working magic... Generating your Sekai world ✨")
         # Compose the prompt based on available fields
-        idea = st.session_state['world_idea_input_temp'].strip()
-        genres = st.session_state['world_genre_temp']
+        idea = st.session_state['world_idea_input'].strip()
+        genres = st.session_state['world_genre']
         genre_str = ', '.join([g.split(' ', 1)[0] for g in genres]) if genres else ''
         if idea and genre_str:
             prompt = f"Generate a creative Sekai world concept based on the following idea and genres.\n\nIdea: {idea}\nGenres: {genre_str}\n\nRespond with:\n- Sekai Title\n- World Setting (2-3 vivid sentences)\n- Keywords (comma separated, 3-6 words)"
@@ -860,41 +847,31 @@ Generate only the 3 choices, nothing else.
         if title:
             clean_title = strip_stars(title.group(1))
             st.session_state["world_title"] = clean_title
-            st.session_state["world_title_temp"] = clean_title
         if setting:
             clean_setting = strip_stars(setting.group(1))
             st.session_state["world_setting"] = clean_setting
-            st.session_state["world_setting_temp"] = clean_setting
         if keywords:
             clean_keywords = strip_stars(keywords.group(1))
             st.session_state["world_keywords_input"] = clean_keywords
-            st.session_state["world_keywords_input_temp"] = clean_keywords
         st.rerun()
 
     # --- Title + Setting Description ---
     if 'world_title' not in st.session_state:
         st.session_state['world_title'] = ''
-    if 'world_title_temp' not in st.session_state:
-        st.session_state['world_title_temp'] = ''
-    def update_world_title():
-        st.session_state['world_title'] = st.session_state['world_title']
+    
     world_title = st.text_input(
         "Sekai Title",
         value=st.session_state['world_title'],
-        key="world_title",
-        on_change=update_world_title
+        key="world_title"
     )
+    
     if 'world_setting' not in st.session_state:
         st.session_state['world_setting'] = ''
-    if 'world_setting_temp' not in st.session_state:
-        st.session_state['world_setting_temp'] = ''
-    def update_world_setting():
-        st.session_state['world_setting'] = st.session_state['world_setting']
+    
     world_setting = st.text_area(
         "Describe the World Setting",
         value=st.session_state['world_setting'],
-        key="world_setting",
-        on_change=update_world_setting
+        key="world_setting"
     )
     if world_setting.strip():
         st.success("📝 This already feels so vivid! We're almost ready to meet your characters…")
@@ -902,15 +879,11 @@ Generate only the 3 choices, nothing else.
     # --- World Keywords/Tags (optional) ---
     if 'world_keywords_input' not in st.session_state:
         st.session_state['world_keywords_input'] = ''
-    if 'world_keywords_input_temp' not in st.session_state:
-        st.session_state['world_keywords_input_temp'] = ''
-    def update_keywords():
-        st.session_state['world_keywords_input'] = st.session_state['world_keywords_input']
+    
     world_keywords = st.text_input(
         "Keywords",
         value=st.session_state['world_keywords_input'],
-        key="world_keywords_input",
-        on_change=update_keywords
+        key="world_keywords_input"
     )
 
     st.markdown("---")
@@ -923,10 +896,10 @@ Generate only the 3 choices, nothing else.
     # --- AI Character Generation Button ---
     if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
         # Get complete world information from Step 1
-        world_title = st.session_state.get('world_title_temp') or st.session_state.get('world_title', '')
-        world_setting = st.session_state.get('world_setting_temp') or st.session_state.get('world_setting', '')
-        world_keywords = st.session_state.get('world_keywords_input_temp') or st.session_state.get('world_keywords_input', '')
-        world_genres = st.session_state.get('world_genre_temp') or st.session_state.get('world_genre', [])
+        world_title = st.session_state.get('world_title', '')
+        world_setting = st.session_state.get('world_setting', '')
+        world_keywords = st.session_state.get('world_keywords_input', '')
+        world_genres = st.session_state.get('world_genre', [])
         
         if not (world_title and world_setting):
             st.warning("Please complete Step 1 (Sekai World) before generating your character.")
@@ -967,8 +940,8 @@ Respond with:
                 clean_name = strip_stars(name.group(1))
                 clean_traits = strip_stars(traits.group(1))
                 if clean_name and clean_traits and not clean_name.lower().startswith("let's craft"):
-                    st.session_state['user_name_input_temp'] = clean_name
-                    st.session_state['user_traits_input_temp'] = clean_traits
+                    st.session_state['user_name_input'] = clean_name
+                    st.session_state['user_traits_input'] = clean_traits
                     valid = True
             if not valid:
                 st.error("AI could not generate a valid character. Please check your world info in Step 1 and try again.")
@@ -978,29 +951,21 @@ Respond with:
     # --- Character Name ---
     if 'user_name_input' not in st.session_state:
         st.session_state['user_name_input'] = ''
-    if 'user_name_input_temp' not in st.session_state:
-        st.session_state['user_name_input_temp'] = ''
-    def update_user_name():
-        st.session_state['user_name_input'] = st.session_state['user_name_input_temp']
+    
     user_name = st.text_input(
         "Your Character's Name",
-        value=st.session_state['user_name_input_temp'],
-        key="user_name_input_temp",
-        on_change=update_user_name
+        value=st.session_state['user_name_input'],
+        key="user_name_input"
     )
 
     # --- Character Traits ---
     if 'user_traits_input' not in st.session_state:
         st.session_state['user_traits_input'] = ''
-    if 'user_traits_input_temp' not in st.session_state:
-        st.session_state['user_traits_input_temp'] = ''
-    def update_user_traits():
-        st.session_state['user_traits_input'] = st.session_state['user_traits_input_temp']
+    
     user_traits = st.text_area(
         "Your Character's Traits",
-        value=st.session_state['user_traits_input_temp'],
-        key="user_traits_input_temp",
-        on_change=update_user_traits
+        value=st.session_state['user_traits_input'],
+        key="user_traits_input"
     )
     
     if user_traits.strip():
@@ -1014,10 +979,10 @@ Respond with:
     st.info("Now let's meet the other characters who will join your story!")
 
     # Get values from previous steps
-    world_title = st.session_state.get("world_title_temp", st.session_state.get("world_title", "Your Sekai World"))
-    world_setting = st.session_state.get("world_setting_temp", st.session_state.get("world_setting", "A magical world"))
-    world_keywords = st.session_state.get("world_keywords_input_temp", st.session_state.get("world_keywords_input", ""))
-    world_genres = st.session_state.get("world_genre_temp") or st.session_state.get("world_genre", [])
+    world_title = st.session_state.get("world_title", "Your Sekai World")
+    world_setting = st.session_state.get("world_setting", "A magical world")
+    world_keywords = st.session_state.get("world_keywords_input", "")
+    world_genres = st.session_state.get("world_genre", [])
     user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
     user_traits = st.session_state.get("user_traits", st.session_state.get("user_traits_input", "Curious and brave"))
 
@@ -1089,7 +1054,7 @@ Opening Line: <What do they say when first met?>"""
         with col1:
             if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
                 # Get complete world and user information
-                world_genres = st.session_state.get("world_genre_temp") or st.session_state.get("world_genre", [])
+                world_genres = st.session_state.get("world_genre") or st.session_state.get("world_genre", [])
                 genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres]) if world_genres else 'Fantasy'
                 world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
                 if world_keywords:
@@ -1203,16 +1168,6 @@ Opening Line: <What do they say when first met?>"""
     # Initialize session state for opening scene
     if "opening_scene_input" not in st.session_state:
         st.session_state["opening_scene_input"] = ""
-    if "opening_scene_generated" not in st.session_state:
-        st.session_state["opening_scene_generated"] = ""
-    
-    # If AI just generated a value, update the input and clear the flag
-    if st.session_state["opening_scene_generated"]:
-        st.session_state["opening_scene_input"] = st.session_state["opening_scene_generated"]
-        st.session_state["opening_scene_generated"] = ""
-    
-    def update_opening_scene():
-        st.session_state["opening_scene_input"] = st.session_state["opening_scene_input"]
     
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -1248,7 +1203,7 @@ Generate only the opening scene description, nothing else.
                     generated_opening = response.text.strip()
                     if generated_opening.startswith('"') and generated_opening.endswith('"'):
                         generated_opening = generated_opening[1:-1]
-                    st.session_state["opening_scene_generated"] = generated_opening
+                    st.session_state["opening_scene_input"] = generated_opening
                     st.rerun()
                 except Exception as e:
                     st.error(f"Failed to generate opening scene: {e}")
@@ -1257,8 +1212,7 @@ Generate only the opening scene description, nothing else.
             value=st.session_state["opening_scene_input"],
             placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
             height=100,
-            key="opening_scene_input",
-            on_change=update_opening_scene
+            key="opening_scene_input"
         )
 
     if opening_scene.strip():
@@ -1364,7 +1318,7 @@ Characters:
     
     # Get values
     user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
-    world_title = st.session_state.get("world_title", st.session_state.get("world_title_temp", "Your Sekai World"))
+    world_title = st.session_state.get("world_title", "Your Sekai World")
     
     st.success(f"🎉 You're all set! Ready to begin your Sekai journey with {user_name} in {world_title}? Let's go!")
     
