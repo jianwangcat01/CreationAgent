@@ -627,6 +627,12 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             # Get the template context
             sekai_json = st.session_state.get("sekai_json", {})
             
+            # Get advanced settings from the JSON template
+            story_tone = sekai_json.get('storyTone', 'Balanced')
+            pacing = sekai_json.get('pacing', 'Balanced')
+            point_of_view = sekai_json.get('pointOfView', 'Third person')
+            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            
             # Build the full context including template and conversation history
             template_context = f"""
 STORY TEMPLATE:
@@ -634,6 +640,12 @@ Title: {sekai_json.get('title', 'Unknown')}
 Setting: {sekai_json.get('setting', 'Unknown')}
 Genre: {sekai_json.get('genre', 'Fantasy')}
 Keywords: {sekai_json.get('keywords', '')}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {point_of_view}
+- Narration Style: {narration_style}
 
 Characters:
 """
@@ -693,6 +705,12 @@ IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_n
 {introduction_instruction}
 Continue the story in script format. Keep narration brief. Do not give choices.
 Stay consistent with the story template and character descriptions provided above.
+
+Story Style Guidelines:
+- Match the story tone: {story_tone}
+- Use the specified pacing: {pacing}
+- Write from the specified point of view: {point_of_view}
+- Apply the narration style: {narration_style}
 """
             new_turn = model.generate_content(reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
@@ -721,6 +739,12 @@ Stay consistent with the story template and character descriptions provided abov
             # Get the template context
             sekai_json = st.session_state.get("sekai_json", {})
             
+            # Get advanced settings from the JSON template
+            story_tone = sekai_json.get('storyTone', 'Balanced')
+            pacing = sekai_json.get('pacing', 'Balanced')
+            point_of_view = sekai_json.get('pointOfView', 'Third person')
+            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            
             # Build template context
             template_context = f"""
 STORY TEMPLATE:
@@ -728,6 +752,12 @@ Title: {sekai_json.get('title', 'Unknown')}
 Setting: {sekai_json.get('setting', 'Unknown')}
 Genre: {sekai_json.get('genre', 'Fantasy')}
 Keywords: {sekai_json.get('keywords', '')}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {point_of_view}
+- Narration Style: {narration_style}
 
 Characters:
 """
@@ -766,6 +796,8 @@ Each choice should be:
 - Different from each other
 - Appropriate for the story context and character personalities
 - Consistent with the story template and setting
+- Match the story tone: {story_tone}
+- Consider the pacing: {pacing}
 
 Format as:
 1. [First choice]
@@ -1280,6 +1312,13 @@ Voice Style: <How do they speak?>"""
                 char_list = f"Player: {user_name} ({user_traits})\n"
                 for c in characters:
                     char_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
+                # Get advanced settings for opening scene generation
+                story_tone = st.session_state.get("story_tone", "Balanced")
+                pacing = st.session_state.get("pacing", "Balanced")
+                pov = st.session_state.get("pov", "Third person")
+                narration_style = st.session_state.get("narration_style", "Balanced")
+                
                 prompt = f"""
 Generate an engaging opening scene for an interactive story.
 
@@ -1288,6 +1327,12 @@ World Information:
 - Setting: {world_setting}
 - Keywords: {world_keywords}
 - Genre: {', '.join(selected_genres) if selected_genres and isinstance(selected_genres, list) else 'Fantasy'}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {pov}
+- Narration Style: {narration_style}
 
 Characters:
 {char_list}
@@ -1298,6 +1343,10 @@ Create a vivid opening scene that:
 - Hints at the story to come
 - Is 2-3 sentences maximum
 - Feels immersive and engaging
+- Matches the story tone: {story_tone}
+- Uses appropriate pacing: {pacing}
+- Written from the specified point of view: {pov}
+- Applies the narration style: {narration_style}
 
 Generate only the opening scene description, nothing else.
 """
@@ -1366,7 +1415,7 @@ Generate only the opening scene description, nothing else.
             
             prompt = f"""
 You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style), and openingScene.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style), openingScene, storyTone, pacing, pointOfView, and narrationStyle.
 
 Title: {world_title}
 Setting: {world_setting}
@@ -1382,17 +1431,14 @@ Characters:
             if opening_scene.strip():
                 prompt += f"\nOpening Scene: {opening_scene}\n"
             
-            # Add advanced settings to prompt
-            if story_tone != "Balanced":
-                prompt += f"\nTone: {story_tone}\n"
-            if pacing != "Balanced":
-                prompt += f"Pacing: {pacing}\n"
-            if pov != "Third person":
-                prompt += f"POV: {pov}\n"
-            if narration_style != "Balanced":
-                prompt += f"Narration: {narration_style}\n"
+            # Add advanced settings to prompt and specify they should be included in JSON
+            prompt += "\nAdvanced Settings (include these as JSON fields):\n"
+            prompt += f"storyTone: {story_tone}\n"
+            prompt += f"pacing: {pacing}\n"
+            prompt += f"pointOfView: {pov}\n"
+            prompt += f"narrationStyle: {narration_style}\n"
             
-            prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style field."
+            prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style field. Include all the advanced settings fields in the JSON output."
 
             response = model.generate_content(prompt)
             output = response.text.strip()
@@ -1448,9 +1494,23 @@ Characters:
         """)
     else:
         if st.button("🎮 Start Game", type="primary"):
+            # Get advanced settings from the JSON template
+            sekai_json = st.session_state['sekai_json']
+            story_tone = sekai_json.get('storyTone', 'Balanced')
+            pacing = sekai_json.get('pacing', 'Balanced')
+            point_of_view = sekai_json.get('pointOfView', 'Third person')
+            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            
             story_prompt = f"""
 You are an interactive fiction narrator for a visual novel.
 Begin the story using the following JSON world structure.
+
+Story Style Guidelines:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {point_of_view}
+- Narration Style: {narration_style}
+
 Write the story in the following script format:
 
 narrator "<scene description>"
@@ -1463,6 +1523,10 @@ Rules:
 - You must introduce all main characters from the JSON within the first 3 story turns.
 - Do NOT offer multiple choice options or suggestions.
 - End with: **"What do you do?"**
+- Match the story tone: {story_tone}
+- Use the specified pacing: {pacing}
+- Write from the specified point of view: {point_of_view}
+- Apply the narration style: {narration_style}
 
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
