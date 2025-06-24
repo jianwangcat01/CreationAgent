@@ -15,7 +15,7 @@ if st.session_state["app_mode"] is None:
     col1, col2 = st.columns(2)
     with col1:
         try:
-            st.image("https://i.postimg.cc/gXyqDf0w/1.png", use_container_width=True)
+            st.image("https://i.postimg.cc/YhMC4Tg4/1.png", width=320)
         except Exception:
             st.warning("Character image not found.")
         if st.button("Character Creation", key="char_mode_btn"):
@@ -23,7 +23,7 @@ if st.session_state["app_mode"] is None:
             st.experimental_rerun()
     with col2:
         try:
-            st.image("https://i.postimg.cc/jCKh5d8y/2.png", use_container_width=True)
+            st.image("https://i.postimg.cc/z3nfGqLZ/2.png", width=320)
         except Exception:
             st.warning("Roleplay image not found.")
         if st.button("Roleplay Creation", key="roleplay_mode_btn"):
