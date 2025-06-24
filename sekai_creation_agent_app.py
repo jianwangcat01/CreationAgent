@@ -624,15 +624,46 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
     def handle_send():
         user_input = st.session_state.get("reply_input", "")
         if user_input.strip():
-            last_turn = st.session_state["game_state"][-1]
+            # Get the template context
+            sekai_json = st.session_state.get("sekai_json", {})
+            
+            # Build the full context including template and conversation history
+            template_context = f"""
+STORY TEMPLATE:
+Title: {sekai_json.get('title', 'Unknown')}
+Setting: {sekai_json.get('setting', 'Unknown')}
+Genre: {sekai_json.get('genre', 'Fantasy')}
+Keywords: {sekai_json.get('keywords', '')}
 
+Characters:
+"""
+            # Add all characters from template
+            for char in sekai_json.get('characters', []):
+                char_name = char.get('name', 'Unknown')
+                char_role = char.get('role', '')
+                char_description = char.get('description', '')
+                char_voice = char.get('voice_style', '')
+                template_context += f"- {char_name} ({char_role}): {char_description}"
+                if char_voice:
+                    template_context += f" | Voice: {char_voice}"
+                template_context += "\n"
+            
+            # Add opening scene if available
+            if sekai_json.get('openingScene'):
+                template_context += f"\nOpening Scene: {sekai_json.get('openingScene')}\n"
+            
+            # Build conversation history
+            conversation_history = ""
+            for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+                if user_input_hist.strip():
+                    conversation_history += f"Player: {user_input_hist}\n"
+                conversation_history += f"Story: {turn}\n\n"
+            
             introduction_instruction = ""
             # Ensure all characters are introduced within the first 3 turns
             if len(st.session_state["game_state"]) < 3:
                 full_story_text = "".join(st.session_state["game_state"])
-                all_characters_in_json = st.session_state["sekai_json"].get(
-                    "characters", []
-                )
+                all_characters_in_json = sekai_json.get("characters", [])
                 character_names = [
                     c.get("name") for c in all_characters_in_json if c.get("name")
                 ]
@@ -646,17 +677,24 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                     introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
 
             player_name = st.session_state.get("user_name", "the player")
-            reply_prompt = (
-                f"You are an interactive fiction narrator. The player character is {player_name}.\n"
-                f"The player's input (action or dialogue) is: '{user_input}'.\n"
-                f"Your role is to describe what happens next. Narrate the scene and have other non-player characters react.\n"
-                f"IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_name}. Their input is already given.\n"
-                f"{introduction_instruction}"
-                f"Continue the story in script format. Keep narration brief. Do not give choices."
-            )
-            new_turn = model.generate_content(
-                last_turn + "\n\n" + reply_prompt
-            ).text.strip()
+            reply_prompt = f"""
+You are an interactive fiction narrator for a visual novel.
+
+{template_context}
+
+CONVERSATION HISTORY:
+{conversation_history}
+
+The player character is {player_name}.
+The player's input (action or dialogue) is: '{user_input}'.
+
+Your role is to describe what happens next. Narrate the scene and have other non-player characters react.
+IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_name}. Their input is already given.
+{introduction_instruction}
+Continue the story in script format. Keep narration brief. Do not give choices.
+Stay consistent with the story template and character descriptions provided above.
+"""
+            new_turn = model.generate_content(reply_prompt).text.strip()
             st.session_state["game_state"].append(new_turn)
             st.session_state["user_inputs"].append(user_input.strip())
 
@@ -680,21 +718,54 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
     def generate_choices():
         """Generate 3 choice options for the player"""
         if "game_state" in st.session_state and st.session_state["game_state"]:
-            last_turn = st.session_state["game_state"][-1]
+            # Get the template context
+            sekai_json = st.session_state.get("sekai_json", {})
+            
+            # Build template context
+            template_context = f"""
+STORY TEMPLATE:
+Title: {sekai_json.get('title', 'Unknown')}
+Setting: {sekai_json.get('setting', 'Unknown')}
+Genre: {sekai_json.get('genre', 'Fantasy')}
+Keywords: {sekai_json.get('keywords', '')}
+
+Characters:
+"""
+            # Add all characters from template
+            for char in sekai_json.get('characters', []):
+                char_name = char.get('name', 'Unknown')
+                char_role = char.get('role', '')
+                char_description = char.get('description', '')
+                char_voice = char.get('voice_style', '')
+                template_context += f"- {char_name} ({char_role}): {char_description}"
+                if char_voice:
+                    template_context += f" | Voice: {char_voice}"
+                template_context += "\n"
+            
+            # Build conversation history
+            conversation_history = ""
+            for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+                if user_input_hist.strip():
+                    conversation_history += f"Player: {user_input_hist}\n"
+                conversation_history += f"Story: {turn}\n\n"
+            
             player_name = st.session_state.get("user_name", "the player")
             
             choice_prompt = f"""
 Based on the current story situation, generate 3 different action choices for {player_name}.
 
-Current story context:
-{last_turn}
+{template_context}
+
+CONVERSATION HISTORY:
+{conversation_history}
 
 Generate 3 distinct choices that would make sense for the player character in this situation. 
 Each choice should be:
 - 1-2 sentences maximum
 - Specific and actionable
 - Different from each other
-- Appropriate for the story context
+- Appropriate for the story context and character personalities
+- Consistent with the story template and setting
 
 Format as:
 1. [First choice]
@@ -1038,8 +1109,7 @@ Each character description must follow this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
 Traits: <Personality traits and special abilities>
-Voice Style: <How do they speak?>
-Opening Line: <What do they say when first met?>"""
+Voice Style: <How do they speak?>"""
             
             response_text = generate_field(prompt)
             generated_characters = response_text.strip().split("\n---\n")
@@ -1050,14 +1120,13 @@ Opening Line: <What do they say when first met?>"""
                     st.session_state[f"char_{i}"] = char_text
                     
                     # Parse the character text into individual fields
-                    parsed_name, parsed_role, parsed_traits, parsed_voice, parsed_opening = "", "", "", "", ""
+                    parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
                     try:
                         # Use regex for robust parsing
                         name_match = re.search(r'Name\s*[:：\-]\s*(.*)', char_text)
                         role_match = re.search(r'Role\s*[:：\-]\s*(.*)', char_text)
                         traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', char_text)
                         voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', char_text)
-                        opening_match = re.search(r'Opening Line\s*[:：\-]\s*(.*)', char_text)
                         if name_match:
                             parsed_name = name_match.group(1).strip()
                         if role_match:
@@ -1066,8 +1135,6 @@ Opening Line: <What do they say when first met?>"""
                             parsed_traits = traits_match.group(1).strip()
                         if voice_match:
                             parsed_voice = voice_match.group(1).strip()
-                        if opening_match:
-                            parsed_opening = opening_match.group(1).strip()
                     except Exception:
                         pass
                     
@@ -1076,14 +1143,12 @@ Opening Line: <What do they say when first met?>"""
                     st.session_state[f"role_{i}"] = parsed_role
                     st.session_state[f"trait_{i}"] = parsed_traits
                     st.session_state[f"voice_style_{i}"] = parsed_voice
-                    st.session_state[f"opening_line_{i}"] = parsed_opening
                 else:
                     st.session_state[f"char_{i}"] = ""
                     st.session_state[f"name_{i}"] = ""
                     st.session_state[f"role_{i}"] = ""
                     st.session_state[f"trait_{i}"] = ""
                     st.session_state[f"voice_style_{i}"] = ""
-                    st.session_state[f"opening_line_{i}"] = ""
             st.rerun()
 
     # Character Forms
@@ -1137,19 +1202,17 @@ Respond in this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
 Traits: <Personality traits and special abilities>
-Voice Style: <How do they speak?>
-Opening Line: <What do they say when first met?>"""
+Voice Style: <How do they speak?>"""
                 
                 result = generate_field(prompt)
                 # Parse the result
-                parsed_name, parsed_role, parsed_traits, parsed_voice, parsed_opening = "", "", "", "", ""
+                parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
                 try:
                     # Use regex for robust parsing
                     name_match = re.search(r'Name\s*[:：\-]\s*(.*)', result)
                     role_match = re.search(r'Role\s*[:：\-]\s*(.*)', result)
                     traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', result)
                     voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', result)
-                    opening_match = re.search(r'Opening Line\s*[:：\-]\s*(.*)', result)
                     if name_match:
                         parsed_name = name_match.group(1).strip()
                     if role_match:
@@ -1158,8 +1221,6 @@ Opening Line: <What do they say when first met?>"""
                         parsed_traits = traits_match.group(1).strip()
                     if voice_match:
                         parsed_voice = voice_match.group(1).strip()
-                    if opening_match:
-                        parsed_opening = opening_match.group(1).strip()
                 except Exception:
                     pass
                 st.session_state[f"char_{i}"] = result
@@ -1167,7 +1228,6 @@ Opening Line: <What do they say when first met?>"""
                 st.session_state[f"role_{i}"] = parsed_role
                 st.session_state[f"trait_{i}"] = parsed_traits
                 st.session_state[f"voice_style_{i}"] = parsed_voice
-                st.session_state[f"opening_line_{i}"] = parsed_opening
                 st.rerun()
         
         # Parse generated character
@@ -1176,7 +1236,6 @@ Opening Line: <What do they say when first met?>"""
         parsed_role = st.session_state.get(f"role_{i}", "")
         parsed_traits = st.session_state.get(f"trait_{i}", "")
         parsed_voice = st.session_state.get(f"voice_style_{i}", "")
-        parsed_opening = st.session_state.get(f"opening_line_{i}", "")
 
         # Character Details
         name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
@@ -1185,27 +1244,17 @@ Opening Line: <What do they say when first met?>"""
         
         # Optional Add-ons
         with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
-            col1, col2 = st.columns(2)
-            with col1:
-                voice_style = st.text_input(
-                    f"Voice Style",
-                    value=parsed_voice,
-                    key=f"voice_style_{i}"
-                )
-            with col2:
-                opening_line = st.text_input(
-                    f"AI Opening Line (or leave blank to auto-gen)",
-                    value=parsed_opening,
-                    placeholder="What should they say when you first meet?",
-                    key=f"opening_line_{i}"
-                )
+            voice_style = st.text_input(
+                f"Voice Style",
+                value=parsed_voice,
+                key=f"voice_style_{i}"
+            )
         
         characters.append({
             "name": name, 
             "role": role, 
             "traits": trait,
-            "voice_style": voice_style if 'voice_style' in locals() else "Default",
-            "opening_line": opening_line if 'opening_line' in locals() else ""
+            "voice_style": voice_style if 'voice_style' in locals() else "Default"
         })
 
     st.markdown("---")
@@ -1313,13 +1362,11 @@ Generate only the opening scene description, nothing else.
                     char_info = f"- {c['name']} ({c['role']}): {c['traits']}"
                     if c.get('voice_style') and c['voice_style'] != "Default":
                         char_info += f" | Voice: {c['voice_style']}"
-                    if c.get('opening_line'):
-                        char_info += f" | Opening: {c['opening_line']}"
                     character_details.append(char_info)
             
             prompt = f"""
 You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style, opening_line), and openingScene.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style), and openingScene.
 
 Title: {world_title}
 Setting: {world_setting}
