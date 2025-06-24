@@ -227,11 +227,7 @@ The AI will take on the personality you describe and respond accordingly.
             current_world_setting = st.session_state.get('world_setting', '')
             if current_world_title.strip() and current_world_setting.strip():
                 if st.button("➡️ Next: Your Character", type="primary"):
-                    # Save the latest values from the widgets (not just session_state)
-                    st.session_state["world_title"] = current_world_title.strip()
-                    st.session_state["world_setting"] = current_world_setting.strip()
-                    st.session_state["roleplay_step"] = 2
-                    st.rerun()
+                    st.session_state["go_to_step2"] = True
             else:
                 st.button("➡️ Next: Your Character", disabled=True)
 
@@ -713,6 +709,14 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.session_state["story_colors"].append(new_color)
             # st.rerun is implicit with on_click callback
 
+    # --- Streamlit Session State Navigation Fix ---
+    if "go_to_step2" in st.session_state and st.session_state["go_to_step2"]:
+        st.session_state["world_title"] = st.session_state.get("world_title", "").strip()
+        st.session_state["world_setting"] = st.session_state.get("world_setting", "").strip()
+        st.session_state["roleplay_step"] = 2
+        st.session_state["go_to_step2"] = False
+        st.experimental_rerun()
+
     # Step 1: Create Your Sekai World
     if st.session_state["roleplay_step"] == 1:
         st.subheader("🌍 Step 1: Create Your Sekai World")
@@ -827,11 +831,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             current_world_setting = st.session_state.get('world_setting', '')
             if current_world_title.strip() and current_world_setting.strip():
                 if st.button("➡️ Next: Your Character", type="primary"):
-                    # Save the latest values from the widgets (not just session_state)
-                    st.session_state["world_title"] = current_world_title.strip()
-                    st.session_state["world_setting"] = current_world_setting.strip()
-                    st.session_state["roleplay_step"] = 2
-                    st.rerun()
+                    st.session_state["go_to_step2"] = True
             else:
                 st.button("➡️ Next: Your Character", disabled=True)
 
