@@ -103,6 +103,30 @@ The AI will take on the personality you describe and respond accordingly.
                 "Greetings, brave soul! What brings you to my humble abode?",
                 "Oh! You're finally here! I was starting to think you'd forgotten about me!",
                 "Welcome, wanderer. I sense great potential within you..."
+            ],
+            "voice_style": [
+                "Always says 'nya~' like a cat girl",
+                "Ends every sentence with 'my dear'",
+                "Speaks in old English ('Thou art brave indeed!')",
+                "Uses lots of exclamation marks and is very energetic",
+                "Speaks very formally and uses big words",
+                "Has a habit of repeating the last word of sentences"
+            ],
+            "emotional_style": [
+                "Protective big brother energy",
+                "Tsundere (hot and cold flirty)",
+                "Obsessive yandere",
+                "Gentle supportive best friend",
+                "Mysterious and aloof but secretly caring",
+                "Playful and teasing but deeply loyal"
+            ],
+            "lore_snippets": [
+                "They once lost someone they loved, and still carry the necklace.",
+                "You and the character used to play in the forest as kids.",
+                "They have a mysterious scar that glows in the moonlight.",
+                "The character saved your life once, but you don't remember it.",
+                "They're actually from another dimension and miss their home.",
+                "You both share a secret that no one else knows about."
             ]
         }
         return random.choice(examples.get(field_type, ["Example"]))
@@ -226,26 +250,80 @@ The AI will take on the personality you describe and respond accordingly.
         # Advanced Options (Collapsible)
         with st.expander("🌟 Advanced Options (Optional)", expanded=False):
             st.markdown("#### 🗣️ Voice Style / Speech Quirks")
-            voice_style = st.text_input(
-                "How do they speak? Any unique speech patterns?",
-                placeholder="Always says 'nya~' like a cat girl / Ends every sentence with 'my dear'",
-                key="voice_style_input"
-            )
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                # Get random voice style if button was clicked
+                if "random_voice_clicked" not in st.session_state:
+                    st.session_state["random_voice_clicked"] = False
+                
+                # Set default value based on random click or existing session state
+                default_voice = st.session_state.get("voice_style_input", "")
+                if st.session_state["random_voice_clicked"]:
+                    default_voice = get_random_example("voice_style")
+                    st.session_state["voice_style_input"] = default_voice
+                    st.session_state["random_voice_clicked"] = False
+                
+                voice_style = st.text_input(
+                    "How do they speak? Any unique speech patterns?",
+                    value=default_voice,
+                    placeholder="Always says 'nya~' like a cat girl / Ends every sentence with 'my dear'",
+                    key="voice_style_input"
+                )
+            with col2:
+                if st.button("🎲 Random", key="random_voice"):
+                    st.session_state["random_voice_clicked"] = True
+                    st.rerun()
             
             st.markdown("#### 💕 Emotional Style / Relationship Style")
-            emotional_style = st.text_input(
-                "How do they treat the user emotionally?",
-                placeholder="Protective big brother energy / Tsundere (hot and cold flirty) / Gentle supportive best friend",
-                key="emotional_style_input"
-            )
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                # Get random emotional style if button was clicked
+                if "random_emotional_clicked" not in st.session_state:
+                    st.session_state["random_emotional_clicked"] = False
+                
+                # Set default value based on random click or existing session state
+                default_emotional = st.session_state.get("emotional_style_input", "")
+                if st.session_state["random_emotional_clicked"]:
+                    default_emotional = get_random_example("emotional_style")
+                    st.session_state["emotional_style_input"] = default_emotional
+                    st.session_state["random_emotional_clicked"] = False
+                
+                emotional_style = st.text_input(
+                    "How do they treat the user emotionally?",
+                    value=default_emotional,
+                    placeholder="Protective big brother energy / Tsundere (hot and cold flirty) / Gentle supportive best friend",
+                    key="emotional_style_input"
+                )
+            with col2:
+                if st.button("🎲 Random", key="random_emotional"):
+                    st.session_state["random_emotional_clicked"] = True
+                    st.rerun()
             
             st.markdown("#### 📖 Memory or Lore Snippets")
-            lore_snippets = st.text_area(
-                "Any personal backstory or shared memories?",
-                placeholder="They once lost someone they loved, and still carry the necklace. / You and the character used to play in the forest as kids.",
-                height=80,
-                key="lore_snippets_input"
-            )
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                # Get random lore if button was clicked
+                if "random_lore_clicked" not in st.session_state:
+                    st.session_state["random_lore_clicked"] = False
+                
+                # Set default value based on random click or existing session state
+                default_lore = st.session_state.get("lore_snippets_input", "")
+                if st.session_state["random_lore_clicked"]:
+                    default_lore = get_random_example("lore_snippets")
+                    st.session_state["lore_snippets_input"] = default_lore
+                    st.session_state["random_lore_clicked"] = False
+                
+                lore_snippets = st.text_area(
+                    "Any personal backstory or shared memories?",
+                    value=default_lore,
+                    placeholder="They once lost someone they loved, and still carry the necklace. / You and the character used to play in the forest as kids.",
+                    height=80,
+                    key="lore_snippets_input"
+                )
+            with col2:
+                if st.button("🎲 Random", key="random_lore"):
+                    st.session_state["random_lore_clicked"] = True
+                    st.rerun()
 
         # Navigation
         col1, col2, col3 = st.columns([1, 2, 1])
