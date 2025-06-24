@@ -80,6 +80,7 @@ The AI will take on the personality you describe and respond accordingly.
             f"You are roleplaying as a fictional character named {char_name}. "
             f"Your role is: {char_role}. Your personality and background: {char_traits}.\n\n"
             "Speak naturally as this character would. Stay in character and never say you're an AI.\n"
+            "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
             "Start the conversation by introducing yourself."
         )
 
@@ -245,38 +246,39 @@ if st.session_state["app_mode"] == "roleplay":
                     st.session_state[f"char_{i}"] = ""
 
     for i in range(num_characters):
-        with st.expander(f"Character {i+1}"):
-            idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
-            if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
-                player_name = st.session_state.get("user_name", "")
-                other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
-                prompt = (
-                    f"Create a new character for the following world: {world_setting}. "
-                    f"The player's character is named '{player_name}'. Do not use this name.\n"
-                    f"Ensure this character is clearly different from the player and any existing characters:\n"
-                    + "\n".join(other_chars) +
-                    "\n\nRespond in this format:\n"
-                    "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
-                    "Role: <Character Role>\n"
-                    "Traits: <Personality traits and special abilities>"
-                )
-                result = generate_field(prompt)
-                st.session_state[f"char_{i}"] = result
+        # Show all character forms directly (not in expanders)
+        st.markdown(f"### Character {i+1}")
+        idea = st.text_input(f"Character Idea {i+1}", key=f"idea_{i}")
+        if st.button(f"🧠 AI: Generate Character {i+1}", key=f"gen_{i}"):
+            player_name = st.session_state.get("user_name", "")
+            other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
+            prompt = (
+                f"Create a new character for the following world: {world_setting}. "
+                f"The player's character is named '{player_name}'. Do not use this name.\n"
+                f"Ensure this character is clearly different from the player and any existing characters:\n"
+                + "\n".join(other_chars) +
+                "\n\nRespond in this format:\n"
+                "Name: <A standard first name and optional last name only, no titles or descriptions>\n"
+                "Role: <Character Role>\n"
+                "Traits: <Personality traits and special abilities>"
+            )
+            result = generate_field(prompt)
+            st.session_state[f"char_{i}"] = result
 
-            default_text = st.session_state.get(f"char_{i}", "")
-            parsed_name, parsed_role, parsed_traits = "", "", ""
-            if "Name:" in default_text and "Role:" in default_text and "Traits:" in default_text:
-                try:
-                    parsed_name = default_text.split("Name:")[1].split("Role:")[0].strip()
-                    parsed_role = default_text.split("Role:")[1].split("Traits:")[0].strip()
-                    parsed_traits = default_text.split("Traits:")[1].strip()
-                except Exception:
-                    parsed_name, parsed_role, parsed_traits = "", "", ""
+        default_text = st.session_state.get(f"char_{i}", "")
+        parsed_name, parsed_role, parsed_traits = "", "", ""
+        if "Name:" in default_text and "Role:" in default_text and "Traits:" in default_text:
+            try:
+                parsed_name = default_text.split("Name:")[1].split("Role:")[0].strip()
+                parsed_role = default_text.split("Role:")[1].split("Traits:")[0].strip()
+                parsed_traits = default_text.split("Traits:")[1].strip()
+            except Exception:
+                parsed_name, parsed_role, parsed_traits = "", "", ""
 
-            name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
-            role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=parsed_role)
-            trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100)
-            characters.append({"name": name, "role": role, "traits": trait})
+        name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
+        role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=parsed_role)
+        trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100)
+        characters.append({"name": name, "role": role, "traits": trait})
 
     # --- Step 3: Generate Sekai Story Template ---
     st.subheader("3. Generate Sekai Story Template")
