@@ -75,13 +75,19 @@ The AI will take on the personality you describe and respond accordingly.
     col1, col2, col3 = st.columns(3)
     with col1:
         step1_active = "🟢" if st.session_state["char_creation_step"] >= 1 else "⚪"
-        st.markdown(f"{step1_active} **Step 1: Core Details**")
+        if st.button(f"{step1_active} **Step 1: Core Details**", key="char_step1_btn", use_container_width=True):
+            st.session_state["char_creation_step"] = 1
+            st.rerun()
     with col2:
         step2_active = "🟢" if st.session_state["char_creation_step"] >= 2 else "⚪"
-        st.markdown(f"{step2_active} **Step 2: Personality**")
+        if st.button(f"{step2_active} **Step 2: Personality**", key="char_step2_btn", use_container_width=True):
+            st.session_state["char_creation_step"] = 2
+            st.rerun()
     with col3:
         step3_active = "🟢" if st.session_state["char_creation_step"] >= 3 else "⚪"
-        st.markdown(f"{step3_active} **Step 3: Final Touches**")
+        if st.button(f"{step3_active} **Step 3: Final Touches**", key="char_step3_btn", use_container_width=True):
+            st.session_state["char_creation_step"] = 3
+            st.rerun()
     st.markdown("---")
 
     # Helper function for random examples
@@ -573,19 +579,29 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         step1_active = "🟢" if st.session_state["roleplay_step"] >= 1 else "⚪"
-        st.markdown(f"{step1_active} **Step 1: World**")
+        if st.button(f"{step1_active} **Step 1: World**", key="roleplay_step1_btn", use_container_width=True):
+            st.session_state["roleplay_step"] = 1
+            st.rerun()
     with col2:
         step2_active = "🟢" if st.session_state["roleplay_step"] >= 2 else "⚪"
-        st.markdown(f"{step2_active} **Step 2: You**")
+        if st.button(f"{step2_active} **Step 2: You**", key="roleplay_step2_btn", use_container_width=True):
+            st.session_state["roleplay_step"] = 2
+            st.rerun()
     with col3:
         step3_active = "🟢" if st.session_state["roleplay_step"] >= 3 else "⚪"
-        st.markdown(f"{step3_active} **Step 3: Characters**")
+        if st.button(f"{step3_active} **Step 3: Characters**", key="roleplay_step3_btn", use_container_width=True):
+            st.session_state["roleplay_step"] = 3
+            st.rerun()
     with col4:
         step4_active = "🟢" if st.session_state["roleplay_step"] >= 4 else "⚪"
-        st.markdown(f"{step4_active} **Step 4: Template**")
+        if st.button(f"{step4_active} **Step 4: Template**", key="roleplay_step4_btn", use_container_width=True):
+            st.session_state["roleplay_step"] = 4
+            st.rerun()
     with col5:
         step5_active = "🟢" if st.session_state["roleplay_step"] >= 5 else "⚪"
-        st.markdown(f"{step5_active} **Step 5: Play!**")
+        if st.button(f"{step5_active} **Step 5: Play!**", key="roleplay_step5_btn", use_container_width=True):
+            st.session_state["roleplay_step"] = 5
+            st.rerun()
     st.markdown("---")
 
     # --- Gemini API Setup (from secrets) ---
@@ -664,6 +680,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("### 💡 What's your initial idea or vibe?")
         world_idea = st.text_input(
             "Your world spark",
+            value=st.session_state.get("world_idea_input", ""),
             placeholder="A city where dreams are currency / Cyberpunk witches at high school / Haunted aquarium / Post-apocalyptic tea shop",
             key="world_idea_input"
         )
@@ -712,7 +729,12 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("*Try combining Romance + Horror for something like vampire dating!*")
         
         genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
-        selected_genres = st.multiselect("Your Sekai's Genre(s)", genre_options, key="world_genre")
+        selected_genres = st.multiselect(
+            "Your Sekai's Genre(s)", 
+            genre_options, 
+            default=st.session_state.get("world_genre", []),
+            key="world_genre"
+        )
         
         if selected_genres:
             st.success(f"🌟 Awesome! Your world will have a {', '.join(selected_genres)} vibe!")
@@ -722,14 +744,16 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         world_title = st.text_input(
             "Sekai Title", 
             value=st.session_state.get("world_title", ""),
-            placeholder="The Midnight Library / Dream Currency City / Cyber Witch Academy"
+            placeholder="The Midnight Library / Dream Currency City / Cyber Witch Academy",
+            key="world_title_input"
         )
         
         world_setting = st.text_area(
             "Describe the World Setting", 
             value=st.session_state.get("world_setting", ""),
             placeholder="A magical library that only appears at midnight, where books come alive and stories write themselves...",
-            height=100
+            height=100,
+            key="world_setting_input"
         )
         
         if world_setting.strip():
@@ -740,6 +764,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("*These help AI generation later - add themes, elements, or vibes!*")
         world_keywords = st.text_input(
             "Keywords",
+            value=st.session_state.get("world_keywords_input", ""),
             placeholder="dreams, magic library, talking animals, steampunk, time travel",
             key="world_keywords_input"
         )
@@ -772,7 +797,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("Give yourself a name — or use your real one, it's up to you!")
         user_name = st.text_input(
             "Your Character's Name",
-            value=st.session_state.get("user_name", ""),
+            value=st.session_state.get("user_name_input", ""),
             placeholder="Alex / Luna / Kai / Your real name",
             key="user_name_input"
         )
@@ -782,7 +807,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.markdown("Describe your personality, quirks, or even your magical powers 💫")
         user_traits = st.text_area(
             "Your Character's Traits",
-            value=st.session_state.get("user_traits", ""),
+            value=st.session_state.get("user_traits_input", ""),
             placeholder="Brave but impulsive, always rushing to help others / A quiet artist who sees spirits / Invented a tea that lets people relive memories",
             height=100,
             key="user_traits_input"
