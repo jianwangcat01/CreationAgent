@@ -1239,27 +1239,6 @@ Generate only the opening scene description, nothing else.
                     key="narration_style"
                 )
 
-        # Build a clear, explicit character list for the prompt
-        character_list = f"- {user_name} (Player): {user_traits}\n"
-        for c in characters:
-            if c['name'].strip() and c['traits'].strip():
-                character_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
-
-        prompt = f"""
-You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
-
-Title: {world_title}
-Setting: {world_setting}
-Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
-Keywords: {world_keywords}
-
-Characters to include (use all of these, in this order):
-{character_list}
-
-The JSON must include all of the above characters in the 'characters' array, with their name, role, and a description based on the info above.
-"""
-
         # Generate Template Button
         if st.button("🧙 Generate Template", type="primary"):
             with st.spinner("Talking to Gemini AI..."):
@@ -1268,6 +1247,37 @@ The JSON must include all of the above characters in the 'characters' array, wit
                 st.info(f"Using user character: Name='{user_name}', Traits='{user_traits}'")
                 st.info(f"Using {len(characters)} characters from Step 3")
                 
+                prompt = f"""
+You are an AI for building JSON-based interactive stories.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
+
+Title: {world_title}
+Setting: {world_setting}
+Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
+Keywords: {world_keywords}
+Characters:
+- {user_name} (Player): {user_traits}
+"""
+                for c in characters:
+                    if c['name'].strip() and c['traits'].strip():
+                        prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
+                # Add opening scene if provided
+                if opening_scene.strip():
+                    prompt += f"\nOpening Scene: {opening_scene}\n"
+                
+                # Add advanced settings to prompt
+                if story_tone != "Balanced":
+                    prompt += f"\nTone: {story_tone}\n"
+                if pacing != "Balanced":
+                    prompt += f"Pacing: {pacing}\n"
+                if pov != "Third person":
+                    prompt += f"POV: {pov}\n"
+                if narration_style != "Balanced":
+                    prompt += f"Narration: {narration_style}\n"
+                
+                prompt += "\nRespond with raw JSON only."
+
                 response = model.generate_content(prompt)
                 output = response.text.strip()
 
