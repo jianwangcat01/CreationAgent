@@ -1159,31 +1159,25 @@ Traits: <Personality traits and special abilities>"""
         # Initialize session state for opening scene
         if "opening_scene_input" not in st.session_state:
             st.session_state["opening_scene_input"] = ""
-        if "opening_scene_temp" not in st.session_state:
-            st.session_state["opening_scene_temp"] = ""
+        if "opening_scene_generated" not in st.session_state:
+            st.session_state["opening_scene_generated"] = ""
         
-        # Callback to update opening scene from temp
+        # If AI just generated a value, update the input and clear the flag
+        if st.session_state["opening_scene_generated"]:
+            st.session_state["opening_scene_input"] = st.session_state["opening_scene_generated"]
+            st.session_state["opening_scene_generated"] = ""
+        
         def update_opening_scene():
-            st.session_state["opening_scene_input"] = st.session_state["opening_scene_temp"]
+            st.session_state["opening_scene_input"] = st.session_state["opening_scene_input"]
         
         col1, col2 = st.columns([3, 1])
         with col1:
-            opening_scene = st.text_area(
-                "Describe the opening scene (optional - leave blank for AI generation)",
-                value=st.session_state["opening_scene_temp"],
-                placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
-                height=100,
-                key="opening_scene_temp",
-                on_change=update_opening_scene
-            )
-        with col2:
+            # AI button is now above the text area
             if st.button("✨ AI: Generate Opening Scene", key="generate_opening_scene"):
                 with st.spinner("Creating an engaging opening scene..."):
-                    # Build character list for the prompt
                     char_list = f"Player: {user_name} ({user_traits})\n"
                     for c in characters:
                         char_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
-                    
                     prompt = f"""
 Generate an engaging opening scene for an interactive story.
 
@@ -1208,13 +1202,20 @@ Generate only the opening scene description, nothing else.
                     try:
                         response = model.generate_content(prompt)
                         generated_opening = response.text.strip()
-                        # Clean up any extra formatting
                         if generated_opening.startswith('"') and generated_opening.endswith('"'):
                             generated_opening = generated_opening[1:-1]
-                        st.session_state["opening_scene_temp"] = generated_opening
-                        st.rerun()
+                        st.session_state["opening_scene_generated"] = generated_opening
+                        st.experimental_rerun()
                     except Exception as e:
                         st.error(f"Failed to generate opening scene: {e}")
+            opening_scene = st.text_area(
+                "Describe the opening scene (optional - leave blank for AI generation)",
+                value=st.session_state["opening_scene_input"],
+                placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
+                height=100,
+                key="opening_scene_input",
+                on_change=update_opening_scene
+            )
 
         if opening_scene.strip():
             st.success("🎭 Perfect! This opening scene will set the tone for your adventure!")
