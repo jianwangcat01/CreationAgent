@@ -625,7 +625,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         keys_to_clear = [
             "roleplay_step", "roleplay_feedback", "world_idea", "world_title", "world_setting", 
             "world_keywords", "world_genre", "user_name", "user_traits", "num_characters_slider",
-            "sekai_json", "game_state", "story_colors", "user_inputs", "story_tone", "pacing", "pov", "narration_style"
+            "sekai_json", "game_state", "story_colors", "user_inputs", "story_tone", "pacing", "pov", "narration_style",
+            "opening_scene_input", "additional_characters"
         ]
         # Clear character-specific keys (up to 5 characters)
         for i in range(5):
@@ -710,9 +711,19 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.subheader("🌍 Step 1: Create Your Sekai World")
         st.info("Let's start with your spark of inspiration! Don't overthink it — just share a mood, a moment, or a single word! We'll turn it into magic together 💫")
 
-        # Step 1: World Spark
+        # Initialize session state for world inputs
         if 'world_idea' not in st.session_state:
             st.session_state['world_idea'] = ''
+        if 'world_title' not in st.session_state:
+            st.session_state['world_title'] = ''
+        if 'world_setting' not in st.session_state:
+            st.session_state['world_setting'] = ''
+        if 'world_keywords' not in st.session_state:
+            st.session_state['world_keywords'] = ''
+        if 'world_genre' not in st.session_state:
+            st.session_state['world_genre'] = []
+
+        # Step 1: World Spark
         world_idea = st.text_input(
             "Your world spark",
             value=st.session_state['world_idea'],
@@ -720,8 +731,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         )
 
         # Step 1: Genre
-        if 'world_genre' not in st.session_state:
-            st.session_state['world_genre'] = []
         selected_genres = st.multiselect(
             "Your Sekai's Genre(s)",
             ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"],
@@ -730,8 +739,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         )
 
         # Step 1: Title
-        if 'world_title' not in st.session_state:
-            st.session_state['world_title'] = ''
         world_title = st.text_input(
             "Sekai Title",
             value=st.session_state['world_title'],
@@ -739,8 +746,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         )
 
         # Step 1: Setting
-        if 'world_setting' not in st.session_state:
-            st.session_state['world_setting'] = ''
         world_setting = st.text_area(
             "Describe the World Setting",
             value=st.session_state['world_setting'],
@@ -748,8 +753,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         )
 
         # Step 1: Keywords
-        if 'world_keywords' not in st.session_state:
-            st.session_state['world_keywords'] = ''
         world_keywords = st.text_input(
             "Keywords",
             value=st.session_state['world_keywords'],
@@ -818,6 +821,12 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.subheader("👤 Step 2: Create Your Character")
         st.info("Now let's meet you! You'll be the heart of this world, so tell us about yourself.")
 
+        # Initialize session state for user inputs
+        if 'user_name' not in st.session_state:
+            st.session_state['user_name'] = ''
+        if 'user_traits' not in st.session_state:
+            st.session_state['user_traits'] = ''
+
         # AI Character Generation Button (now above name input)
         if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
             # Get complete world information from Step 1
@@ -874,8 +883,6 @@ Respond with:
                     st.rerun()
 
         # Character Name
-        if 'user_name' not in st.session_state:
-            st.session_state['user_name'] = ''
         user_name = st.text_input(
             "Your Character's Name",
             value=st.session_state['user_name'],
@@ -883,8 +890,6 @@ Respond with:
         )
 
         # Character Traits
-        if 'user_traits' not in st.session_state:
-            st.session_state['user_traits'] = ''
         user_traits = st.text_area(
             "Your Character's Traits",
             value=st.session_state['user_traits'],
@@ -914,6 +919,12 @@ Respond with:
         st.subheader("👥 Step 3: Create Main Characters")
         st.info("Now let's meet the other characters who will join your story!")
 
+        # Initialize session state for additional characters
+        if 'additional_characters' not in st.session_state:
+            st.session_state['additional_characters'] = []
+        if 'num_characters_slider' not in st.session_state:
+            st.session_state['num_characters_slider'] = 2
+
         # Get values from previous steps
         world_title = st.session_state.get("world_title")
         world_setting = st.session_state.get("world_setting")
@@ -925,7 +936,24 @@ Respond with:
         # Number of Characters
         st.markdown("### 🎭 How many characters will join your story?")
         st.markdown("Choose between 1 and 5 to start.")
-        num_characters = st.slider("Number of Characters", 1, 5, 2, key="num_characters_slider")
+        num_characters = st.slider("Number of Characters", 1, 5, st.session_state['num_characters_slider'], key="num_characters_slider")
+        
+        # Adjust the additional_characters list to match the slider
+        if num_characters != len(st.session_state['additional_characters']):
+            current_chars = st.session_state['additional_characters']
+            if len(current_chars) > num_characters:
+                st.session_state['additional_characters'] = current_chars[:num_characters]
+            else:
+                # Add new empty characters
+                for i in range(num_characters - len(current_chars)):
+                    st.session_state['additional_characters'].append({
+                        "name": "",
+                        "role": "",
+                        "traits": "",
+                        "voice_style": "Default",
+                        "opening_line": ""
+                    })
+            st.rerun()
         
         if num_characters > 1:
             st.success(f"🎉 Great! {num_characters} characters will make this story even more exciting!")
@@ -962,25 +990,44 @@ Traits: <Personality traits and special abilities>"""
                 response_text = generate_field(prompt)
                 generated_characters = response_text.strip().split("\n---\n")
 
+                st.session_state['additional_characters'] = []
                 for i in range(num_characters):
-                    desc = generated_characters[i].strip() if i < len(generated_characters) else ''
-                    name_match  = re.search(r"Name\s*:\s*(.*)", desc)
-                    role_match  = re.search(r"Role\s*:\s*(.*)", desc)
-                    trait_match = re.search(r"Traits\s*:\s*(.*)", desc)
-                    if name_match and role_match and trait_match:
-                        st.session_state[f"name_{i}"]  = name_match.group(1).strip()
-                        st.session_state[f"role_{i}"]  = role_match.group(1).strip()
-                        st.session_state[f"trait_{i}"] = trait_match.group(1).strip()
+                    if i < len(generated_characters):
+                        desc = generated_characters[i].strip()
+                        name_match = re.search(r"Name\s*:\s*(.*)", desc)
+                        role_match = re.search(r"Role\s*:\s*(.*)", desc)
+                        trait_match = re.search(r"Traits\s*:\s*(.*)", desc)
+                        if name_match and role_match and trait_match:
+                            st.session_state['additional_characters'].append({
+                                "name": name_match.group(1).strip(),
+                                "role": role_match.group(1).strip(),
+                                "traits": trait_match.group(1).strip(),
+                                "voice_style": "Default",
+                                "opening_line": ""
+                            })
+                        else:
+                            st.session_state['additional_characters'].append({
+                                "name": "",
+                                "role": "",
+                                "traits": "",
+                                "voice_style": "Default",
+                                "opening_line": ""
+                            })
+                    else:
+                        st.session_state['additional_characters'].append({
+                            "name": "",
+                            "role": "",
+                            "traits": "",
+                            "voice_style": "Default",
+                            "opening_line": ""
+                        })
             st.rerun()
 
         # Character Forms
-        characters = []
         for i in range(num_characters):
             st.markdown(f"### Character {i+1}")
             
             # Character Idea
-            if f"idea_{i}" not in st.session_state:
-                st.session_state[f"idea_{i}"] = ""
             idea = st.text_input(
                 f"Character Idea {i+1}",
                 placeholder="Knight with amnesia who might be evil / Librarian who hides a secret / Rival time mage",
@@ -998,8 +1045,8 @@ Traits: <Personality traits and special abilities>"""
                     if world_keywords:
                         world_context += f"\nKeywords: {world_keywords}"
                     
-                    other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
-                    existing_chars_text = "\n".join(other_chars) if other_chars else "None"
+                    other_chars = [c for j, c in enumerate(st.session_state['additional_characters']) if j != i]
+                    existing_chars_text = "\n".join([f"Name: {c['name']}\nRole: {c['role']}\nTraits: {c['traits']}" for c in other_chars if c['name']]) or "None"
                     
                     prompt = f"""Create a new character for the following world:
 
@@ -1023,24 +1070,28 @@ Role: <Character Role>
 Traits: <Personality traits and special abilities>"""
                     
                     result = generate_field(prompt)
-                    st.session_state[f"char_{i}"] = result
+                    name = re.search(r'Name\s*[:：\-]\s*(.*)', result)
+                    role = re.search(r'Role\s*[:：\-]\s*(.*)', result)
+                    traits = re.search(r'Traits\s*[:：\-]\s*(.*)', result)
+                    if name and role and traits:
+                        st.session_state['additional_characters'][i] = {
+                            "name": name.group(1).strip(),
+                            "role": role.group(1).strip(),
+                            "traits": traits.group(1).strip(),
+                            "voice_style": st.session_state['additional_characters'][i]["voice_style"],
+                            "opening_line": st.session_state['additional_characters'][i]["opening_line"]
+                        }
                     st.rerun()
             
-            # Parse generated character
-            default_text = st.session_state.get(f"char_{i}", "")
-            parsed_name, parsed_role, parsed_traits = "", "", ""
-            if "Name:" in default_text and "Role:" in default_text and "Traits:" in default_text:
-                try:
-                    parsed_name = default_text.split("Name:")[1].split("Role:")[0].strip()
-                    parsed_role = default_text.split("Role:")[1].split("Traits:")[0].strip()
-                    parsed_traits = default_text.split("Traits:")[1].strip()
-                except Exception:
-                    parsed_name, parsed_role, parsed_traits = "", "", ""
-
             # Character Details
-            name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=parsed_name)
-            role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=parsed_role, placeholder="Librarian who hides a secret / Rival time mage")
-            trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=parsed_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
+            name = st.text_input(f"Name {i+1}", key=f"name_{i}", value=st.session_state['additional_characters'][i]["name"])
+            role = st.text_input(f"Role {i+1}", key=f"role_{i}", value=st.session_state['additional_characters'][i]["role"], placeholder="Librarian who hides a secret / Rival time mage")
+            trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}", value=st.session_state['additional_characters'][i]["traits"], height=100, placeholder="Describe their personality, abilities, and backstory...")
+            
+            # Update session state on change
+            st.session_state['additional_characters'][i]["name"] = name
+            st.session_state['additional_characters'][i]["role"] = role
+            st.session_state['additional_characters'][i]["traits"] = trait
             
             # Optional Add-ons
             with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
@@ -1049,16 +1100,18 @@ Traits: <Personality traits and special abilities>"""
                     voice_style = st.selectbox(
                         f"Voice Style",
                         ["Default", "Cute", "Serious", "Snarky", "Mysterious", "Energetic", "Calm"],
+                        index=["Default", "Cute", "Serious", "Snarky", "Mysterious", "Energetic", "Calm"].index(st.session_state['additional_characters'][i]["voice_style"]),
                         key=f"voice_style_{i}"
                     )
+                    st.session_state['additional_characters'][i]["voice_style"] = voice_style
                 with col2:
                     opening_line = st.text_input(
                         f"AI Opening Line (or leave blank to auto-gen)",
+                        value=st.session_state['additional_characters'][i]["opening_line"],
                         placeholder="What should they say when you first meet?",
                         key=f"opening_line_{i}"
                     )
-            
-            characters.append({"name": name, "role": role, "traits": trait})
+                    st.session_state['additional_characters'][i]["opening_line"] = opening_line
 
         # Navigation
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -1067,7 +1120,7 @@ Traits: <Personality traits and special abilities>"""
                 st.session_state["roleplay_step"] = 2
                 st.rerun()
         with col3:
-            if all(char["name"].strip() and char["traits"].strip() for char in characters):
+            if all(c["name"].strip() and c["traits"].strip() for c in st.session_state['additional_characters']):
                 if st.button("➡️ Next: Generate Template", type="primary"):
                     st.session_state["roleplay_step"] = 4
                     st.rerun()
@@ -1089,15 +1142,8 @@ Traits: <Personality traits and special abilities>"""
         user_name = st.session_state.get("user_name", "Alex")
         user_traits = st.session_state.get("user_traits", "Curious and brave")
         
-        # Build characters list from Step 3
-        num_characters = st.session_state.get("num_characters_slider", 2)
-        characters = []
-        for i in range(num_characters):
-            name = st.session_state.get(f"name_{i}", "")
-            role = st.session_state.get(f"role_{i}", "")
-            traits = st.session_state.get(f"trait_{i}", "")
-            if name and traits:
-                characters.append({"name": name, "role": role, "traits": traits})
+        # Get additional characters from session state
+        characters = st.session_state.get("additional_characters", [])
 
         # Opening Line Setup (before advanced options)
         st.markdown("### 💬 Opening Scene Setup")
@@ -1106,16 +1152,6 @@ Traits: <Personality traits and special abilities>"""
         # Initialize session state for opening scene
         if "opening_scene_input" not in st.session_state:
             st.session_state["opening_scene_input"] = ""
-        if "opening_scene_generated" not in st.session_state:
-            st.session_state["opening_scene_generated"] = ""
-        
-        # If AI just generated a value, update the input and clear the flag
-        if st.session_state["opening_scene_generated"]:
-            st.session_state["opening_scene_input"] = st.session_state["opening_scene_generated"]
-            st.session_state["opening_scene_generated"] = ""
-        
-        def update_opening_scene():
-            st.session_state["opening_scene_input"] = st.session_state["opening_scene_input"]
         
         col1, col2 = st.columns([3, 1])
         with col1:
@@ -1151,7 +1187,7 @@ Generate only the opening scene description, nothing else.
                         generated_opening = response.text.strip()
                         if generated_opening.startswith('"') and generated_opening.endswith('"'):
                             generated_opening = generated_opening[1:-1]
-                        st.session_state["opening_scene_generated"] = generated_opening
+                        st.session_state["opening_scene_input"] = generated_opening
                         st.rerun()
                     except Exception as e:
                         st.error(f"Failed to generate opening scene: {e}")
@@ -1160,8 +1196,7 @@ Generate only the opening scene description, nothing else.
                 value=st.session_state["opening_scene_input"],
                 placeholder="You wake up in a mysterious library at midnight... / The city streets are filled with floating dreams...",
                 height=100,
-                key="opening_scene_input",
-                on_change=update_opening_scene
+                key="opening_scene_input"
             )
 
         if opening_scene.strip():
@@ -1201,6 +1236,12 @@ Generate only the opening scene description, nothing else.
                 st.info(f"Using user character: Name='{user_name}', Traits='{user_traits}'")
                 st.info(f"Using {len(characters)} characters from Step 3")
                 
+                # Build character list for prompt
+                character_list = f"- {user_name} (Player): {user_traits}\n"
+                for c in characters:
+                    if c['name'].strip() and c['traits'].strip():
+                        character_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
                 prompt = f"""
 You are an AI for building JSON-based interactive stories.
 Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description), and openingScene.
@@ -1209,29 +1250,14 @@ Title: {world_title}
 Setting: {world_setting}
 Genre: {', '.join(selected_genres) if selected_genres else 'Fantasy'}
 Keywords: {world_keywords}
-Characters:
-- {user_name} (Player): {user_traits}
-"""
-                for c in characters:
-                    if c['name'].strip() and c['traits'].strip():
-                        prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
-                
-                # Add opening scene if provided
-                if opening_scene.strip():
-                    prompt += f"\nOpening Scene: {opening_scene}\n"
-                
-                # Add advanced settings to prompt
-                if story_tone != "Balanced":
-                    prompt += f"\nTone: {story_tone}\n"
-                if pacing != "Balanced":
-                    prompt += f"Pacing: {pacing}\n"
-                if pov != "Third person":
-                    prompt += f"POV: {pov}\n"
-                if narration_style != "Balanced":
-                    prompt += f"Narration: {narration_style}\n"
-                
-                prompt += "\nRespond with raw JSON only."
+Opening Scene: {opening_scene}
 
+Characters to include (use all of these, in this order):
+{character_list}
+
+The JSON must include all of the above characters in the 'characters' array, with their name, role, and a description based on the info above.
+"""
+                
                 response = model.generate_content(prompt)
                 output = response.text.strip()
 
