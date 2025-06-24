@@ -725,6 +725,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             key="world_idea_input_temp",
             on_change=update_world_idea
         )
+        if world_idea.strip():
+            st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
 
         # --- Genre Picker (now above the AI button) ---
         genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
@@ -746,6 +748,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.success(f"🌟 Awesome! Your world will have a {', '.join(selected_genres)} vibe!")
 
         # --- AI World Generation Button ---
+        def strip_stars(s):
+            return s.strip().strip('*').strip()
         if st.button("✨ AI: Turn My Idea into a World", type="primary"):
             st.toast("Working magic... Generating your Sekai world ✨")
             # Compose the prompt based on available fields
@@ -775,20 +779,20 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                         setting = re.match(r'^(.*)$', lines[1])
                     if not keywords:
                         keywords = re.match(r'^(.*)$', lines[2])
-            # Fill session state
+            # Fill session state, stripping stars
             if title:
-                st.session_state["world_title"] = title.group(1).strip()
-                st.session_state["world_title_temp"] = title.group(1).strip()
+                clean_title = strip_stars(title.group(1))
+                st.session_state["world_title"] = clean_title
+                st.session_state["world_title_temp"] = clean_title
             if setting:
-                st.session_state["world_setting"] = setting.group(1).strip()
-                st.session_state["world_setting_temp"] = setting.group(1).strip()
+                clean_setting = strip_stars(setting.group(1))
+                st.session_state["world_setting"] = clean_setting
+                st.session_state["world_setting_temp"] = clean_setting
             if keywords:
-                st.session_state["world_keywords_input"] = keywords.group(1).strip()
-                st.session_state["world_keywords_input_temp"] = keywords.group(1).strip()
+                clean_keywords = strip_stars(keywords.group(1))
+                st.session_state["world_keywords_input"] = clean_keywords
+                st.session_state["world_keywords_input_temp"] = clean_keywords
             st.rerun()
-
-        if world_idea.strip():
-            st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
 
         # --- Title + Setting Description ---
         if 'world_title' not in st.session_state:
