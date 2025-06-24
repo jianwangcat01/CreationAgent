@@ -715,7 +715,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.session_state["world_setting"] = st.session_state.get("world_setting", "").strip()
         st.session_state["roleplay_step"] = 2
         st.session_state["go_to_step2"] = False
-        st.experimental_rerun()
+        st.rerun()
 
     # Step 1: Create Your Sekai World
     if st.session_state["roleplay_step"] == 1:
