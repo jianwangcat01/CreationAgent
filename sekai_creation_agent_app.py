@@ -725,7 +725,47 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             key="world_idea_input_temp",
             on_change=update_world_idea
         )
-        
+
+        # --- AI World Generation Button ---
+        if st.button("✨ AI: Turn My Idea into a World", type="primary"):
+            st.toast("Working magic... Generating your Sekai world ✨")
+            suggestion = generate_field(
+                f"Let's craft a compelling concept around the '{st.session_state['world_idea_input_temp']}' idea.\n\n"
+                "Please generate a structured Sekai concept with:\n\n"
+                "**Title:** (a short and poetic title)\n"
+                "**Genre:** (1-2 genres only, like Fantasy / Romance)\n"
+                "**World Setting:** (2-3 sentence vivid description)\n"
+                "**Player Character Name:** (a human name)\n"
+                "**Character Traits:** (1-2 short traits only)\n\n"
+                "Respond in markdown format using ** for bolded labels."
+            )
+            title = re.search(r'\*\*Title:\*\*\s*(.*?)\n', suggestion)
+            genre = re.search(r'\*\*Genre:\*\*\s*(.*?)\n', suggestion)
+            setting = re.search(r'\*\*World Setting:\*\*\s*(.*?)\n', suggestion)
+            name = re.search(r'\*\*Player Character Name:\*\*\s*(.*?)\n', suggestion)
+            traits = re.search(r'\*\*Character Traits:\*\*\s*(.*?)$', suggestion, re.DOTALL)
+
+            if title:
+                st.session_state["world_title"] = title.group(1).strip()
+                st.session_state["world_title_temp"] = title.group(1).strip()
+            if setting:
+                st.session_state["world_setting"] = setting.group(1).strip()
+                st.session_state["world_setting_temp"] = setting.group(1).strip()
+            if name:
+                st.session_state["user_name_input"] = name.group(1).strip()
+                st.session_state["user_name_input_temp"] = name.group(1).strip()
+            if traits:
+                st.session_state["user_traits_input"] = traits.group(1).strip()
+                st.session_state["user_traits_input_temp"] = traits.group(1).strip()
+            new_genres = extract_genres(genre)
+            genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
+            if new_genres:
+                valid_genres = [g for g in new_genres if g in genre_options]
+                if valid_genres:
+                    st.session_state["world_genre"] = valid_genres
+                    st.session_state["world_genre_temp"] = valid_genres
+            st.rerun()
+
         if world_idea.strip():
             st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
 
