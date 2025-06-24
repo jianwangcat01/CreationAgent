@@ -14,20 +14,27 @@ if st.session_state["app_mode"] is None:
     st.title("Sekai AI Creation Agent")
     st.subheader("Choose a mode to get started:")
     
-    # Create two columns with equal width
     col1, col2 = st.columns(2)
     
     with col1:
-        try:
-            st.image("https://i.postimg.cc/YGrdLrpn/1.png", width=320, height=240)
-        except Exception:
-            st.warning("Character image not found.")
+        st.markdown(
+            '''
+            <a href="https://postimg.cc/YGrdLrpn" target="_blank">
+                <img src="https://i.postimg.cc/j5Nm92Bb/1.png" alt="1" width="320" height="240"/>
+            </a>
+            ''',
+            unsafe_allow_html=True
+        )
     
     with col2:
-        try:
-            st.image("https://i.postimg.cc/G8XqkWtc/2.png", width=320, height=240)
-        except Exception:
-            st.warning("Roleplay image not found.")
+        st.markdown(
+            '''
+            <a href="https://postimages.org/" target="_blank">
+                <img src="https://i.postimg.cc/nrJgtZtQ/2.png" alt="2" width="320" height="240"/>
+            </a>
+            ''',
+            unsafe_allow_html=True
+        )
     
     # Create another row for buttons to ensure they're aligned
     col1_btn, col2_btn = st.columns(2)
