@@ -1141,59 +1141,29 @@ Respond with:
     # --- Display Generated World (if available) ---
     if st.session_state.get("world_title") or st.session_state.get("world_setting"):
         st.markdown("---")
-        st.markdown("### 🎨 Your Generated World")
-        
-        # Display the generated world
-        world_title = st.session_state.get("world_title", "")
-        world_setting = st.session_state.get("world_setting", "")
-        world_keywords = st.session_state.get("world_keywords_input", "")
-        
-        if world_title:
-            st.markdown(f"**🎨 Sekai Title:** {world_title}")
-        
-        if world_setting:
-            st.markdown(f"**📖 Sekai Description:** {world_setting}")
-        
-        if world_keywords:
-            st.markdown(f"**🏷️ Keywords:** {world_keywords}")
-        
-        if world_title or world_setting:
-            st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
-
-    # --- Legacy fields (for manual editing) ---
-    st.markdown("---")
-    st.markdown("### ✏️ Manual World Details (Optional)")
-    
-    # Title + Setting Description
-    if 'world_title' not in st.session_state:
-        st.session_state['world_title'] = ''
-    
-    world_title = st.text_input(
-        "Sekai Title",
-        value=st.session_state['world_title'],
-        key="world_title_edit"
-    )
-    
-    if 'world_setting' not in st.session_state:
-        st.session_state['world_setting'] = ''
-    
-    world_setting = st.text_area(
-        "Describe the World Setting",
-        value=st.session_state['world_setting'],
-        key="world_setting_edit"
-    )
-    
-    # World Keywords/Tags
-    if 'world_keywords_input' not in st.session_state:
-        st.session_state['world_keywords_input'] = ''
-    
-    world_keywords = st.text_input(
-        "Keywords",
-        value=st.session_state['world_keywords_input'],
-        key="world_keywords_edit"
-    )
-
-    st.markdown("---")
+        # Only show the editable fields, pre-filled with generated values
+        if 'world_title' not in st.session_state:
+            st.session_state['world_title'] = ''
+        world_title = st.text_input(
+            "Sekai Title",
+            value=st.session_state['world_title'],
+            key="world_title_edit"
+        )
+        if 'world_setting' not in st.session_state:
+            st.session_state['world_setting'] = ''
+        world_setting = st.text_area(
+            "Describe the World Setting",
+            value=st.session_state['world_setting'],
+            key="world_setting_edit"
+        )
+        if 'world_keywords_input' not in st.session_state:
+            st.session_state['world_keywords_input'] = ''
+        world_keywords = st.text_input(
+            "Keywords",
+            value=st.session_state['world_keywords_input'],
+            key="world_keywords_edit"
+        )
+        st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
 
     # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
     st.markdown("## 👤 Step 2: Create Your Character")
