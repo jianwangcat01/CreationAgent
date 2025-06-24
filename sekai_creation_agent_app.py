@@ -859,22 +859,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.subheader("👤 Step 2: Create Your Character")
         st.info("Now let's meet you! You'll be the heart of this world, so tell us about yourself.")
 
-        # --- Character Name ---
-        if 'user_name_input' not in st.session_state:
-            st.session_state['user_name_input'] = ''
-        if 'user_name_input_temp' not in st.session_state:
-            st.session_state['user_name_input_temp'] = st.session_state['user_name_input']
-        def update_user_name():
-            st.session_state['user_name_input'] = st.session_state['user_name_input_temp']
-        user_name = st.text_input(
-            "Your Character's Name",
-            value=st.session_state['user_name_input_temp'],
-            placeholder="Alex / Luna / Kai / Your real name",
-            key="user_name_input_temp",
-            on_change=update_user_name
-        )
-
-        # --- AI Character Generation Button ---
+        # --- AI Character Generation Button (now above name input) ---
         if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
             world_title = st.session_state.get('world_title_temp', '')
             world_setting = st.session_state.get('world_setting_temp', '')
@@ -905,6 +890,21 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                 rerun_needed = True
             if rerun_needed:
                 st.rerun()
+
+        # --- Character Name ---
+        if 'user_name_input' not in st.session_state:
+            st.session_state['user_name_input'] = ''
+        if 'user_name_input_temp' not in st.session_state:
+            st.session_state['user_name_input_temp'] = st.session_state['user_name_input']
+        def update_user_name():
+            st.session_state['user_name_input'] = st.session_state['user_name_input_temp']
+        user_name = st.text_input(
+            "Your Character's Name",
+            value=st.session_state['user_name_input_temp'],
+            placeholder="Alex / Luna / Kai / Your real name",
+            key="user_name_input_temp",
+            on_change=update_user_name
+        )
 
         # --- Character Traits ---
         if 'user_traits_input' not in st.session_state:
@@ -945,9 +945,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         st.info("Now let's meet the other characters who will join your story!")
 
         # Get values from previous steps
-        world_title = st.session_state.get("world_title", "Your Sekai World")
-        world_setting = st.session_state.get("world_setting", "A magical world")
-        user_name = st.session_state.get("user_name", "Alex")
+        world_title = st.session_state.get("world_title_temp", "Your Sekai World")
+        world_setting = st.session_state.get("world_setting_temp", "A magical world")
+        world_keywords = st.session_state.get("world_keywords_input_temp", "")
+        user_name = st.session_state.get("user_name_input", "Alex")
+        user_traits = st.session_state.get("user_traits_input", "Curious and brave")
 
         # Number of Characters
         st.markdown("### 🎭 How many characters will join your story?")
@@ -962,7 +964,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             with st.spinner(f"Creating {num_characters} unique characters..."):
                 prompt = (
                     f"Generate {num_characters} completely unique and different characters for the world: {world_setting}.\n"
-                    f"The player's character is named '{user_name}'. Do not use this name for any of the generated characters.\n"
+                    f"World Title: {world_title}\nKeywords: {world_keywords}\n"
+                    f"The player's character is named '{user_name}' with traits: {user_traits}. Do not use this name for any of the generated characters.\n"
                     f"Ensure the names, personalities, and abilities are distinct from each other and from the player.\n"
                     f"Please provide {num_characters} character descriptions separated by '---'.\n\n"
                     "Each character description must follow this format:\n"
@@ -999,7 +1002,8 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                     other_chars = [st.session_state.get(f"char_{j}", "") for j in range(num_characters) if j != i]
                     prompt = (
                         f"Create a new character for the following world: {world_setting}. "
-                        f"The player's character is named '{user_name}'. Do not use this name.\n"
+                        f"World Title: {world_title}\nKeywords: {world_keywords}\n"
+                        f"The player's character is named '{user_name}' with traits: {user_traits}. Do not use this name.\n"
                         f"Ensure this character is clearly different from the player and any existing characters:\n"
                         + "\n".join(other_chars) +
                         "\n\nRespond in this format:\n"
