@@ -849,6 +849,13 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         with col2:
             if world_title.strip() and world_setting.strip():
                 if st.button("➡️ Next: Your Character", type="primary"):
+                    # Sync world info to both temp and non-temp keys
+                    st.session_state['world_title'] = st.session_state.get('world_title_temp', world_title)
+                    st.session_state['world_title_temp'] = st.session_state['world_title']
+                    st.session_state['world_setting'] = st.session_state.get('world_setting_temp', world_setting)
+                    st.session_state['world_setting_temp'] = st.session_state['world_setting']
+                    st.session_state['world_keywords_input'] = st.session_state.get('world_keywords_input_temp', world_keywords)
+                    st.session_state['world_keywords_input_temp'] = st.session_state['world_keywords_input']
                     st.session_state["roleplay_step"] = 2
                     st.rerun()
             else:
@@ -861,9 +868,10 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
 
         # --- AI Character Generation Button (now above name input) ---
         if st.button("✨ AI: Generate My Character", key="ai_generate_player_char", type="primary"):
-            world_title = st.session_state.get('world_title_temp', '')
-            world_setting = st.session_state.get('world_setting_temp', '')
-            world_keywords = st.session_state.get('world_keywords_input_temp', '')
+            # Try both temp and non-temp keys for world info
+            world_title = st.session_state.get('world_title_temp') or st.session_state.get('world_title', '')
+            world_setting = st.session_state.get('world_setting_temp') or st.session_state.get('world_setting', '')
+            world_keywords = st.session_state.get('world_keywords_input_temp') or st.session_state.get('world_keywords_input', '')
             if not (world_title and world_setting and world_keywords):
                 st.warning("Please complete Step 1 (Sekai World) before generating your character.")
             else:
