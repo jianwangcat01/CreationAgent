@@ -798,17 +798,25 @@ Generate only the 3 choices, nothing else.
         st.success("✨ Ooooh, that sounds fascinating. Let's shape it into something special!")
 
     # --- Genre Picker ---
-    genre_options = ["Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰", "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"]
+    genre_options = [
+        "Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰",
+        "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"
+    ]
     if 'world_genre' not in st.session_state:
         st.session_state['world_genre'] = []
-    if 'world_genre_temp' not in st.session_state:
+    if 'world_genre_temp' not in st.session_state or not isinstance(st.session_state['world_genre_temp'], list):
         st.session_state['world_genre_temp'] = []
+
+    # Filter out any invalid genres
+    valid_genres = [g for g in st.session_state['world_genre_temp'] if g in genre_options]
+
     def update_genres():
         st.session_state['world_genre'] = st.session_state['world_genre_temp']
+
     selected_genres = st.multiselect(
         "Your Sekai's Genre(s)",
         genre_options,
-        value=st.session_state['world_genre_temp'],
+        value=valid_genres,
         key="world_genre_temp",
         on_change=update_genres
     )
