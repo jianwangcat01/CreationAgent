@@ -1198,7 +1198,7 @@ Generate only the opening scene description, nothing else.
                         if generated_opening.startswith('"') and generated_opening.endswith('"'):
                             generated_opening = generated_opening[1:-1]
                         st.session_state["opening_scene_generated"] = generated_opening
-                        st.rerun()
+                        st.experimental_rerun()
                     except Exception as e:
                         st.error(f"Failed to generate opening scene: {e}")
             opening_scene = st.text_area(
@@ -1258,11 +1258,9 @@ Keywords: {world_keywords}
 Characters:
 - {user_name} (Player): {user_traits}
 """
-                # Add all main characters from Step 3
                 for c in characters:
-                    if c['name'].strip() and c['traits'].strip():
-                        prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
-
+                    prompt += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                
                 # Add opening scene if provided
                 if opening_scene.strip():
                     prompt += f"\nOpening Scene: {opening_scene}\n"
