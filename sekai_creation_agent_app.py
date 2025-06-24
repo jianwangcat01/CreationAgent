@@ -691,7 +691,7 @@ Story Style:
 
 Characters:
 """
-            # Add all characters from template
+            # Add all characters from template with detailed descriptions
             for char in sekai_json.get('characters', []):
                 char_name = char.get('name', 'Unknown')
                 char_role = char.get('role', '')
@@ -706,7 +706,7 @@ Characters:
             if sekai_json.get('openingScene'):
                 template_context += f"\nOpening Scene: {sekai_json.get('openingScene')}\n"
             
-            # Build conversation history
+            # Build conversation history with better formatting
             conversation_history = ""
             for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
                 if user_input_hist.strip():
@@ -731,8 +731,10 @@ Characters:
                     introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
 
             player_name = st.session_state.get("user_name", "the player")
+            
+            # Enhanced prompt for better consistency and formatting
             reply_prompt = f"""
-You are an interactive fiction narrator for a visual novel.
+You are an interactive fiction narrator for a visual novel. Maintain consistent character voices and story coherence.
 
 {template_context}
 
@@ -742,34 +744,161 @@ CONVERSATION HISTORY:
 The player character is {player_name}.
 The player's input (action or dialogue) is: '{user_input}'.
 
-Your role is to describe what happens next. Narrate the scene and have other non-player characters react.
-IMPORTANT: Do NOT write dialogue or thoughts for the player character, {player_name}. Their input is already given.
-{introduction_instruction}
-Continue the story in script format. Keep narration brief. Do not give choices.
-Stay consistent with the story template and character descriptions provided above.
+CRITICAL FORMATTING RULES:
+- Write in script format with clear speaker identification
+- Use this exact format for each line:
+  narrator "description of what happens"
+  CharacterName "dialogue or thoughts"
+- Keep each line concise and focused
+- Maintain consistent character voices and personalities
+- Do NOT write dialogue or thoughts for the player character, {player_name}
+- End with: **"What do you do?"**
 
-Story Style Guidelines:
+CONTENT GUIDELINES:
+- Stay true to character personalities and voice styles
+- Maintain story coherence and logical progression
+- Keep responses engaging but not overwhelming
+- {introduction_instruction}
 - Match the story tone: {story_tone}
 - Use the specified pacing: {pacing}
 - Write from the specified point of view: {point_of_view}
 - Apply the narration style: {narration_style}
+
+Generate the next story turn in proper script format:
 """
-            new_turn = model.generate_content(reply_prompt).text.strip()
-            st.session_state["game_state"].append(new_turn)
-            st.session_state["user_inputs"].append(user_input.strip())
+            
+            try:
+                new_turn = model.generate_content(reply_prompt).text.strip()
+                
+                # Clean up the response to ensure proper formatting
+                cleaned_turn = clean_story_response(new_turn)
+                
+                st.session_state["game_state"].append(cleaned_turn)
+                st.session_state["user_inputs"].append(user_input.strip())
 
-            # Clear the input box for the next turn
-            st.session_state.reply_input = ""
+                # Clear the input box for the next turn
+                st.session_state.reply_input = ""
 
-            existing_colors = st.session_state.get("story_colors", [])
-            available_colors = [
-                c
-                for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
-                if c != existing_colors[-1]
-            ]
-            new_color = random.choice(available_colors)
-            st.session_state["story_colors"].append(new_color)
+                existing_colors = st.session_state.get("story_colors", [])
+                available_colors = [
+                    c
+                    for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
+                    if c != existing_colors[-1]
+                ]
+                new_color = random.choice(available_colors)
+                st.session_state["story_colors"].append(new_color)
+                
+            except Exception as e:
+                st.error(f"Error generating story response: {e}")
+                # Fallback response
+                fallback_response = f'narrator "The story continues..."\n**"What do you do?"**'
+                st.session_state["game_state"].append(fallback_response)
+                st.session_state["user_inputs"].append(user_input.strip())
+                st.session_state.reply_input = ""
+                
+                existing_colors = st.session_state.get("story_colors", [])
+                available_colors = [
+                    c
+                    for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
+                    if c != existing_colors[-1]
+                ]
+                new_color = random.choice(available_colors)
+                st.session_state["story_colors"].append(new_color)
             # st.rerun is implicit with on_click callback
+
+    def clean_story_response(response_text):
+        """Clean and format the story response to ensure consistency"""
+        if not response_text:
+            return 'narrator "The story continues..."\n**"What do you do?"**'
+        
+        # Split into lines and clean each line
+        lines = response_text.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Handle different response formats
+            if line.startswith('**') and line.endswith('**'):
+                # Keep bold text as is
+                cleaned_lines.append(line)
+            elif '"' in line:
+                # Check if it's already in script format
+                if re.match(r'^[a-zA-Z\s]+["\']', line):
+                    cleaned_lines.append(line)
+                else:
+                    # Try to convert to script format
+                    match = re.match(r'^([^:]+):\s*["\'](.+)["\']', line)
+                    if match:
+                        speaker = match.group(1).strip()
+                        dialogue = match.group(2)
+                        if speaker.lower() == 'narrator':
+                            cleaned_lines.append(f'narrator "{dialogue}"')
+                        else:
+                            cleaned_lines.append(f'{speaker} "{dialogue}"')
+                    else:
+                        # Assume it's narration
+                        cleaned_lines.append(f'narrator "{line}"')
+            else:
+                # Assume it's narration
+                cleaned_lines.append(f'narrator "{line}"')
+        
+        # Ensure it ends with "What do you do?"
+        if not any('What do you do?' in line for line in cleaned_lines):
+            cleaned_lines.append('**"What do you do?"**')
+        
+        return '\n'.join(cleaned_lines)
+
+    def format_story_block(block_text):
+        """Format story block for consistent display"""
+        if not block_text:
+            return '<p style="margin:4px 0; color:#666;"><i>Story continues...</i></p>'
+        
+        formatted_lines = []
+        lines = block_text.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Handle "What do you do?" prompt
+            if 'What do you do?' in line:
+                formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**"What do you do?"**</p>')
+                continue
+            
+            # Handle narrator lines
+            if line.startswith('narrator "') and line.endswith('"'):
+                content = line[9:-1]  # Remove 'narrator "' and '"'
+                formatted_lines.append(f'<p style="margin:4px 0; color:#555; font-style:italic;">{content}</p>')
+                continue
+            
+            # Handle character dialogue
+            if '"' in line:
+                # Try to extract speaker and dialogue
+                match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                if match:
+                    speaker = match.group(1).strip()
+                    dialogue = match.group(2)
+                    
+                    if speaker.lower() == 'narrator':
+                        formatted_lines.append(f'<p style="margin:4px 0; color:#555; font-style:italic;">{dialogue}</p>')
+                    else:
+                        formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
+                    continue
+            
+            # Handle other formats (fallback)
+            if line.startswith('**') and line.endswith('**'):
+                # Bold text
+                content = line[2:-2]
+                formatted_lines.append(f'<p style="margin:4px 0; font-weight:bold; color:#2c3e50;">{content}</p>')
+            else:
+                # Assume it's narration
+                formatted_lines.append(f'<p style="margin:4px 0; color:#555; font-style:italic;">{line}</p>')
+        
+        return ''.join(formatted_lines)
 
     def handle_choice_click(choice_text):
         st.session_state.reply_input = choice_text
@@ -835,11 +964,16 @@ Generate 3 distinct choices that would make sense for the player character in th
 Each choice should be:
 - 1-2 sentences maximum
 - Specific and actionable
-- Different from each other
+- Different from each other (one dialogue, one action, one investigation/exploration)
 - Appropriate for the story context and character personalities
 - Consistent with the story template and setting
 - Match the story tone: {story_tone}
 - Consider the pacing: {pacing}
+
+CHOICE TYPES:
+1. Dialogue choice (speaking to someone)
+2. Action choice (doing something physical)
+3. Investigation/Exploration choice (examining surroundings or moving)
 
 Format as:
 1. [First choice]
@@ -863,9 +997,15 @@ Generate only the 3 choices, nothing else.
                         if choice:
                             choices.append(choice)
                 
-                # Ensure we have exactly 3 choices
+                # Ensure we have exactly 3 choices with fallbacks
                 while len(choices) < 3:
-                    choices.append(f"Continue exploring the area")
+                    if len(choices) == 0:
+                        choices.append("Ask someone nearby what's happening")
+                    elif len(choices) == 1:
+                        choices.append("Look around the area for clues")
+                    else:
+                        choices.append("Continue exploring the surroundings")
+                
                 if len(choices) > 3:
                     choices = choices[:3]
                 
@@ -873,14 +1013,14 @@ Generate only the 3 choices, nothing else.
             except Exception as e:
                 # Fallback choices
                 return [
-                    "Continue exploring the area",
-                    "Talk to someone nearby", 
-                    "Investigate something interesting"
+                    "Ask someone nearby what's happening",
+                    "Look around the area for clues", 
+                    "Continue exploring the surroundings"
                 ]
         return [
-            "Continue exploring the area",
-            "Talk to someone nearby", 
-            "Investigate something interesting"
+            "Ask someone nearby what's happening",
+            "Look around the area for clues", 
+            "Continue exploring the surroundings"
         ]
 
     # --- Quick Navigation Links ---
@@ -1727,18 +1867,21 @@ Story Style Guidelines:
 - Point of View: {point_of_view}
 - Narration Style: {narration_style}
 
-Write the story in the following script format:
-
-narrator "<scene description>"
-character (expression) "<dialogue or thoughts>"
-
-Rules:
-- Use narrator and character lines as shown.
-- Focus on character dialogue and internal thoughts.
-- Avoid long narration.
-- You must introduce all main characters from the JSON within the first 3 story turns.
-- Do NOT offer multiple choice options or suggestions.
+CRITICAL FORMATTING RULES:
+- Write in script format with clear speaker identification
+- Use this exact format for each line:
+  narrator "description of what happens"
+  CharacterName "dialogue or thoughts"
+- Keep each line concise and focused
+- Maintain consistent character voices and personalities
+- Do NOT write dialogue or thoughts for the player character
 - End with: **"What do you do?"**
+
+CONTENT GUIDELINES:
+- Introduce the world and setting vividly
+- Establish the player character's situation
+- Introduce at least one other character from the JSON
+- Keep the opening engaging but not overwhelming
 - Match the story tone: {story_tone}
 - Use the specified pacing: {pacing}
 - Write from the specified point of view: {point_of_view}
@@ -1747,14 +1890,26 @@ Rules:
 JSON:
 {json.dumps(st.session_state['sekai_json'], indent=2)}
 
-Write the opening scene below, making sure to introduce one or more characters:
+Write the opening scene below in proper script format:
 """
-            first_turn = model.generate_content(story_prompt).text.strip()
+            try:
+                first_turn = model.generate_content(story_prompt).text.strip()
 
-            if first_turn.startswith("{") or first_turn.startswith('"title"'):
-                st.error("Model returned raw JSON instead of story text. Please retry.")
-            else:
-                st.session_state["game_state"] = [first_turn]
+                if first_turn.startswith("{") or first_turn.startswith('"title"'):
+                    st.error("Model returned raw JSON instead of story text. Please retry.")
+                else:
+                    # Clean up the initial story response
+                    cleaned_first_turn = clean_story_response(first_turn)
+                    
+                    st.session_state["game_state"] = [cleaned_first_turn]
+                    st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
+                    st.session_state["user_inputs"] = [""]
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error starting the game: {e}")
+                # Fallback opening
+                fallback_opening = f'narrator "Welcome to {sekai_json.get("title", "your adventure")}!"\nnarrator "The story begins..."\n**"What do you do?"**'
+                st.session_state["game_state"] = [fallback_opening]
                 st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
                 st.session_state["user_inputs"] = [""]
                 st.rerun()
@@ -1766,40 +1921,13 @@ Write the opening scene below, making sure to introduce one or more characters:
 
         for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
             color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
-            user_reply_html = f'<p style="margin-bottom:4px;"><b>Your input:</b> {user_input}</p>' if user_input.strip() else ""
+            user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
 
-            # Format each line on a new line with spacing
-            formatted_block = ""
-            for line in block.split("\n"):
-                line = line.strip()
-                if not line:
-                    continue
-
-                # Use regex to find speaker and dialogue
-                match = re.match(r'^(.*?)\s*(".*")', line, re.DOTALL)
-                if match:
-                    speaker = match.group(1).strip()
-                    dialogue = match.group(2)  # Keep original with quotes for characters
-
-                    if speaker.lower() == "narrator":
-                        # For narrator, remove quotes and italicize the content
-                        dialogue_content = dialogue.strip()
-                        if dialogue_content.startswith('"') and dialogue_content.endswith(
-                            '"'
-                        ):
-                            dialogue_content = dialogue_content[1:-1]
-                        formatted_line = f"<i>{dialogue_content}</i>"
-                    else:
-                        # For characters, bold the speaker and show the dialogue
-                        formatted_line = f"<b>{speaker}</b> {dialogue}"
-
-                    formatted_block += f"<p style='margin:4px 0;'>{formatted_line}</p>"
-                else:
-                    # Handle lines without a speaker, like "**What do you do?**"
-                    formatted_block += f"<p style='margin:4px 0;'>{line}</p>"
+            # Enhanced formatting for better readability
+            formatted_block = format_story_block(block)
 
             st.markdown(
-                f'<div style="background-color:{color}; padding:10px; border-radius:8px">{user_reply_html}{formatted_block}</div>',
+                f'<div style="background-color:{color}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1)">{user_reply_html}{formatted_block}</div>',
                 unsafe_allow_html=True,
             )
 
