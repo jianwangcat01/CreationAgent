@@ -888,30 +888,27 @@ Generate the next story turn in proper visual novel script format:
                 formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**What do you do?**</p>')
                 continue
             
-            # Handle narrator lines (no quotes, no italics)
+            # Remove 'narrator' prefix for narration lines
             if line.startswith('narrator '):
                 content = line[9:]  # Remove 'narrator '
                 formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{content}</p>')
                 continue
             
-            # Handle character dialogue with expressions
+            # Character dialogue with expressions: bold everything before the first quote
             if '"' in line:
                 # Try to extract speaker, expression, and dialogue
-                match = re.match(r'^([^(]+)\s*\(([^)]+)\)\s*"([^"]+)"', line)
+                match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
                 if match:
-                    speaker = match.group(1).strip()
-                    expression = match.group(2).strip()
-                    dialogue = match.group(3)
-                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker} ({expression}):</b> "{dialogue}"</p>')
+                    speaker_expr = match.group(1).strip()
+                    dialogue = match.group(2)
+                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker_expr}:</b> "{dialogue}"</p>')
                     continue
-                
                 # Fallback for character dialogue without expression
-                match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                match = re.match(r'^([^\"]+)\s*"([^"]+)"', line)
                 if match:
                     speaker = match.group(1).strip()
                     dialogue = match.group(2)
-                    if speaker.lower() != 'narrator':
-                        formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
+                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
                     continue
             
             # Handle other formats (fallback)
@@ -920,7 +917,7 @@ Generate the next story turn in proper visual novel script format:
                 content = line[2:-2]
                 formatted_lines.append(f'<p style="margin:4px 0; font-weight:bold; color:#2c3e50;">{content}</p>')
             else:
-                # Assume it's narration
+                # Plain narration (no narrator prefix)
                 formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{line}</p>')
         
         return ''.join(formatted_lines)
