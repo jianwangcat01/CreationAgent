@@ -1392,7 +1392,7 @@ Characters:
             if narration_style != "Balanced":
                 prompt += f"Narration: {narration_style}\n"
             
-            prompt += "\nRespond with raw JSON only."
+            prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style field."
 
             response = model.generate_content(prompt)
             output = response.text.strip()
@@ -1404,6 +1404,13 @@ Characters:
 
             try:
                 sekai_json = json.loads(output)
+                # Remove 'choices' if present
+                if 'choices' in sekai_json:
+                    del sekai_json['choices']
+                # Remove 'voice_style' from player (assume first character is player)
+                if 'characters' in sekai_json and len(sekai_json['characters']) > 0:
+                    if 'voice_style' in sekai_json['characters'][0]:
+                        del sekai_json['characters'][0]['voice_style']
                 st.session_state["sekai_json"] = sekai_json
                 st.success("🎉 Sekai story template generated successfully!")
                 st.json(sekai_json)
@@ -1522,44 +1529,17 @@ Write the opening scene below, making sure to introduce one or more characters:
         # Generate 3 choice options
         choices = generate_choices()
         
-        # Display choice buttons
+        # Display choice buttons vertically with full description
         st.markdown("**Choose an action or write your own:**")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button(f"🎯 {choices[0][:30]}{'...' if len(choices[0]) > 30 else ''}", 
-                        key=f"choice_1_{len(st.session_state['game_state'])}", 
-                        on_click=handle_choice_click, args=(choices[0],)):
+        for idx, choice in enumerate(choices):
+            btn_label = f"Choice {idx+1}: {choice}"
+            if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
                 pass
-        
-        with col2:
-            if st.button(f"🎯 {choices[1][:30]}{'...' if len(choices[1]) > 30 else ''}", 
-                        key=f"choice_2_{len(st.session_state['game_state'])}", 
-                        on_click=handle_choice_click, args=(choices[1],)):
-                pass
-        
-        with col3:
-            if st.button(f"🎯 {choices[2][:30]}{'...' if len(choices[2]) > 30 else ''}", 
-                        key=f"choice_3_{len(st.session_state['game_state'])}", 
-                        on_click=handle_choice_click, args=(choices[2],)):
-                pass
-        
-        # Show full choice text on hover (using tooltips)
-        st.markdown(f"""
-        <details>
-        <summary>📋 View full choice descriptions</summary>
-        <ul>
-        <li><strong>Choice 1:</strong> {choices[0]}</li>
-        <li><strong>Choice 2:</strong> {choices[1]}</li>
-        <li><strong>Choice 3:</strong> {choices[2]}</li>
-        </ul>
-        </details>
-        """, unsafe_allow_html=True)
         
         # Freeform input
         st.markdown("**Or write your own action/dialogue:**")
         st.text_input("Enter your next action or dialogue", key="reply_input")
-        st.button("🔄 Send", on_click=handle_send)
+        st.button("Send", on_click=handle_send)
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
