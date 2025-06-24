@@ -20,7 +20,7 @@ if st.session_state["app_mode"] is None:
         st.markdown(
             '''
             <a href="https://postimg.cc/YGrdLrpn" target="_blank">
-                <img src="https://i.postimg.cc/j5Nm92Bb/1.png" alt="1" width="320" height="240"/>
+                <img src="https://i.postimg.cc/j5Nm92Bb/1.png" alt="1" width="250" height="240"/>
             </a>
             ''',
             unsafe_allow_html=True
@@ -30,7 +30,7 @@ if st.session_state["app_mode"] is None:
         st.markdown(
             '''
             <a href="https://postimages.org/" target="_blank">
-                <img src="https://i.postimg.cc/nrJgtZtQ/2.png" alt="2" width="320" height="240"/>
+                <img src="https://i.postimg.cc/nrJgtZtQ/2.png" alt="2" width="380" height="240"/>
             </a>
             ''',
             unsafe_allow_html=True
