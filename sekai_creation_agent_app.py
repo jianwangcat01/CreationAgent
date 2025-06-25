@@ -102,8 +102,7 @@ if st.session_state["app_mode"] == "character":
     st.set_page_config(page_title="Create Your Character", layout="wide")
     st.title("🎭 Create Your Character")
     st.markdown("""
-Design a unique character, then chat with them as if they were real!
-The AI will take on the personality you describe and respond accordingly.
+Design a unique character, then chat with them as if they were real! The AI will fully embody their personality, quirks, and charm.
 """)
 
     if st.button("⬅️ Go Back to Menu", key="back_to_menu_char"):
@@ -128,7 +127,7 @@ The AI will take on the personality you describe and respond accordingly.
     # --- Step Overview ---
     st.markdown("---")
     st.markdown("### 📋 Creation Steps Overview")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
@@ -148,8 +147,16 @@ The AI will take on the personality you describe and respond accordingly.
     with col3:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">✨</div>
+            <div style="font-size: 24px;">💫</div>
             <div style="font-weight: bold; color: #495057;">Step 3</div>
+            <div style="color: #6c757d; font-size: 14px;">Expression & Relationships</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col4:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">✨</div>
+            <div style="font-weight: bold; color: #495057;">Step 4</div>
             <div style="color: #6c757d; font-size: 14px;">Final Touches</div>
         </div>
         """, unsafe_allow_html=True)
@@ -158,17 +165,20 @@ The AI will take on the personality you describe and respond accordingly.
     # Helper function for random examples
     def get_random_example(field_type):
         examples = {
-            "name": ["Eliora", "Jack the Brave", "Neko-chan", "Luna", "Kai", "Aria"],
-            "role": ["Your loyal knight", "The mischievous demon you summoned", "Your online girlfriend who only lives in a phone", "Time-traveling librarian", "Guardian spirit", "Space pirate captain"],
+            "name": ["Eliora", "Jack the Brave", "Neko-chan", "Luna", "Kai", "Aria", "Artemis", "Rei"],
+            "role": ["Your loyal knight", "The mischievous demon you summoned", "Your online girlfriend who only lives in a phone", "Time-traveling librarian", "Guardian spirit", "Space pirate captain", "Witch who sells cursed flowers", "Guardian spirit of your dreams"],
             "traits": [
-                "She's soft-spoken but bold when protecting loved ones. She speaks like an ancient priestess.",
+                "Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
                 "He's sarcastic, flirty, and never serious — until someone mentions his tragic past.",
-                "They adore shiny things and always try to trade useless junk with people.",
+                "Chaotic and charming. A street magician who trusts no one but you.",
                 "Calm, mysterious, and always speaks in riddles. Has knowledge of the past and future.",
                 "Energetic and optimistic, but secretly carries deep emotional scars from their past.",
                 "Wise and patient mentor figure who loves sharing stories and giving advice."
             ],
             "opening": [
+                "Took you long enough. Shall we begin?",
+                "You're late again, silly. I missed you.",
+                "I thought you'd never return...",
                 "Hey, it's you again! I've been waiting forever, dummy!",
                 "Ah... another traveler. Come to disturb my peace?",
                 "Greetings, brave soul! What brings you to my humble abode?",
@@ -176,7 +186,9 @@ The AI will take on the personality you describe and respond accordingly.
                 "Welcome, wanderer. I sense great potential within you..."
             ],
             "voice_style": [
-                "Always says 'nya~' like a cat girl",
+                "Always says 'nya~' like a catgirl",
+                "Talks in old poetic phrases",
+                "Speaks bluntly and calls you 'human'",
                 "Ends every sentence with 'my dear'",
                 "Speaks in old English ('Thou art brave indeed!')",
                 "Uses lots of exclamation marks and is very energetic",
@@ -186,12 +198,15 @@ The AI will take on the personality you describe and respond accordingly.
             "emotional_style": [
                 "Protective big brother energy",
                 "Tsundere (hot and cold flirty)",
+                "Warm and clingy childhood friend",
                 "Obsessive yandere",
                 "Gentle supportive best friend",
                 "Mysterious and aloof but secretly caring",
                 "Playful and teasing but deeply loyal"
             ],
             "lore_snippets": [
+                "They still carry the ring you gave them long ago.",
+                "You used to sneak into the temple garden together as kids.",
                 "They once lost someone they loved, and still carry the necklace.",
                 "You and the character used to play in the forest as kids.",
                 "They have a mysterious scar that glows in the moonlight.",
@@ -205,10 +220,13 @@ The AI will take on the personality you describe and respond accordingly.
     # ===== STEP 1: CORE DETAILS =====
     st.markdown("---")
     st.markdown("## 🌟 Step 1: Core Details")
-    st.info("Let's start with the basics! Tell us about your character's identity.")
+    st.info("Let's start with who they are.")
 
     # Character Name
     st.markdown("### 👤 Character Name")
+    st.markdown("💡 **Pick something cool, elegant, or fun. Be as creative as you like!**")
+    st.markdown("*Examples: Eliora, Jack the Brave, Neko-chan, Artemis, Rei*")
+    
     col1, col2 = st.columns([3, 1])
     with col1:
         # Get random name if button was clicked
@@ -234,10 +252,13 @@ The AI will take on the personality you describe and respond accordingly.
             st.rerun()
     
     if char_name.strip():
-        st.success(f"✨ That name is full of charm! Can't wait to meet {char_name}!")
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Love that name!</span> It already paints a picture in my mind.</div>', unsafe_allow_html=True)
 
     # Role/Occupation
     st.markdown("### 🎭 Role / Occupation")
+    st.markdown("💡 **What's their role in your world or story? Be descriptive or playful!**")
+    st.markdown("*Examples: Your loyal knight, Time-traveling librarian, Witch who sells cursed flowers, Guardian spirit of your dreams*")
+    
     col1, col2 = st.columns([3, 1])
     with col1:
         # Get random role if button was clicked
@@ -263,15 +284,20 @@ The AI will take on the personality you describe and respond accordingly.
             st.rerun()
     
     if char_role.strip():
-        st.success("🎉 Ooooh! That's an exciting role — this is gonna be fun!")
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That role is so vivid</span> — I want to meet them already!</div>', unsafe_allow_html=True)
 
     # ===== STEP 2: PERSONALITY & BACKGROUND =====
     st.markdown("---")
     st.markdown("## 🧠 Step 2: Personality & Background")
-    st.info("This is where the magic happens! Tell us how they behave, think, speak, and feel.")
+    st.info("Now give them depth — what makes them special?")
 
     # Personality Traits
-    st.markdown("### 💫 Personality Traits & Background")
+    st.markdown("### 💫 Personality Traits & Backstory")
+    st.markdown("💡 **Describe their nature, how they behave, and a glimpse of their story.**")
+    st.markdown("*Examples:*")
+    st.markdown("- *\"Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.\"*")
+    st.markdown("- *\"Chaotic and charming. A street magician who trusts no one but you.\"*")
+    
     col1, col2 = st.columns([3, 1])
     with col1:
         # Get random traits if button was clicked
@@ -288,7 +314,7 @@ The AI will take on the personality you describe and respond accordingly.
         char_traits = st.text_area(
             "Tell us about their personality, background, and how they behave:",
             value=default_traits,
-            placeholder="She's soft-spoken but bold when protecting loved ones. She speaks like an ancient priestess.",
+            placeholder="Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
             height=120,
             key="char_traits_input"
         )
@@ -298,93 +324,130 @@ The AI will take on the personality you describe and respond accordingly.
             st.rerun()
 
     if char_traits.strip():
-        st.success("🎨 Wow, that's such a vivid personality. You're a worldbuilder already!")
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That\'s so rich</span> — they already feel alive!</div>', unsafe_allow_html=True)
 
-    # Advanced Options (Collapsible)
-    with st.expander("🌟 Advanced Options (Optional)", expanded=False):
-        st.markdown("#### 🗣️ Voice Style / Speech Quirks")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random voice style if button was clicked
-            if "random_voice_clicked" not in st.session_state:
-                st.session_state["random_voice_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_voice = st.session_state.get("voice_style_input", "")
-            if st.session_state["random_voice_clicked"]:
-                default_voice = get_random_example("voice_style")
-                st.session_state["voice_style_input"] = default_voice
-                st.session_state["random_voice_clicked"] = False
-            
-            voice_style = st.text_input(
-                "How do they speak? Any unique speech patterns?",
-                value=default_voice,
-                placeholder="Always says 'nya~' like a cat girl / Ends every sentence with 'my dear'",
-                key="voice_style_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_voice"):
-                st.session_state["random_voice_clicked"] = True
-                st.rerun()
-        
-        st.markdown("#### 💕 Emotional Style / Relationship Style")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random emotional style if button was clicked
-            if "random_emotional_clicked" not in st.session_state:
-                st.session_state["random_emotional_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_emotional = st.session_state.get("emotional_style_input", "")
-            if st.session_state["random_emotional_clicked"]:
-                default_emotional = get_random_example("emotional_style")
-                st.session_state["emotional_style_input"] = default_emotional
-                st.session_state["random_emotional_clicked"] = False
-            
-            emotional_style = st.text_input(
-                "How do they treat the user emotionally?",
-                value=default_emotional,
-                placeholder="Protective big brother energy / Tsundere (hot and cold flirty) / Gentle supportive best friend",
-                key="emotional_style_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_emotional"):
-                st.session_state["random_emotional_clicked"] = True
-                st.rerun()
-        
-        st.markdown("#### 📖 Memory or Lore Snippets")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random lore if button was clicked
-            if "random_lore_clicked" not in st.session_state:
-                st.session_state["random_lore_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_lore = st.session_state.get("lore_snippets_input", "")
-            if st.session_state["random_lore_clicked"]:
-                default_lore = get_random_example("lore_snippets")
-                st.session_state["lore_snippets_input"] = default_lore
-                st.session_state["random_lore_clicked"] = False
-            
-            lore_snippets = st.text_area(
-                "Any personal backstory or shared memories?",
-                value=default_lore,
-                placeholder="They once lost someone they loved, and still carry the necklace. / You and the character used to play in the forest as kids.",
-                height=80,
-                key="lore_snippets_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_lore"):
-                st.session_state["random_lore_clicked"] = True
-                st.rerun()
-
-    # ===== STEP 3: FINAL TOUCHES =====
+    # ===== STEP 3: EXPRESSION & RELATIONSHIPS =====
     st.markdown("---")
-    st.markdown("## ✨ Step 3: Final Touches")
-    st.info("Almost done! Let's add those finishing touches to make your character perfect.")
+    st.markdown("## 💫 Step 3: Expression & Relationships")
+    st.info("Let's add how they speak and how they feel about you.")
+
+    # Voice Style
+    st.markdown("### 🗣️ Voice Style / Speech Quirks")
+    st.markdown("💡 **Do they speak like a noble? A weirdo? A modern teen?**")
+    st.markdown("*Examples:*")
+    st.markdown("- *\"Always says 'nya~' like a catgirl\"*")
+    st.markdown("- *\"Talks in old poetic phrases\"*")
+    st.markdown("- *\"Speaks bluntly and calls you 'human'\"*")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random voice style if button was clicked
+        if "random_voice_clicked" not in st.session_state:
+            st.session_state["random_voice_clicked"] = False
+        
+        # Set default value based on random click or existing session state
+        default_voice = st.session_state.get("voice_style_input", "")
+        if st.session_state["random_voice_clicked"]:
+            default_voice = get_random_example("voice_style")
+            st.session_state["voice_style_input"] = default_voice
+            st.session_state["random_voice_clicked"] = False
+        
+        voice_style = st.text_input(
+            "How do they speak? Any unique speech patterns?",
+            value=default_voice,
+            placeholder="Always says 'nya~' like a catgirl / Talks in old poetic phrases",
+            key="voice_style_input"
+        )
+    with col2:
+        if st.button("🎲 Random", key="random_voice"):
+            st.session_state["random_voice_clicked"] = True
+            st.rerun()
+    
+    if voice_style.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Nice!</span> I can already imagine hearing them talk.</div>', unsafe_allow_html=True)
+
+    # Emotional Style
+    st.markdown("### 💕 Emotional / Relationship Style")
+    st.markdown("💡 **How do they emotionally connect with the user?**")
+    st.markdown("*Examples:*")
+    st.markdown("- *Protective big brother energy*")
+    st.markdown("- *Tsundere (hot and cold flirty)*")
+    st.markdown("- *Warm and clingy childhood friend*")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random emotional style if button was clicked
+        if "random_emotional_clicked" not in st.session_state:
+            st.session_state["random_emotional_clicked"] = False
+        
+        # Set default value based on random click or existing session state
+        default_emotional = st.session_state.get("emotional_style_input", "")
+        if st.session_state["random_emotional_clicked"]:
+            default_emotional = get_random_example("emotional_style")
+            st.session_state["emotional_style_input"] = default_emotional
+            st.session_state["random_emotional_clicked"] = False
+        
+        emotional_style = st.text_input(
+            "How do they treat the user emotionally?",
+            value=default_emotional,
+            placeholder="Protective big brother energy / Tsundere (hot and cold flirty)",
+            key="emotional_style_input"
+        )
+    with col2:
+        if st.button("🎲 Random", key="random_emotional"):
+            st.session_state["random_emotional_clicked"] = True
+            st.rerun()
+    
+    if emotional_style.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Adorable!</span> Their emotional vibe is going to make this chat really fun.</div>', unsafe_allow_html=True)
+
+    # Lore Snippets
+    st.markdown("### 📖 Memory or Lore Snippets")
+    st.markdown("💡 **Add personal history or a shared memory with the user.**")
+    st.markdown("*Examples:*")
+    st.markdown("- *\"They still carry the ring you gave them long ago.\"*")
+    st.markdown("- *\"You used to sneak into the temple garden together as kids.\"*")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random lore if button was clicked
+        if "random_lore_clicked" not in st.session_state:
+            st.session_state["random_lore_clicked"] = False
+        
+        # Set default value based on random click or existing session state
+        default_lore = st.session_state.get("lore_snippets_input", "")
+        if st.session_state["random_lore_clicked"]:
+            default_lore = get_random_example("lore_snippets")
+            st.session_state["lore_snippets_input"] = default_lore
+            st.session_state["random_lore_clicked"] = False
+        
+        lore_snippets = st.text_area(
+            "Any personal backstory or shared memories?",
+            value=default_lore,
+            placeholder="They still carry the ring you gave them long ago. / You used to sneak into the temple garden together as kids.",
+            height=80,
+            key="lore_snippets_input"
+        )
+    with col2:
+        if st.button("🎲 Random", key="random_lore"):
+            st.session_state["random_lore_clicked"] = True
+            st.rerun()
+    
+    if lore_snippets.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That detail adds so much depth</span> — what a story!</div>', unsafe_allow_html=True)
+
+    # ===== STEP 4: FINAL TOUCHES =====
+    st.markdown("---")
+    st.markdown("## ✨ Step 4: Final Touches")
+    st.info("Let's get ready for your first encounter.")
 
     # Opening Lines
-    st.markdown("### 💬 Opening Lines (Optional)")
+    st.markdown("### 💬 Opening Line (Optional)")
+    st.markdown("💡 **What's the first thing they say when the story begins?**")
+    st.markdown("*Examples:*")
+    st.markdown("- *\"Took you long enough. Shall we begin?\"*")
+    st.markdown("- *\"You're late again, silly. I missed you.\"*")
+    st.markdown("- *\"I thought you'd never return...\"*")
     st.markdown("**💡 Tip:** If you don't write anything here, I'll come up with something fun for you!")
     
     col1, col2 = st.columns([3, 1])
@@ -403,7 +466,7 @@ The AI will take on the personality you describe and respond accordingly.
         opening_line = st.text_area(
             "What should they say to start the conversation?",
             value=default_opening,
-            placeholder="Hey, it's you again! I've been waiting forever, dummy!",
+            placeholder="Took you long enough. Shall we begin?",
             height=80,
             key="opening_line_input"
         )
@@ -413,23 +476,25 @@ The AI will take on the personality you describe and respond accordingly.
             st.rerun()
 
     if opening_line.strip():
-        st.success("🎭 Got it! That's a perfect way to start the conversation!")
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Oooh, such a strong intro!</span> They\'re totally in character.</div>', unsafe_allow_html=True)
 
     # Character Image
     st.markdown("### 🖼️ Character Image (Optional)")
-    st.markdown("**💡 Tip:** Try using AI image generators from Hugging Face like `cagliostrolab/animagine-xl` or `hakurei/waifu-diffusion`!")
+    st.markdown("💡 **Upload an image or generate one with Hugging Face models like animagine-xl or waifu-diffusion.**")
     
     char_image = st.file_uploader(
-        "Upload a profile image",
+        "Upload: PNG / JPG / JPEG (Max 200MB)",
         type=["png", "jpg", "jpeg"],
         key="char_image_upload"
     )
 
     if char_image:
-        st.success("🖼️ Beautiful image! It'll make the chat feel more immersive!")
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Visuals complete!</span> That\'s a full character now!</div>', unsafe_allow_html=True)
 
     # Character Preview
     st.markdown("### 👀 Character Preview")
+    st.markdown("**Your character so far:**")
+    
     preview_col1, preview_col2 = st.columns([1, 2])
     
     with preview_col1:
@@ -447,9 +512,19 @@ The AI will take on the personality you describe and respond accordingly.
 
     with preview_col2:
         st.markdown(f"""
-        **Name:** {char_name}
-        **Role:** {char_role}
-        **Personality:** {char_traits[:100]}{'...' if len(char_traits) > 100 else ''}
+        **🎭 Name:** {char_name}
+        
+        **✨ Role:** {char_role}
+        
+        **💫 Personality:** {char_traits[:100]}{'...' if len(char_traits) > 100 else ''}
+        
+        **🗣️ Speech Style:** {voice_style if voice_style.strip() else 'Natural'}
+        
+        **💕 Emotion:** {emotional_style if emotional_style.strip() else 'Friendly'}
+        
+        **📖 Memory:** {lore_snippets if lore_snippets.strip() else 'None yet'}
+        
+        **💬 Opening Line:** {opening_line if opening_line.strip() else 'Will be generated'}
         """)
 
     # Start Chat Button
