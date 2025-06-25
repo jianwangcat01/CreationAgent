@@ -1319,21 +1319,30 @@ Generate only the 3 choices, nothing else.
     # ===== STEP 1: CREATE YOUR SEKAI WORLD =====
     st.markdown("---")
     st.markdown("## 🌍 Step 1: Your Sekai World")
-    
+
     # --- World Inspiration ---
     st.markdown("### 🌈 World Inspiration")
     st.markdown("**What's a theme, object, or feeling that inspires your world? Anything works — just a spark!**")
-    
-    if "world_inspiration" not in st.session_state:
-        st.session_state["world_inspiration"] = ""
-    
-    world_inspiration = st.text_input(
-        "Your inspiration spark",
-        value=st.session_state["world_inspiration"],
-        placeholder="zoo / library / sunset / music / dreams / friendship",
-        key="world_inspiration"
-    )
-    
+
+    # Add random button above input
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🎲 Random Inspiration", key="random_inspiration"):
+            random_inspirations = [
+                "zoo", "library", "sunset", "music", "dreams", "friendship", "ancient ruins", "lost city", "enchanted forest", "forgotten melody"
+            ]
+            st.session_state["world_inspiration"] = random.choice(random_inspirations)
+            st.rerun()
+    with col1:
+        if "world_inspiration" not in st.session_state:
+            st.session_state["world_inspiration"] = ""
+        world_inspiration = st.text_input(
+            "Your inspiration spark",
+            value=st.session_state["world_inspiration"],
+            placeholder="zoo / library / sunset / music / dreams / friendship",
+            key="world_inspiration"
+        )
+
     if world_inspiration.strip():
         # Dynamic feedback based on input
         inspiration_lower = world_inspiration.lower()
@@ -1353,17 +1362,26 @@ Generate only the 3 choices, nothing else.
     # --- Environment / Setting ---
     st.markdown("### 🌍 Environment / Setting")
     st.markdown("**Where does your world take place? Think big: forest canopy, underwater palace, moonlit garden…**")
-    
-    if "world_environment" not in st.session_state:
-        st.session_state["world_environment"] = ""
-    
-    world_environment = st.text_input(
-        "Your world's environment",
-        value=st.session_state["world_environment"],
-        placeholder="a floating island in the sky / underwater palace / forest canopy / moonlit garden",
-        key="world_environment"
-    )
-    
+
+    # Add random button above input
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🎲 Random Environment", key="random_environment"):
+            random_envs = [
+                "a floating island in the sky", "underwater palace", "forest canopy", "moonlit garden", "crystal caves", "ancient ruins", "desert oasis", "city of clouds", "volcanic fortress"
+            ]
+            st.session_state["world_environment"] = random.choice(random_envs)
+            st.rerun()
+    with col1:
+        if "world_environment" not in st.session_state:
+            st.session_state["world_environment"] = ""
+        world_environment = st.text_input(
+            "Your world's environment",
+            value=st.session_state["world_environment"],
+            placeholder="a floating island in the sky / underwater palace / forest canopy / moonlit garden",
+            key="world_environment"
+        )
+
     if world_environment.strip():
         # Dynamic feedback based on input
         environment_lower = world_environment.lower()
@@ -1381,17 +1399,26 @@ Generate only the 3 choices, nothing else.
     # --- Mood / Vibe ---
     st.markdown("### 🎭 Mood / Vibe")
     st.markdown("**What kind of mood does your world have? Cozy? Mysterious? Epic? Peaceful?**")
-    
-    if "world_mood" not in st.session_state:
-        st.session_state["world_mood"] = ""
-    
-    world_mood = st.text_input(
-        "Your world's mood",
-        value=st.session_state["world_mood"],
-        placeholder="serene and dreamlike / cozy and warm / mysterious and dark / epic and adventurous",
-        key="world_mood"
-    )
-    
+
+    # Add random button above input
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🎲 Random Mood", key="random_mood"):
+            random_moods = [
+                "serene and dreamlike", "cozy and warm", "mysterious and dark", "epic and adventurous", "whimsical and playful", "melancholic and nostalgic", "tense and suspenseful", "romantic and hopeful"
+            ]
+            st.session_state["world_mood"] = random.choice(random_moods)
+            st.rerun()
+    with col1:
+        if "world_mood" not in st.session_state:
+            st.session_state["world_mood"] = ""
+        world_mood = st.text_input(
+            "Your world's mood",
+            value=st.session_state["world_mood"],
+            placeholder="serene and dreamlike / cozy and warm / mysterious and dark / epic and adventurous",
+            key="world_mood"
+        )
+
     if world_mood.strip():
         # Dynamic feedback based on input
         mood_lower = world_mood.lower()
@@ -1409,17 +1436,26 @@ Generate only the 3 choices, nothing else.
     # --- Magical Rule or Twist ---
     st.markdown("### 🧬 Magical Rule or Twist")
     st.markdown("**Is there something unique or magical about this world? Something that bends reality?**")
-    
-    if "world_magic" not in st.session_state:
-        st.session_state["world_magic"] = ""
-    
-    world_magic = st.text_input(
-        "Your world's magical twist",
-        value=st.session_state["world_magic"],
-        placeholder="time flows backward at sunset / gravity works sideways / memories become physical objects",
-        key="world_magic"
-    )
-    
+
+    # Add random button above input
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🎲 Random Magic", key="random_magic"):
+            random_magics = [
+                "time flows backward at sunset", "gravity works sideways", "memories become physical objects", "everyone can talk to animals", "dreams shape the landscape", "music controls the weather", "secrets are visible as glowing runes", "people swap bodies at midnight"
+            ]
+            st.session_state["world_magic"] = random.choice(random_magics)
+            st.rerun()
+    with col1:
+        if "world_magic" not in st.session_state:
+            st.session_state["world_magic"] = ""
+        world_magic = st.text_input(
+            "Your world's magical twist",
+            value=st.session_state["world_magic"],
+            placeholder="time flows backward at sunset / gravity works sideways / memories become physical objects",
+            key="world_magic"
+        )
+
     if world_magic.strip():
         # Dynamic feedback based on input
         magic_lower = world_magic.lower()
@@ -1435,21 +1471,18 @@ Generate only the 3 choices, nothing else.
     # --- Genre Tags ---
     st.markdown("### 🎬 Optional Genre Tags")
     st.markdown("**Want to pick a genre to help shape the story? (You can mix two!)**")
-    
     genre_options = [
         "Fantasy 🧝‍♀️", "Sci-Fi 🚀", "Romance 💘", "Slice of Life 🍰",
         "Mystery 🔍", "Horror 👻", "Comedy 😂", "Action ⚔️", "Historical 🏯"
     ]
     if 'world_genre' not in st.session_state:
         st.session_state['world_genre'] = []
-
     selected_genres = st.multiselect(
         "Your Sekai's Genre(s)",
         genre_options,
         default=st.session_state['world_genre'],
         key="world_genre"
     )
-    
     if selected_genres:
         # Dynamic feedback based on genre selection
         genre_names = [g.split(' ', 1)[0] for g in selected_genres]
@@ -1464,118 +1497,33 @@ Generate only the 3 choices, nothing else.
         else:
             st.success("🌟 Great choice! Your Sekai will have an amazing vibe with that genre.")
 
-    # --- AI World Generation Button ---
-    if st.button("🔮 Generate My Magical World", type="primary"):
-        st.toast("Working magic... Generating your Sekai world ✨")
-        
-        # Collect all the world creation data
-        inspiration = st.session_state.get("world_inspiration", "").strip()
-        environment = st.session_state.get("world_environment", "").strip()
-        mood = st.session_state.get("world_mood", "").strip()
-        magic = st.session_state.get("world_magic", "").strip()
-        genres = st.session_state.get("world_genre", [])
-        
-        # Safety check for genres
-        if not isinstance(genres, list):
-            genres = []
-        
-        genre_str = ', '.join([g.split(' ', 1)[0] for g in genres if g]) if genres else ''
-        
-        # Build comprehensive prompt
-        world_context = f"Inspiration: {inspiration}\nEnvironment: {environment}\nMood: {mood}"
-        if magic:
-            world_context += f"\nMagical Twist: {magic}"
-        if genre_str:
-            world_context += f"\nGenre: {genre_str}"
-        
-        prompt = f"""Generate a creative Sekai world concept based on the following guided creation:
-
-{world_context}
-
-Create a magical world that combines all these elements into a cohesive and engaging setting.
-
-Respond with:
-- Sekai Title (creative and memorable)
-- World Setting (3-5 vivid sentences describing the world)
-- Keywords (comma separated, 3-6 words that capture the essence)"""
-        
-        suggestion = generate_field(prompt)
-        
-        # Parse the response
-        title = re.search(r'[Tt]itle\s*[:：\-]\s*(.*)', suggestion)
-        setting = re.search(r'[Ww]orld [Ss]etting\s*[:：\-]\s*(.*)', suggestion)
-        keywords = re.search(r'[Kk]eywords?\s*[:：\-]\s*(.*)', suggestion)
-        
-        # Fallback: try to split lines if not matched
-        if not title or not setting or not keywords:
-            lines = [l.strip() for l in suggestion.split('\n') if l.strip()]
-            if len(lines) >= 3:
-                if not title:
-                    title = re.match(r'^(.*)$', lines[0])
-                if not setting:
-                    setting = re.match(r'^(.*)$', lines[1])
-                if not keywords:
-                    keywords = re.match(r'^(.*)$', lines[2])
-        
-        # Fill session state, stripping stars
-        if title:
-            clean_title = strip_stars(title.group(1))
-            st.session_state["world_title"] = clean_title
-        if setting:
-            clean_setting = strip_stars(setting.group(1))
-            st.session_state["world_setting"] = clean_setting
-        if keywords:
-            clean_keywords = strip_stars(keywords.group(1))
-            st.session_state["world_keywords_input"] = clean_keywords
-        
-        st.rerun()
-
-    # --- Display Generated World (if available) ---
-    if st.session_state.get("world_title") or st.session_state.get("world_setting"):
-        st.markdown("---")
-        st.markdown("### 🌟 Your Sekai World Details")
-        st.markdown("**Review and edit your world details below:**")
-        # Only show the editable fields, pre-filled with generated values
-        if 'world_title' not in st.session_state:
-            st.session_state['world_title'] = ''
-        world_title = st.text_input(
-            "Sekai Title",
-            value=st.session_state['world_title'],
-            key="world_title_display"
-        )
-        if 'world_setting' not in st.session_state:
-            st.session_state['world_setting'] = ''
-        world_setting = st.text_area(
-            "Describe the World Setting",
-            value=st.session_state['world_setting'],
-            key="world_setting_display"
-        )
-        if 'world_keywords_input' not in st.session_state:
-            st.session_state['world_keywords_input'] = ''
-        world_keywords = st.text_input(
-            "Keywords",
-            value=st.session_state['world_keywords_input'],
-            key="world_keywords_display"
-        )
-        st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
-
-    # ===== TEMPLATE GENERATION & DISPLAY =====
-    if "sekai_json" in st.session_state:
-        st.markdown("---")
-        st.markdown("## 📜 Sekai Story Template")
-        st.info("Your Sekai story template is ready! You can use this template to start your journey, edit details above and regenerate, or save it for future use.")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            st.markdown("**Template Details:**")
-            st.json(st.session_state["sekai_json"])
-        with col2:
-            st.markdown("**Ready to Play:**")
-            st.markdown("""
-            Your Sekai template is ready! You can now:
-            - Start your Sekai journey!
-            - Edit any details above and regenerate
-            - Save this template for future use
-            """)
+    # --- Sekai World Details (ALWAYS VISIBLE) ---
+    st.markdown("---")
+    st.markdown("### 🌟 Your Sekai World Details")
+    st.markdown("**Review and edit your world details below, or use the guided creation above:**")
+    if 'world_title' not in st.session_state:
+        st.session_state['world_title'] = ''
+    world_title = st.text_input(
+        "Sekai Title",
+        value=st.session_state['world_title'],
+        key="world_title_display"
+    )
+    if 'world_setting' not in st.session_state:
+        st.session_state['world_setting'] = ''
+    world_setting = st.text_area(
+        "Describe the World Setting",
+        value=st.session_state['world_setting'],
+        key="world_setting_display"
+    )
+    if 'world_keywords_input' not in st.session_state:
+        st.session_state['world_keywords_input'] = ''
+    world_keywords = st.text_input(
+        "Keywords",
+        value=st.session_state['world_keywords_input'],
+        key="world_keywords_display"
+    )
+    if world_title.strip() or world_setting.strip():
+        st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is taking shape!</span> Ready to move to the next step!</div>', unsafe_allow_html=True)
 
     # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
     st.markdown("## 👤 Step 2: Create Your Character")
