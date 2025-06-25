@@ -2001,10 +2001,13 @@ Voice Style: <How do they speak?>"""
 
 Player Character: {user_name} ({user_traits})
 
+Character Idea: {idea}
+
 Existing Characters:
 {existing_chars_text}
 
 Create a character that:
+- Incorporates the character idea: {idea}
 - Is clearly different from the player character and any existing characters
 - Would naturally exist in this world
 - Has an interesting personality and abilities
