@@ -832,8 +832,12 @@ Generate the next story turn in proper visual novel script format:
                 # Keep bold text as is
                 cleaned_lines.append(line)
             elif '"' in line:
-                # Check if it's already in script format
-                if re.match(r'^[a-zA-Z\s]+["\']', line):
+                # Check if it's already in script format with expression: CharacterName (expression) "dialogue"
+                if re.match(r'^[a-zA-Z\s]+\([^)]*\)\s*["\']', line):
+                    # Already in correct format, keep as is
+                    cleaned_lines.append(line)
+                # Check if it's in basic script format: CharacterName "dialogue"
+                elif re.match(r'^[a-zA-Z\s]+["\']', line):
                     # Convert to new format: CharacterName (expression) "dialogue"
                     match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
                     if match:
@@ -896,19 +900,24 @@ Generate the next story turn in proper visual novel script format:
             
             # Character dialogue with expressions: bold everything before the first quote
             if '"' in line:
-                # Try to extract speaker, expression, and dialogue
+                # Try to extract speaker with expression: CharacterName (expression) "dialogue"
                 match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
                 if match:
                     speaker_expr = match.group(1).strip()
                     dialogue = match.group(2)
                     formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker_expr}:</b> "{dialogue}"</p>')
                     continue
-                # Fallback for character dialogue without expression
-                match = re.match(r'^([^\"]+)\s*"([^"]+)"', line)
+                
+                # Try to extract speaker without expression: CharacterName "dialogue"
+                match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
                 if match:
                     speaker = match.group(1).strip()
                     dialogue = match.group(2)
-                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
+                    # Only bold if it looks like a character name (not just random text)
+                    if not speaker.lower() in ['narrator', 'story', 'scene'] and len(speaker.strip()) > 0:
+                        formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
+                    else:
+                        formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{speaker}: "{dialogue}"</p>')
                     continue
             
             # Handle other formats (fallback)
@@ -1878,7 +1887,6 @@ CRITICAL FORMATTING RULES:
   narrator description of what happens (no quotes, no italics)
   CharacterName (expression/mood) "dialogue or thoughts"
 - Keep narrator descriptions short and concise
-- CharacterName (expression/mood) should be bolded
 - Maintain consistent character voices and personalities
 - Do NOT write dialogue or thoughts for the player character
 - End with: **What do you do?**
