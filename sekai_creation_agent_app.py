@@ -1558,36 +1558,24 @@ Respond with:
             key="world_keywords_display"
         )
         st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is born!</span> It already feels so real… Let\'s meet your characters next!</div>', unsafe_allow_html=True)
-    else:
-        # Show manual input fields if no world has been generated yet
+
+    # ===== TEMPLATE GENERATION & DISPLAY =====
+    if "sekai_json" in st.session_state:
         st.markdown("---")
-        st.markdown("### 🌟 Your Sekai World Details")
-        st.markdown("**Fill in your world details below, or use the guided creation above:**")
-        
-        if 'world_title' not in st.session_state:
-            st.session_state['world_title'] = ''
-        world_title = st.text_input(
-            "Sekai Title",
-            value=st.session_state['world_title'],
-            key="world_title_manual"
-        )
-        if 'world_setting' not in st.session_state:
-            st.session_state['world_setting'] = ''
-        world_setting = st.text_area(
-            "Describe the World Setting",
-            value=st.session_state['world_setting'],
-            key="world_setting_manual"
-        )
-        if 'world_keywords_input' not in st.session_state:
-            st.session_state['world_keywords_input'] = ''
-        world_keywords = st.text_input(
-            "Keywords",
-            value=st.session_state['world_keywords_input'],
-            key="world_keywords_manual"
-        )
-        
-        if world_title.strip() or world_setting.strip():
-            st.markdown('<div class="feedback-animation">🌟 <span class="emoji-sparkle">Your world is taking shape!</span> Ready to move to the next step!</div>', unsafe_allow_html=True)
+        st.markdown("## 📜 Sekai Story Template")
+        st.info("Your Sekai story template is ready! You can use this template to start your journey, edit details above and regenerate, or save it for future use.")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("**Template Details:**")
+            st.json(st.session_state["sekai_json"])
+        with col2:
+            st.markdown("**Ready to Play:**")
+            st.markdown("""
+            Your Sekai template is ready! You can now:
+            - Start your Sekai journey!
+            - Edit any details above and regenerate
+            - Save this template for future use
+            """)
 
     # ===== STEP 2: CREATE YOUR CHARACTER (YOU IN THE WORLD) =====
     st.markdown("## 👤 Step 2: Create Your Character")
