@@ -41,6 +41,16 @@ st.markdown("""
 .step-inactive {
     color: #ccc;
 }
+
+/* Smooth scrolling for anchor navigation */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Anchor positioning */
+[id^="step-"] {
+    scroll-margin-top: 2rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1061,41 +1071,57 @@ Generate only the 3 choices, nothing else.
         if st.button("🌍 Step 1: World", key="nav_step1", use_container_width=True):
             st.markdown("""
             <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            setTimeout(function() {
+                window.location.hash = '#step-1';
+            }, 100);
             </script>
             """, unsafe_allow_html=True)
+            st.toast("🌍 Scrolling to Step 1: World")
     with col2:
         if st.button("👤 Step 2: You", key="nav_step2", use_container_width=True):
             st.markdown("""
             <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            setTimeout(function() {
+                window.location.hash = '#step-2';
+            }, 100);
             </script>
             """, unsafe_allow_html=True)
+            st.toast("👤 Scrolling to Step 2: You")
     with col3:
         if st.button("👥 Step 3: Characters", key="nav_step3", use_container_width=True):
             st.markdown("""
             <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            setTimeout(function() {
+                window.location.hash = '#step-3';
+            }, 100);
             </script>
             """, unsafe_allow_html=True)
+            st.toast("👥 Scrolling to Step 3: Characters")
     with col4:
         if st.button("📜 Step 4: Template", key="nav_step4", use_container_width=True):
             st.markdown("""
             <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            setTimeout(function() {
+                window.location.hash = '#step-4';
+            }, 100);
             </script>
             """, unsafe_allow_html=True)
+            st.toast("📜 Scrolling to Step 4: Template")
     with col5:
         if st.button("🎮 Step 5: Play", key="nav_step5", use_container_width=True):
             st.markdown("""
             <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
+            setTimeout(function() {
+                window.location.hash = '#step-5';
+            }, 100);
             </script>
             """, unsafe_allow_html=True)
+            st.toast("🎮 Scrolling to Step 5: Play")
     st.markdown("---")
 
     # ===== STEP 1: CREATE YOUR SEKAI WORLD =====
     st.markdown("---")
+    st.markdown('<div id="step-1"></div>', unsafe_allow_html=True)
     st.markdown("## 🌍 Step 1: Your Sekai World")
     
     # --- World Inspiration ---
