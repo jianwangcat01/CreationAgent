@@ -125,6 +125,36 @@ The AI will take on the personality you describe and respond accordingly.
                 del st.session_state[key]
         st.rerun()
 
+    # --- Step Overview ---
+    st.markdown("---")
+    st.markdown("### 📋 Creation Steps Overview")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">🌟</div>
+            <div style="font-weight: bold; color: #495057;">Step 1</div>
+            <div style="color: #6c757d; font-size: 14px;">Core Details</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">🧠</div>
+            <div style="font-weight: bold; color: #495057;">Step 2</div>
+            <div style="color: #6c757d; font-size: 14px;">Personality & Background</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">✨</div>
+            <div style="font-weight: bold; color: #495057;">Step 3</div>
+            <div style="color: #6c757d; font-size: 14px;">Final Touches</div>
+        </div>
+        """, unsafe_allow_html=True)
+    st.markdown("---")
+
     # Helper function for random examples
     def get_random_example(field_type):
         examples = {
