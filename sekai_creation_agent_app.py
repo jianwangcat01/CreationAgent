@@ -973,6 +973,13 @@ Generate only the opening line, nothing else.
         st.markdown("---")
         st.subheader(f"🗨️ Chat with {st.session_state.get('char_name_input', 'Your Character')}")
         
+        # Chat instructions
+        st.markdown("**💡 Chat Instructions:**")
+        st.markdown("- Put your movements, gestures, and expressions in brackets like `(waves hello)` or `(smiles shyly)`")
+        st.markdown("- Type normal text for what you want to say (no quotation marks needed)")
+        st.markdown("- Example: `(adjusts glasses) Hello there! How are you today?`")
+        st.markdown("---")
+        
         # Character info display
         char_name = st.session_state.get("char_name_input", "Luna")
         char_image = st.session_state.get("char_image_upload")
@@ -989,12 +996,6 @@ Generate only the opening line, nothing else.
             st.markdown(f"**{char_name}:** {bot_reply}")
         
         # Chat input
-        st.markdown("**💡 Chat Instructions:**")
-        st.markdown("- Put your movements, gestures, and expressions in brackets like `(waves hello)` or `(smiles shyly)`")
-        st.markdown("- Type normal text for what you want to say (no quotation marks needed)")
-        st.markdown("- Example: `(adjusts glasses) Hello there! How are you today?`")
-        st.markdown("---")
-        
         user_input = st.text_input("Your Message", key="char_chat_input")
         if st.button("📩 Send"):
             model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
@@ -1014,7 +1015,7 @@ Generate only the opening line, nothing else.
                 "bot": formatted_reply
             })
             st.rerun()
-        
+
         # Back to character creation
         if st.button("🔄 Create New Character"):
             st.session_state["chat_started"] = False
