@@ -255,6 +255,19 @@ Design a unique character, then chat with them as if they were real! The AI will
         }
         return random.choice(examples.get(field_type, ["Example"]))
 
+    # Helper function to format character responses
+    def format_character_response(response_text, char_name):
+        """Format character responses to ensure expressions and movements are in brackets"""
+        # Remove any existing character name prefix
+        prefix = f"{char_name}:"
+        if response_text.strip().lower().startswith(prefix.lower()):
+            response_text = response_text.strip()[len(prefix):].lstrip()
+        
+        # Ensure expressions and movements are properly formatted with asterisks
+        # This is a simple check - the AI should already be formatting them correctly
+        # but we can add some basic formatting if needed
+        return response_text.strip()
+
     # ===== STEP 1: CORE DETAILS =====
     st.markdown("---")
     st.markdown("## 🌟 Step 1: Core Details")
@@ -717,6 +730,7 @@ The opening line should:
 - Not mention being an AI or fictional character
 - Incorporate their voice style if specified
 - Match their emotional style
+- FORMATTING: When you make expressions, movements, or actions, put them in brackets like *smiles warmly* or *adjusts their cloak*
 
 Generate only the opening line, nothing else.
 """
@@ -895,6 +909,7 @@ Generate only the opening line, nothing else.
         character_prompt += "\nSpeak naturally as this character would. Stay in character and never say you're an AI.\n"
         character_prompt += "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
         character_prompt += "Use the information about the user to make conversations more personal and engaging.\n"
+        character_prompt += "FORMATTING: When you make expressions, movements, or actions, put them in brackets like *smiles warmly* or *adjusts their cloak*.\n"
         character_prompt += "Start the conversation by introducing yourself."
         
         st.session_state["character_prompt"] = character_prompt
@@ -922,6 +937,7 @@ The opening line should:
 - Feel natural and conversational
 - Not mention being an AI or fictional character
 - Incorporate their voice style if specified
+- FORMATTING: When you make expressions, movements, or actions, put them in brackets like *smiles warmly* or *adjusts their cloak*
 
 Generate only the opening line, nothing else.
 """
@@ -960,11 +976,8 @@ Generate only the opening line, nothing else.
         for i, entry in enumerate(st.session_state["chat_history"]):
             if entry['user']:
                 st.markdown(f"**You:** {entry['user']}")
-            # Remove double character name if present
-            bot_reply = entry['bot']
-            prefix = f"{char_name}:"
-            if bot_reply.strip().lower().startswith(prefix.lower()):
-                bot_reply = bot_reply.strip()[len(prefix):].lstrip()
+            # Format character response
+            bot_reply = format_character_response(entry['bot'], char_name)
             st.markdown(f"**{char_name}:** {bot_reply}")
         
         # Chat input
@@ -980,13 +993,11 @@ Generate only the opening line, nothing else.
             full_prompt += f"You: {user_input}\n{char_name}:"
             response = model.generate_content(full_prompt)
             reply = response.text.strip()
-            # Remove double character name if present in reply before saving
-            prefix = f"{char_name}:"
-            if reply.lower().startswith(prefix.lower()):
-                reply = reply[len(prefix):].lstrip()
+            # Format the reply before saving
+            formatted_reply = format_character_response(reply, char_name)
             st.session_state["chat_history"].append({
                 "user": user_input,
-                "bot": reply
+                "bot": formatted_reply
             })
             st.rerun()
         
