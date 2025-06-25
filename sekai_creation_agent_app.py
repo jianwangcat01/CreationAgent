@@ -989,6 +989,12 @@ Generate only the opening line, nothing else.
             st.markdown(f"**{char_name}:** {bot_reply}")
         
         # Chat input
+        st.markdown("**💡 Chat Instructions:**")
+        st.markdown("- Put your movements, gestures, and expressions in brackets like `(waves hello)` or `(smiles shyly)`")
+        st.markdown("- Type normal text for what you want to say (no quotation marks needed)")
+        st.markdown("- Example: `(adjusts glasses) Hello there! How are you today?`")
+        st.markdown("---")
+        
         user_input = st.text_input("Your Message", key="char_chat_input")
         if st.button("📩 Send"):
             model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
