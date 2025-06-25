@@ -2154,35 +2154,89 @@ Write the opening scene below in proper visual novel script format:
         st.markdown("---")
         st.subheader("🚀 Game In Progress")
 
-        for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
-            color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
-            user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
-
-            # Enhanced formatting for better readability
-            formatted_block = format_story_block(block)
-
-            st.markdown(
-                f'<div style="background-color:{color}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1)">{user_reply_html}{formatted_block}</div>',
-                unsafe_allow_html=True,
-            )
-
-        # Game input (only appears when game is active)
-        st.markdown("### 🎮 Your Turn")
+        # Create two columns: game on left, template and instructions on right
+        game_col, info_col = st.columns([2, 1])
         
-        # Generate 3 choice options
-        choices = generate_choices()
+        with game_col:
+            for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+                color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
+                user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
+
+                # Enhanced formatting for better readability
+                formatted_block = format_story_block(block)
+
+                st.markdown(
+                    f'<div style="background-color:{color}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1)">{user_reply_html}{formatted_block}</div>',
+                    unsafe_allow_html=True,
+                )
+
+            # Game input (only appears when game is active)
+            st.markdown("### 🎮 Your Turn")
+            
+            # Generate 3 choice options
+            choices = generate_choices()
+            
+            # Display choice buttons vertically with full description
+            st.markdown("**Choose an action or write your own:**")
+            for idx, choice in enumerate(choices):
+                btn_label = f"Choice {idx+1}: {choice}"
+                if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
+                    pass
+            
+            # Freeform input
+            st.markdown("**Or write your own action/dialogue:**")
+            st.text_input("Enter your next action or dialogue", key="reply_input")
+            st.button("Send", on_click=handle_send)
         
-        # Display choice buttons vertically with full description
-        st.markdown("**Choose an action or write your own:**")
-        for idx, choice in enumerate(choices):
-            btn_label = f"Choice {idx+1}: {choice}"
-            if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
-                pass
-        
-        # Freeform input
-        st.markdown("**Or write your own action/dialogue:**")
-        st.text_input("Enter your next action or dialogue", key="reply_input")
-        st.button("Send", on_click=handle_send)
+        with info_col:
+            # Display the template and instructions
+            st.markdown("### 📋 Your Story Template")
+            if "sekai_json" in st.session_state:
+                sekai_json = st.session_state["sekai_json"]
+                
+                # Display key template information
+                st.markdown(f"**🌍 Title:** {sekai_json.get('title', 'Unknown')}")
+                st.markdown(f"**🏞️ Setting:** {sekai_json.get('setting', 'Unknown')}")
+                st.markdown(f"**🎬 Genre:** {sekai_json.get('genre', 'Fantasy')}")
+                
+                if sekai_json.get('keywords'):
+                    st.markdown(f"**🏷️ Keywords:** {sekai_json.get('keywords')}")
+                
+                # Display characters
+                st.markdown("**👥 Characters:**")
+                for char in sekai_json.get('characters', []):
+                    char_name = char.get('name', 'Unknown')
+                    char_role = char.get('role', '')
+                    char_desc = char.get('description', '')[:50] + '...' if len(char.get('description', '')) > 50 else char.get('description', '')
+                    st.markdown(f"- **{char_name}** ({char_role}): {char_desc}")
+                
+                # Display story style settings
+                st.markdown("**🎭 Story Style:**")
+                st.markdown(f"- Tone: {sekai_json.get('storyTone', 'Balanced')}")
+                st.markdown(f"- Pacing: {sekai_json.get('pacing', 'Balanced')}")
+                st.markdown(f"- POV: {sekai_json.get('pointOfView', 'Third person')}")
+                st.markdown(f"- Narration: {sekai_json.get('narrationStyle', 'Balanced')}")
+            
+            st.markdown("---")
+            st.markdown("### 📜 How to Play")
+            st.markdown("""
+            **🎮 Game Controls:**
+            - Type **dialogue** normally: `What are you doing here?`
+            - Type **actions** with asterisks: `*run away from the library*`
+            - Use the choice buttons for quick actions
+            - The AI will narrate and have characters respond!
+            
+            **💡 Tips:**
+            - Stay in character as your player character
+            - Be descriptive with your actions
+            - Interact with the world and other characters
+            - The story adapts to your choices!
+            """)
+            
+            # Add a button to view full template
+            if st.button("📄 View Full Template", key="view_full_template"):
+                if "sekai_json" in st.session_state:
+                    st.json(st.session_state["sekai_json"])
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
