@@ -1060,44 +1060,50 @@ Generate only the 3 choices, nothing else.
             "Continue exploring the surroundings"
         ]
 
-    # --- Quick Navigation Links ---
+    # --- Step Overview ---
     st.markdown("---")
+    st.markdown("### 📋 Creation Steps Overview")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        if st.button("🌍 Step 1: World", key="nav_step1", use_container_width=True):
-            st.markdown("""
-            <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
-            </script>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">🌍</div>
+            <div style="font-weight: bold; color: #495057;">Step 1</div>
+            <div style="color: #6c757d; font-size: 14px;">Your Sekai World</div>
+        </div>
+        """, unsafe_allow_html=True)
     with col2:
-        if st.button("👤 Step 2: You", key="nav_step2", use_container_width=True):
-            st.markdown("""
-            <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
-            </script>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">👤</div>
+            <div style="font-weight: bold; color: #495057;">Step 2</div>
+            <div style="color: #6c757d; font-size: 14px;">Create Your Character</div>
+        </div>
+        """, unsafe_allow_html=True)
     with col3:
-        if st.button("👥 Step 3: Characters", key="nav_step3", use_container_width=True):
-            st.markdown("""
-            <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
-            </script>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">👥</div>
+            <div style="font-weight: bold; color: #495057;">Step 3</div>
+            <div style="color: #6c757d; font-size: 14px;">Main Characters</div>
+        </div>
+        """, unsafe_allow_html=True)
     with col4:
-        if st.button("📜 Step 4: Template", key="nav_step4", use_container_width=True):
-            st.markdown("""
-            <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
-            </script>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">📜</div>
+            <div style="font-weight: bold; color: #495057;">Step 4</div>
+            <div style="color: #6c757d; font-size: 14px;">Story Template</div>
+        </div>
+        """, unsafe_allow_html=True)
     with col5:
-        if st.button("🎮 Step 5: Play", key="nav_step5", use_container_width=True):
-            st.markdown("""
-            <script>
-            document.querySelector('[data-testid="stMarkdown"]').scrollIntoView();
-            </script>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">🎮</div>
+            <div style="font-weight: bold; color: #495057;">Step 5</div>
+            <div style="color: #6c757d; font-size: 14px;">Start Your Journey</div>
+        </div>
+        """, unsafe_allow_html=True)
     st.markdown("---")
 
     # ===== STEP 1: CREATE YOUR SEKAI WORLD =====
