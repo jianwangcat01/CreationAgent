@@ -2001,10 +2001,18 @@ Voice Style: <How do they speak?>"""
                     st.session_state[f"trait_{i}"] = parsed_traits
                     st.session_state[f"voice_style_{i}"] = parsed_voice
                     
+                    # Also update the input field values
+                    st.session_state[f"name_input_{i}"] = parsed_name
+                    st.session_state[f"role_input_{i}"] = parsed_role
+                    st.session_state[f"trait_input_{i}"] = parsed_traits
+                    st.session_state[f"voice_input_{i}"] = parsed_voice
+                    
                     # Increment generation counter to force form refresh
                     current_gen_count = st.session_state.get(f"gen_count_{i}", 0)
                     st.session_state[f"gen_count_{i}"] = current_gen_count + 1
                     
+                    # Show success message
+                    st.success(f"✅ Character {i+1} generated successfully! The form below has been updated.")
                 except Exception as e:
                     st.error(f"Failed to generate character {i+1}: {e}")
                     # Set empty values if generation fails
@@ -2117,6 +2125,12 @@ Voice Style: <How do they speak?>"""
                             st.session_state[f"trait_{i}"] = parsed_traits
                             st.session_state[f"voice_style_{i}"] = parsed_voice
                             
+                            # Also update the input field values
+                            st.session_state[f"name_input_{i}"] = parsed_name
+                            st.session_state[f"role_input_{i}"] = parsed_role
+                            st.session_state[f"trait_input_{i}"] = parsed_traits
+                            st.session_state[f"voice_input_{i}"] = parsed_voice
+                            
                             # Increment generation counter to force form refresh
                             current_gen_count = st.session_state.get(f"gen_count_{i}", 0)
                             st.session_state[f"gen_count_{i}"] = current_gen_count + 1
@@ -2136,17 +2150,30 @@ Voice Style: <How do they speak?>"""
         # Character Details
         # Use a unique key that changes when character is generated to force refresh
         generation_key = st.session_state.get(f"gen_count_{i}", 0)
-        name = st.text_input(f"Name {i+1}", key=f"name_{i}_{generation_key}", value=parsed_name)
-        role = st.text_input(f"Role {i+1}", key=f"role_{i}_{generation_key}", value=parsed_role, placeholder="Librarian who hides a secret / Rival time mage")
-        trait = st.text_area(f"Key Traits {i+1}", key=f"trait_{i}_{generation_key}", value=parsed_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
+        
+        # Get the current values from session state, with fallback to stored values
+        current_name = st.session_state.get(f"name_input_{i}", st.session_state.get(f"name_{i}", parsed_name))
+        current_role = st.session_state.get(f"role_input_{i}", st.session_state.get(f"role_{i}", parsed_role))
+        current_traits = st.session_state.get(f"trait_input_{i}", st.session_state.get(f"trait_{i}", parsed_traits))
+        current_voice = st.session_state.get(f"voice_input_{i}", st.session_state.get(f"voice_style_{i}", parsed_voice))
+        
+        name = st.text_input(f"Name {i+1}", key=f"name_input_{i}", value=current_name)
+        role = st.text_input(f"Role {i+1}", key=f"role_input_{i}", value=current_role, placeholder="Librarian who hides a secret / Rival time mage")
+        trait = st.text_area(f"Key Traits {i+1}", key=f"trait_input_{i}", value=current_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
         
         # Optional Add-ons
         with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
             voice_style = st.text_input(
                 f"Voice Style",
-                value=parsed_voice,
-                key=f"voice_style_{i}_{generation_key}"
+                value=current_voice,
+                key=f"voice_input_{i}"
             )
+        
+        # Sync the form values back to session state for persistence
+        st.session_state[f"name_{i}"] = name
+        st.session_state[f"role_{i}"] = role
+        st.session_state[f"trait_{i}"] = trait
+        st.session_state[f"voice_style_{i}"] = voice_style if 'voice_style' in locals() else "Default"
         
         characters.append({
             "name": name, 
