@@ -257,15 +257,23 @@ Design a unique character, then chat with them as if they were real! The AI will
 
     # Helper function to format character responses
     def format_character_response(response_text, char_name):
-        """Format character responses to ensure expressions and movements are in brackets"""
+        """Format character responses to ensure expressions and movements are in parentheses and italics"""
         # Remove any existing character name prefix
         prefix = f"{char_name}:"
         if response_text.strip().lower().startswith(prefix.lower()):
             response_text = response_text.strip()[len(prefix):].lstrip()
         
-        # Ensure expressions and movements are properly formatted with asterisks
-        # This is a simple check - the AI should already be formatting them correctly
-        # but we can add some basic formatting if needed
+        # Remove any quotation marks from dialogue
+        response_text = response_text.strip()
+        if response_text.startswith('"') and response_text.endswith('"'):
+            response_text = response_text[1:-1]
+        elif response_text.startswith('"'):
+            response_text = response_text[1:]
+        elif response_text.endswith('"'):
+            response_text = response_text[:-1]
+        
+        # Ensure expressions and movements are properly formatted with parentheses and italics
+        # The AI should already be formatting them correctly, but we can add some basic formatting if needed
         return response_text.strip()
 
     # ===== STEP 1: CORE DETAILS =====
@@ -730,7 +738,7 @@ The opening line should:
 - Not mention being an AI or fictional character
 - Incorporate their voice style if specified
 - Match their emotional style
-- FORMATTING: When you make expressions, movements, or actions, put them in brackets like *smiles warmly* or *adjusts their cloak*
+- FORMATTING: When you make expressions, movements, or actions, put them in parentheses and italics like (smiles warmly) or (adjusts their cloak). Dialogue should be normal text without quotation marks.
 
 Generate only the opening line, nothing else.
 """
@@ -909,7 +917,7 @@ Generate only the opening line, nothing else.
         character_prompt += "\nSpeak naturally as this character would. Stay in character and never say you're an AI.\n"
         character_prompt += "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
         character_prompt += "Use the information about the user to make conversations more personal and engaging.\n"
-        character_prompt += "FORMATTING: When you make expressions, movements, or actions, put them in brackets like *smiles warmly* or *adjusts their cloak*.\n"
+        character_prompt += "FORMATTING: When you make expressions, movements, or actions, put them in parentheses and italics like (smiles warmly) or (adjusts their cloak). Dialogue should be normal text without quotation marks.\n"
         character_prompt += "Start the conversation by introducing yourself."
         
         st.session_state["character_prompt"] = character_prompt
@@ -937,7 +945,7 @@ The opening line should:
 - Feel natural and conversational
 - Not mention being an AI or fictional character
 - Incorporate their voice style if specified
-- FORMATTING: When you make expressions, movements, or actions, put them in brackets like *smiles warmly* or *adjusts their cloak*
+- FORMATTING: When you make expressions, movements, or actions, put them in parentheses and italics like (smiles warmly) or (adjusts their cloak). Dialogue should be normal text without quotation marks.
 
 Generate only the opening line, nothing else.
 """
