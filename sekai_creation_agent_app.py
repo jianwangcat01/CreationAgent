@@ -547,10 +547,10 @@ Generate only the lore snippet, nothing else.
     if lore_snippets.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That detail adds so much depth</span> — what a story!</div>', unsafe_allow_html=True)
 
-    # ===== STEP 4: YOUR ROLE IN THE STORY =====
+    # ===== STEP 4: YOUR INFORMATION =====
     st.markdown("---")
-    st.markdown("## 🌟 Step 4: Your Role in the Story")
-    st.info("Now let's define who YOU are in this story. This helps the character understand and interact with you better!")
+    st.markdown("## 🌟 Step 4: Your Information")
+    st.info("Now let's define who YOU are in this chat. This helps the character understand and interact with you better!")
 
     # User Name
     st.markdown("### 👤 Your Name")
