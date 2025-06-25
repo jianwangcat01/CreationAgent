@@ -666,7 +666,6 @@ Generate only the opening line, nothing else.
                 
                 st.session_state["character_template"] = character_template
                 st.success("🎉 Character template generated successfully!")
-                st.json(character_template)
         else:
             st.warning("⚠️ Please complete at least the Name, Role, and Personality fields before generating the template.")
 
