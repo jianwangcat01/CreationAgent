@@ -334,15 +334,7 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *\"Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.\"*")
     st.markdown("- *\"Chaotic and charming. A street magician who trusts no one but you.\"*")
     
-    char_traits = st.text_area(
-        "Tell us about their personality, background, and how they behave:",
-        value=st.session_state.get("char_traits_input", ""),
-        placeholder="Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
-        height=120,
-        key="char_traits_input"
-    )
-    
-    # AI Generation button below input
+    # Handle AI generation before creating the widget
     if st.button("🤖 AI Generate", key="ai_generate_traits"):
         if char_name.strip() and char_role.strip():
             # Configure Gemini API for generating traits
@@ -376,6 +368,14 @@ Generate only the personality description, nothing else.
                 st.error(f"Failed to generate traits: {e}")
         else:
             st.warning("Please complete Step 1 (Name and Role) before generating personality traits.")
+    
+    char_traits = st.text_area(
+        "Tell us about their personality, background, and how they behave:",
+        value=st.session_state.get("char_traits_input", ""),
+        placeholder="Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
+        height=120,
+        key="char_traits_input"
+    )
 
     if char_traits.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That\'s so rich</span> — they already feel alive!</div>', unsafe_allow_html=True)
@@ -393,14 +393,7 @@ Generate only the personality description, nothing else.
     st.markdown("- *\"Talks in old poetic phrases\"*")
     st.markdown("- *\"Speaks bluntly and calls you 'human'\"*")
     
-    voice_style = st.text_input(
-        "How do they speak? Any unique speech patterns?",
-        value=st.session_state.get("voice_style_input", ""),
-        placeholder="Always says 'nya~' like a catgirl / Talks in old poetic phrases",
-        key="voice_style_input"
-    )
-    
-    # AI Generation button below input
+    # Handle AI generation before creating the widget
     if st.button("🤖 AI Generate", key="ai_generate_voice"):
         if char_name.strip() and char_role.strip() and char_traits.strip():
             # Configure Gemini API for generating voice style
@@ -435,6 +428,13 @@ Generate only the voice style description, nothing else.
         else:
             st.warning("Please complete Steps 1 and 2 before generating voice style.")
     
+    voice_style = st.text_input(
+        "How do they speak? Any unique speech patterns?",
+        value=st.session_state.get("voice_style_input", ""),
+        placeholder="Always says 'nya~' like a catgirl / Talks in old poetic phrases",
+        key="voice_style_input"
+    )
+    
     if voice_style.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Nice!</span> I can already imagine hearing them talk.</div>', unsafe_allow_html=True)
 
@@ -446,14 +446,7 @@ Generate only the voice style description, nothing else.
     st.markdown("- *Tsundere (hot and cold flirty)*")
     st.markdown("- *Warm and clingy childhood friend*")
     
-    emotional_style = st.text_input(
-        "How do they treat the user emotionally?",
-        value=st.session_state.get("emotional_style_input", ""),
-        placeholder="Protective big brother energy / Tsundere (hot and cold flirty)",
-        key="emotional_style_input"
-    )
-    
-    # AI Generation button below input
+    # Handle AI generation before creating the widget
     if st.button("🤖 AI Generate", key="ai_generate_emotional"):
         if char_name.strip() and char_role.strip() and char_traits.strip():
             # Configure Gemini API for generating emotional style
@@ -489,6 +482,13 @@ Generate only the emotional style description, nothing else.
         else:
             st.warning("Please complete Steps 1 and 2 before generating emotional style.")
     
+    emotional_style = st.text_input(
+        "How do they treat the user emotionally?",
+        value=st.session_state.get("emotional_style_input", ""),
+        placeholder="Protective big brother energy / Tsundere (hot and cold flirty)",
+        key="emotional_style_input"
+    )
+    
     if emotional_style.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Adorable!</span> Their emotional vibe is going to make this chat really fun.</div>', unsafe_allow_html=True)
 
@@ -499,15 +499,7 @@ Generate only the emotional style description, nothing else.
     st.markdown("- *\"They still carry the ring you gave them long ago.\"*")
     st.markdown("- *\"You used to sneak into the temple garden together as kids.\"*")
     
-    lore_snippets = st.text_area(
-        "Any personal backstory or shared memories?",
-        value=st.session_state.get("lore_snippets_input", ""),
-        placeholder="They still carry the ring you gave them long ago. / You used to sneak into the temple garden together as kids.",
-        height=80,
-        key="lore_snippets_input"
-    )
-    
-    # AI Generation button below input
+    # Handle AI generation before creating the widget
     if st.button("🤖 AI Generate", key="ai_generate_lore"):
         if char_name.strip() and char_role.strip() and char_traits.strip():
             # Configure Gemini API for generating lore
@@ -543,6 +535,14 @@ Generate only the lore snippet, nothing else.
                 st.error(f"Failed to generate lore: {e}")
         else:
             st.warning("Please complete Steps 1 and 2 before generating lore.")
+    
+    lore_snippets = st.text_area(
+        "Any personal backstory or shared memories?",
+        value=st.session_state.get("lore_snippets_input", ""),
+        placeholder="They still carry the ring you gave them long ago. / You used to sneak into the temple garden together as kids.",
+        height=80,
+        key="lore_snippets_input"
+    )
     
     if lore_snippets.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That detail adds so much depth</span> — what a story!</div>', unsafe_allow_html=True)
@@ -692,15 +692,7 @@ Generate only the lore snippet, nothing else.
     st.markdown("- *\"I thought you'd never return...\"*")
     st.markdown("**💡 Tip:** If you don't write anything here, I'll come up with something fun for you!")
     
-    opening_line = st.text_area(
-        "What should they say to start the conversation?",
-        value=st.session_state.get("opening_line_input", ""),
-        placeholder="Took you long enough. Shall we begin?",
-        height=80,
-        key="opening_line_input"
-    )
-    
-    # AI Generation button below input
+    # Handle AI generation before creating the widget
     if st.button("🤖 AI Generate", key="ai_generate_opening"):
         if char_name.strip() and char_role.strip() and char_traits.strip():
             # Configure Gemini API for generating opening line
@@ -739,6 +731,14 @@ Generate only the opening line, nothing else.
                 st.error(f"Failed to generate opening line: {e}")
         else:
             st.warning("Please complete Steps 1 and 2 before generating opening line.")
+    
+    opening_line = st.text_area(
+        "What should they say to start the conversation?",
+        value=st.session_state.get("opening_line_input", ""),
+        placeholder="Took you long enough. Shall we begin?",
+        height=80,
+        key="opening_line_input"
+    )
 
     if opening_line.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Oooh, such a strong intro!</span> They\'re totally in character.</div>', unsafe_allow_html=True)
