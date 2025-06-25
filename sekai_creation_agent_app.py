@@ -110,33 +110,7 @@ The AI will take on the personality you describe and respond accordingly.
         st.session_state["app_mode"] = None
         st.rerun()
 
-    # Initialize session state for character creation
-    if "char_creation_step" not in st.session_state:
-        st.session_state["char_creation_step"] = 1
-    if "char_feedback" not in st.session_state:
-        st.session_state["char_feedback"] = {}
-
-    # Progress indicator
-    st.markdown("---")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        step1_active = "🟢" if st.session_state["char_creation_step"] >= 1 else "⚪"
-        if st.button(f"{step1_active} **Step 1: Core Details**", key="char_step1_btn", use_container_width=True):
-            st.session_state["char_creation_step"] = 1
-            st.rerun()
-    with col2:
-        step2_active = "🟢" if st.session_state["char_creation_step"] >= 2 else "⚪"
-        if st.button(f"{step2_active} **Step 2: Personality**", key="char_step2_btn", use_container_width=True):
-            st.session_state["char_creation_step"] = 2
-            st.rerun()
-    with col3:
-        step3_active = "🟢" if st.session_state["char_creation_step"] >= 3 else "⚪"
-        if st.button(f"{step3_active} **Step 3: Final Touches**", key="char_step3_btn", use_container_width=True):
-            st.session_state["char_creation_step"] = 3
-            st.rerun()
-    st.markdown("---")
-
-    # Clear button
+    # Clear button at the top
     if st.button("🗑️ Clear All & Start Over", type="secondary", use_container_width=True):
         # Clear all character creation related session state
         keys_to_clear = [
@@ -198,333 +172,291 @@ The AI will take on the personality you describe and respond accordingly.
         }
         return random.choice(examples.get(field_type, ["Example"]))
 
-    # Step 1: Core Details
-    if st.session_state["char_creation_step"] == 1:
-        st.subheader("🌟 Step 1: Core Details")
-        st.info("Let's start with the basics! Tell us about your character's identity.")
+    # ===== STEP 1: CORE DETAILS =====
+    st.markdown("---")
+    st.markdown("## 🌟 Step 1: Core Details")
+    st.info("Let's start with the basics! Tell us about your character's identity.")
 
-        # Character Name
-        st.markdown("### 👤 Character Name")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random name if button was clicked
-            if "random_name_clicked" not in st.session_state:
-                st.session_state["random_name_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_name = st.session_state.get("char_name_input", "")
-            if st.session_state["random_name_clicked"]:
-                default_name = get_random_example("name")
-                st.session_state["char_name_input"] = default_name
-                st.session_state["random_name_clicked"] = False
-            
-            char_name = st.text_input(
-                "What's their name?",
-                value=default_name,
-                placeholder="Eliora / Jack the Brave / Neko-chan",
-                key="char_name_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_name"):
-                st.session_state["random_name_clicked"] = True
-                st.rerun()
+    # Character Name
+    st.markdown("### 👤 Character Name")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random name if button was clicked
+        if "random_name_clicked" not in st.session_state:
+            st.session_state["random_name_clicked"] = False
         
-        if char_name.strip():
-            st.success(f"✨ That name is full of charm! Can't wait to meet {char_name}!")
-
-        # Role/Occupation
-        st.markdown("### 🎭 Role / Occupation")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random role if button was clicked
-            if "random_role_clicked" not in st.session_state:
-                st.session_state["random_role_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_role = st.session_state.get("char_role_input", "")
-            if st.session_state["random_role_clicked"]:
-                default_role = get_random_example("role")
-                st.session_state["char_role_input"] = default_role
-                st.session_state["random_role_clicked"] = False
-            
-            char_role = st.text_input(
-                "What do they do? What's their role?",
-                value=default_role,
-                placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
-                key="char_role_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_role"):
-                st.session_state["random_role_clicked"] = True
-                st.rerun()
+        # Set default value based on random click or existing session state
+        default_name = st.session_state.get("char_name_input", "")
+        if st.session_state["random_name_clicked"]:
+            default_name = get_random_example("name")
+            st.session_state["char_name_input"] = default_name
+            st.session_state["random_name_clicked"] = False
         
-        if char_role.strip():
-            st.success("🎉 Ooooh! That's an exciting role — this is gonna be fun!")
-
-        # Navigation
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("⬅️ Back to Menu"):
-                st.session_state["app_mode"] = None
-                st.rerun()
-        with col2:
-            if char_name.strip() and char_role.strip():
-                if st.button("➡️ Next: Personality", type="primary"):
-                    st.session_state["char_creation_step"] = 2
-                    st.rerun()
-            else:
-                st.button("➡️ Next: Personality", disabled=True)
-
-    # Step 2: Personality
-    elif st.session_state["char_creation_step"] == 2:
-        st.subheader("🧠 Step 2: Personality & Background")
-        st.info("This is where the magic happens! Tell us how they behave, think, speak, and feel.")
-
-        # Get values from previous step
-        char_name = st.session_state.get("char_name_input", "Luna")
-        char_role = st.session_state.get("char_role_input", "Time-traveling librarian")
-
-        # Personality Traits
-        st.markdown("### 💫 Personality Traits & Background")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random traits if button was clicked
-            if "random_traits_clicked" not in st.session_state:
-                st.session_state["random_traits_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_traits = st.session_state.get("char_traits_input", "")
-            if st.session_state["random_traits_clicked"]:
-                default_traits = get_random_example("traits")
-                st.session_state["char_traits_input"] = default_traits
-                st.session_state["random_traits_clicked"] = False
-            
-            char_traits = st.text_area(
-                "Tell us about their personality, background, and how they behave:",
-                value=default_traits,
-                placeholder="She's soft-spoken but bold when protecting loved ones. She speaks like an ancient priestess.",
-                height=120,
-                key="char_traits_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_traits"):
-                st.session_state["random_traits_clicked"] = True
-                st.rerun()
-
-        if char_traits.strip():
-            st.success("🎨 Wow, that's such a vivid personality. You're a worldbuilder already!")
-
-        # Advanced Options (Collapsible)
-        with st.expander("🌟 Advanced Options (Optional)", expanded=False):
-            st.markdown("#### 🗣️ Voice Style / Speech Quirks")
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                # Get random voice style if button was clicked
-                if "random_voice_clicked" not in st.session_state:
-                    st.session_state["random_voice_clicked"] = False
-                
-                # Set default value based on random click or existing session state
-                default_voice = st.session_state.get("voice_style_input", "")
-                if st.session_state["random_voice_clicked"]:
-                    default_voice = get_random_example("voice_style")
-                    st.session_state["voice_style_input"] = default_voice
-                    st.session_state["random_voice_clicked"] = False
-                
-                voice_style = st.text_input(
-                    "How do they speak? Any unique speech patterns?",
-                    value=default_voice,
-                    placeholder="Always says 'nya~' like a cat girl / Ends every sentence with 'my dear'",
-                    key="voice_style_input"
-                )
-            with col2:
-                if st.button("🎲 Random", key="random_voice"):
-                    st.session_state["random_voice_clicked"] = True
-                    st.rerun()
-            
-            st.markdown("#### 💕 Emotional Style / Relationship Style")
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                # Get random emotional style if button was clicked
-                if "random_emotional_clicked" not in st.session_state:
-                    st.session_state["random_emotional_clicked"] = False
-                
-                # Set default value based on random click or existing session state
-                default_emotional = st.session_state.get("emotional_style_input", "")
-                if st.session_state["random_emotional_clicked"]:
-                    default_emotional = get_random_example("emotional_style")
-                    st.session_state["emotional_style_input"] = default_emotional
-                    st.session_state["random_emotional_clicked"] = False
-                
-                emotional_style = st.text_input(
-                    "How do they treat the user emotionally?",
-                    value=default_emotional,
-                    placeholder="Protective big brother energy / Tsundere (hot and cold flirty) / Gentle supportive best friend",
-                    key="emotional_style_input"
-                )
-            with col2:
-                if st.button("🎲 Random", key="random_emotional"):
-                    st.session_state["random_emotional_clicked"] = True
-                    st.rerun()
-            
-            st.markdown("#### 📖 Memory or Lore Snippets")
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                # Get random lore if button was clicked
-                if "random_lore_clicked" not in st.session_state:
-                    st.session_state["random_lore_clicked"] = False
-                
-                # Set default value based on random click or existing session state
-                default_lore = st.session_state.get("lore_snippets_input", "")
-                if st.session_state["random_lore_clicked"]:
-                    default_lore = get_random_example("lore_snippets")
-                    st.session_state["lore_snippets_input"] = default_lore
-                    st.session_state["random_lore_clicked"] = False
-                
-                lore_snippets = st.text_area(
-                    "Any personal backstory or shared memories?",
-                    value=default_lore,
-                    placeholder="They once lost someone they loved, and still carry the necklace. / You and the character used to play in the forest as kids.",
-                    height=80,
-                    key="lore_snippets_input"
-                )
-            with col2:
-                if st.button("🎲 Random", key="random_lore"):
-                    st.session_state["random_lore_clicked"] = True
-                    st.rerun()
-
-        # Navigation
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col1:
-            if st.button("⬅️ Back"):
-                st.session_state["char_creation_step"] = 1
-                st.rerun()
-        with col3:
-            if char_traits.strip():
-                if st.button("➡️ Next: Final Touches", type="primary"):
-                    st.session_state["char_creation_step"] = 3
-                    st.rerun()
-            else:
-                st.button("➡️ Next: Final Touches", disabled=True)
-
-    # Step 3: Final Touches
-    elif st.session_state["char_creation_step"] == 3:
-        st.subheader("✨ Step 3: Final Touches")
-        st.info("Almost done! Let's add those finishing touches to make your character perfect.")
-
-        # Get values from previous steps
-        char_name = st.session_state.get("char_name_input", "Luna")
-        char_role = st.session_state.get("char_role_input", "Time-traveling librarian")
-        char_traits = st.session_state.get("char_traits_input", "Luna is calm, mysterious, and always speaks in riddles.")
-
-        # Opening Lines
-        st.markdown("### 💬 Opening Lines (Optional)")
-        st.markdown("**💡 Tip:** If you don't write anything here, I'll come up with something fun for you!")
-        
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            # Get random opening if button was clicked
-            if "random_opening_clicked" not in st.session_state:
-                st.session_state["random_opening_clicked"] = False
-            
-            # Set default value based on random click or existing session state
-            default_opening = st.session_state.get("opening_line_input", "")
-            if st.session_state["random_opening_clicked"]:
-                default_opening = get_random_example("opening")
-                st.session_state["opening_line_input"] = default_opening
-                st.session_state["random_opening_clicked"] = False
-            
-            opening_line = st.text_area(
-                "What should they say to start the conversation?",
-                value=default_opening,
-                placeholder="Hey, it's you again! I've been waiting forever, dummy!",
-                height=80,
-                key="opening_line_input"
-            )
-        with col2:
-            if st.button("🎲 Random", key="random_opening"):
-                st.session_state["random_opening_clicked"] = True
-                st.rerun()
-
-        if opening_line.strip():
-            st.success("🎭 Got it! That's a perfect way to start the conversation!")
-
-        # Character Image
-        st.markdown("### 🖼️ Character Image (Optional)")
-        st.markdown("**💡 Tip:** Try using AI image generators from Hugging Face like `cagliostrolab/animagine-xl` or `hakurei/waifu-diffusion`!")
-        
-        char_image = st.file_uploader(
-            "Upload a profile image",
-            type=["png", "jpg", "jpeg"],
-            key="char_image_upload"
+        char_name = st.text_input(
+            "What's their name?",
+            value=default_name,
+            placeholder="Eliora / Jack the Brave / Neko-chan",
+            key="char_name_input"
         )
+    with col2:
+        if st.button("🎲 Random", key="random_name"):
+            st.session_state["random_name_clicked"] = True
+            st.rerun()
+    
+    if char_name.strip():
+        st.success(f"✨ That name is full of charm! Can't wait to meet {char_name}!")
 
-        if char_image:
-            st.success("🖼️ Beautiful image! It'll make the chat feel more immersive!")
-
-        # Character Preview
-        st.markdown("### 👀 Character Preview")
-        preview_col1, preview_col2 = st.columns([1, 2])
+    # Role/Occupation
+    st.markdown("### 🎭 Role / Occupation")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random role if button was clicked
+        if "random_role_clicked" not in st.session_state:
+            st.session_state["random_role_clicked"] = False
         
-        with preview_col1:
-            if char_image:
-                st.image(char_image, use_container_width=True, caption=f"{char_name}'s Avatar")
-            else:
-                # Default avatar placeholder
-                st.markdown(f"""
-                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-radius: 10px; color: white;">
-                    <h3>🎭 {char_name}</h3>
-                    <p>✨ Character Avatar</p>
-                </div>
-                """, unsafe_allow_html=True)
+        # Set default value based on random click or existing session state
+        default_role = st.session_state.get("char_role_input", "")
+        if st.session_state["random_role_clicked"]:
+            default_role = get_random_example("role")
+            st.session_state["char_role_input"] = default_role
+            st.session_state["random_role_clicked"] = False
+        
+        char_role = st.text_input(
+            "What do they do? What's their role?",
+            value=default_role,
+            placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
+            key="char_role_input"
+        )
+    with col2:
+        if st.button("🎲 Random", key="random_role"):
+            st.session_state["random_role_clicked"] = True
+            st.rerun()
+    
+    if char_role.strip():
+        st.success("🎉 Ooooh! That's an exciting role — this is gonna be fun!")
 
-        with preview_col2:
-            st.markdown(f"""
-            **Name:** {char_name}
-            **Role:** {char_role}
-            **Personality:** {char_traits[:100]}{'...' if len(char_traits) > 100 else ''}
-            """)
+    # ===== STEP 2: PERSONALITY & BACKGROUND =====
+    st.markdown("---")
+    st.markdown("## 🧠 Step 2: Personality & Background")
+    st.info("This is where the magic happens! Tell us how they behave, think, speak, and feel.")
 
-        # Navigation and Start Chat
-        col1, col2, col3 = st.columns([1, 2, 1])
+    # Personality Traits
+    st.markdown("### 💫 Personality Traits & Background")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random traits if button was clicked
+        if "random_traits_clicked" not in st.session_state:
+            st.session_state["random_traits_clicked"] = False
+        
+        # Set default value based on random click or existing session state
+        default_traits = st.session_state.get("char_traits_input", "")
+        if st.session_state["random_traits_clicked"]:
+            default_traits = get_random_example("traits")
+            st.session_state["char_traits_input"] = default_traits
+            st.session_state["random_traits_clicked"] = False
+        
+        char_traits = st.text_area(
+            "Tell us about their personality, background, and how they behave:",
+            value=default_traits,
+            placeholder="She's soft-spoken but bold when protecting loved ones. She speaks like an ancient priestess.",
+            height=120,
+            key="char_traits_input"
+        )
+    with col2:
+        if st.button("🎲 Random", key="random_traits"):
+            st.session_state["random_traits_clicked"] = True
+            st.rerun()
+
+    if char_traits.strip():
+        st.success("🎨 Wow, that's such a vivid personality. You're a worldbuilder already!")
+
+    # Advanced Options (Collapsible)
+    with st.expander("🌟 Advanced Options (Optional)", expanded=False):
+        st.markdown("#### 🗣️ Voice Style / Speech Quirks")
+        col1, col2 = st.columns([3, 1])
         with col1:
-            if st.button("⬅️ Back"):
-                st.session_state["char_creation_step"] = 2
+            # Get random voice style if button was clicked
+            if "random_voice_clicked" not in st.session_state:
+                st.session_state["random_voice_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_voice = st.session_state.get("voice_style_input", "")
+            if st.session_state["random_voice_clicked"]:
+                default_voice = get_random_example("voice_style")
+                st.session_state["voice_style_input"] = default_voice
+                st.session_state["random_voice_clicked"] = False
+            
+            voice_style = st.text_input(
+                "How do they speak? Any unique speech patterns?",
+                value=default_voice,
+                placeholder="Always says 'nya~' like a cat girl / Ends every sentence with 'my dear'",
+                key="voice_style_input"
+            )
+        with col2:
+            if st.button("🎲 Random", key="random_voice"):
+                st.session_state["random_voice_clicked"] = True
                 st.rerun()
-        with col3:
-            if st.button("🔮 Start Chat with Character", type="primary"):
-                # Start the chat
-                st.session_state["chat_started"] = True
-                st.session_state["chat_history"] = []
-                
-                # Build character prompt with advanced options
-                voice_style = st.session_state.get("voice_style_input", "")
-                emotional_style = st.session_state.get("emotional_style_input", "")
-                lore_snippets = st.session_state.get("lore_snippets_input", "")
-                
-                character_prompt = f"You are roleplaying as a fictional character named {char_name}. "
-                character_prompt += f"Your role is: {char_role}. Your personality and background: {char_traits}.\n\n"
-                
-                if voice_style:
-                    character_prompt += f"Speech style: {voice_style}\n"
-                if emotional_style:
-                    character_prompt += f"Emotional style: {emotional_style}\n"
-                if lore_snippets:
-                    character_prompt += f"Background lore: {lore_snippets}\n"
-                
-                character_prompt += "\nSpeak naturally as this character would. Stay in character and never say you're an AI.\n"
-                character_prompt += "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
-                character_prompt += "Start the conversation by introducing yourself."
-                
-                st.session_state["character_prompt"] = character_prompt
-                
-                # Generate opening line if user didn't provide one
-                if not opening_line.strip():
-                    # Configure Gemini API for generating opening line
-                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-                    
-                    opening_prompt = f"""
+        
+        st.markdown("#### 💕 Emotional Style / Relationship Style")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            # Get random emotional style if button was clicked
+            if "random_emotional_clicked" not in st.session_state:
+                st.session_state["random_emotional_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_emotional = st.session_state.get("emotional_style_input", "")
+            if st.session_state["random_emotional_clicked"]:
+                default_emotional = get_random_example("emotional_style")
+                st.session_state["emotional_style_input"] = default_emotional
+                st.session_state["random_emotional_clicked"] = False
+            
+            emotional_style = st.text_input(
+                "How do they treat the user emotionally?",
+                value=default_emotional,
+                placeholder="Protective big brother energy / Tsundere (hot and cold flirty) / Gentle supportive best friend",
+                key="emotional_style_input"
+            )
+        with col2:
+            if st.button("🎲 Random", key="random_emotional"):
+                st.session_state["random_emotional_clicked"] = True
+                st.rerun()
+        
+        st.markdown("#### 📖 Memory or Lore Snippets")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            # Get random lore if button was clicked
+            if "random_lore_clicked" not in st.session_state:
+                st.session_state["random_lore_clicked"] = False
+            
+            # Set default value based on random click or existing session state
+            default_lore = st.session_state.get("lore_snippets_input", "")
+            if st.session_state["random_lore_clicked"]:
+                default_lore = get_random_example("lore_snippets")
+                st.session_state["lore_snippets_input"] = default_lore
+                st.session_state["random_lore_clicked"] = False
+            
+            lore_snippets = st.text_area(
+                "Any personal backstory or shared memories?",
+                value=default_lore,
+                placeholder="They once lost someone they loved, and still carry the necklace. / You and the character used to play in the forest as kids.",
+                height=80,
+                key="lore_snippets_input"
+            )
+        with col2:
+            if st.button("🎲 Random", key="random_lore"):
+                st.session_state["random_lore_clicked"] = True
+                st.rerun()
+
+    # ===== STEP 3: FINAL TOUCHES =====
+    st.markdown("---")
+    st.markdown("## ✨ Step 3: Final Touches")
+    st.info("Almost done! Let's add those finishing touches to make your character perfect.")
+
+    # Opening Lines
+    st.markdown("### 💬 Opening Lines (Optional)")
+    st.markdown("**💡 Tip:** If you don't write anything here, I'll come up with something fun for you!")
+    
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        # Get random opening if button was clicked
+        if "random_opening_clicked" not in st.session_state:
+            st.session_state["random_opening_clicked"] = False
+        
+        # Set default value based on random click or existing session state
+        default_opening = st.session_state.get("opening_line_input", "")
+        if st.session_state["random_opening_clicked"]:
+            default_opening = get_random_example("opening")
+            st.session_state["opening_line_input"] = default_opening
+            st.session_state["random_opening_clicked"] = False
+        
+        opening_line = st.text_area(
+            "What should they say to start the conversation?",
+            value=default_opening,
+            placeholder="Hey, it's you again! I've been waiting forever, dummy!",
+            height=80,
+            key="opening_line_input"
+        )
+    with col2:
+        if st.button("🎲 Random", key="random_opening"):
+            st.session_state["random_opening_clicked"] = True
+            st.rerun()
+
+    if opening_line.strip():
+        st.success("🎭 Got it! That's a perfect way to start the conversation!")
+
+    # Character Image
+    st.markdown("### 🖼️ Character Image (Optional)")
+    st.markdown("**💡 Tip:** Try using AI image generators from Hugging Face like `cagliostrolab/animagine-xl` or `hakurei/waifu-diffusion`!")
+    
+    char_image = st.file_uploader(
+        "Upload a profile image",
+        type=["png", "jpg", "jpeg"],
+        key="char_image_upload"
+    )
+
+    if char_image:
+        st.success("🖼️ Beautiful image! It'll make the chat feel more immersive!")
+
+    # Character Preview
+    st.markdown("### 👀 Character Preview")
+    preview_col1, preview_col2 = st.columns([1, 2])
+    
+    with preview_col1:
+        if char_image:
+            st.image(char_image, use_container_width=True, caption=f"{char_name}'s Avatar")
+        else:
+            # Default avatar placeholder
+            st.markdown(f"""
+            <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px; color: white;">
+                <h3>🎭 {char_name}</h3>
+                <p>✨ Character Avatar</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    with preview_col2:
+        st.markdown(f"""
+        **Name:** {char_name}
+        **Role:** {char_role}
+        **Personality:** {char_traits[:100]}{'...' if len(char_traits) > 100 else ''}
+        """)
+
+    # Start Chat Button
+    st.markdown("---")
+    if st.button("🔮 Start Chat with Character", type="primary", use_container_width=True):
+        # Start the chat
+        st.session_state["chat_started"] = True
+        st.session_state["chat_history"] = []
+        
+        # Build character prompt with advanced options
+        voice_style = st.session_state.get("voice_style_input", "")
+        emotional_style = st.session_state.get("emotional_style_input", "")
+        lore_snippets = st.session_state.get("lore_snippets_input", "")
+        
+        character_prompt = f"You are roleplaying as a fictional character named {char_name}. "
+        character_prompt += f"Your role is: {char_role}. Your personality and background: {char_traits}.\n\n"
+        
+        if voice_style:
+            character_prompt += f"Speech style: {voice_style}\n"
+        if emotional_style:
+            character_prompt += f"Emotional style: {emotional_style}\n"
+        if lore_snippets:
+            character_prompt += f"Background lore: {lore_snippets}\n"
+        
+        character_prompt += "\nSpeak naturally as this character would. Stay in character and never say you're an AI.\n"
+        character_prompt += "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
+        character_prompt += "Start the conversation by introducing yourself."
+        
+        st.session_state["character_prompt"] = character_prompt
+        
+        # Generate opening line if user didn't provide one
+        if not opening_line.strip():
+            # Configure Gemini API for generating opening line
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            opening_prompt = f"""
 Generate an engaging opening line for a character in a chat conversation.
 
 Character Name: {char_name}
@@ -544,24 +476,24 @@ The opening line should:
 
 Generate only the opening line, nothing else.
 """
-                    try:
-                        response = model.generate_content(opening_prompt)
-                        generated_opening = response.text.strip()
-                        # Clean up any extra formatting
-                        if generated_opening.startswith('"') and generated_opening.endswith('"'):
-                            generated_opening = generated_opening[1:-1]
-                        opening_line = generated_opening
-                    except Exception as e:
-                        # Fallback to a simple greeting if generation fails
-                        opening_line = f"Hello! I'm {char_name}."
-                
-                # Add the opening line as the first message from the character
-                st.session_state["chat_history"].append({
-                    "user": "",
-                    "bot": opening_line.strip()
-                })
-                
-                st.rerun()
+            try:
+                response = model.generate_content(opening_prompt)
+                generated_opening = response.text.strip()
+                # Clean up any extra formatting
+                if generated_opening.startswith('"') and generated_opening.endswith('"'):
+                    generated_opening = generated_opening[1:-1]
+                opening_line = generated_opening
+            except Exception as e:
+                # Fallback to a simple greeting if generation fails
+                opening_line = f"Hello! I'm {char_name}."
+        
+        # Add the opening line as the first message from the character
+        st.session_state["chat_history"].append({
+            "user": "",
+            "bot": opening_line.strip()
+        })
+        
+        st.rerun()
 
     # --- Chat UI (after Start) ---
     if st.session_state.get("chat_started"):
@@ -612,7 +544,6 @@ Generate only the opening line, nothing else.
         # Back to character creation
         if st.button("🔄 Create New Character"):
             st.session_state["chat_started"] = False
-            st.session_state["char_creation_step"] = 1
             st.rerun()
     
     st.stop()
