@@ -117,7 +117,10 @@ Design a unique character, then chat with them as if they were real! The AI will
             "char_traits_input", "voice_style_input", "emotional_style_input", "lore_snippets_input",
             "opening_line_input", "char_image_upload", "chat_started", "chat_history",
             "character_prompt", "random_name_clicked", "random_role_clicked", "random_traits_clicked",
-            "random_voice_clicked", "random_emotional_clicked", "random_lore_clicked", "random_opening_clicked"
+            "random_voice_clicked", "random_emotional_clicked", "random_lore_clicked", "random_opening_clicked",
+            # New user fields
+            "user_name_input", "user_role_input", "user_traits_input", "user_details_input",
+            "random_user_name_clicked", "random_user_role_clicked", "random_user_traits_clicked", "random_user_details_clicked"
         ]
         for key in keys_to_clear:
             if key in st.session_state:
@@ -127,7 +130,7 @@ Design a unique character, then chat with them as if they were real! The AI will
     # --- Step Overview ---
     st.markdown("---")
     st.markdown("### 📋 Creation Steps Overview")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
@@ -155,8 +158,16 @@ Design a unique character, then chat with them as if they were real! The AI will
     with col4:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">✨</div>
+            <div style="font-size: 24px;">🌟</div>
             <div style="font-weight: bold; color: #495057;">Step 4</div>
+            <div style="color: #6c757d; font-size: 14px;">Your Role in the Story</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col5:
+        st.markdown("""
+        <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
+            <div style="font-size: 24px;">✨</div>
+            <div style="font-weight: bold; color: #495057;">Step 5</div>
             <div style="color: #6c757d; font-size: 14px;">Final Touches</div>
         </div>
         """, unsafe_allow_html=True)
@@ -213,6 +224,33 @@ Design a unique character, then chat with them as if they were real! The AI will
                 "The character saved your life once, but you don't remember it.",
                 "They're actually from another dimension and miss their home.",
                 "You both share a secret that no one else knows about."
+            ],
+            "user_name": ["Alex", "Mei", "Hiro", "Luna", "Kai", "Aria", "Sam", "Zoe", "Jordan", "Riley"],
+            "user_role": [
+                "The chosen one", "Their long-lost friend", "A time-traveling guest", 
+                "The last hope", "A mysterious stranger", "Their destined partner",
+                "A lost soul seeking answers", "The one who can save them",
+                "A traveler from another world", "Their childhood friend returned"
+            ],
+            "user_traits": [
+                "Curious but shy, always asking questions",
+                "Assertive and logical, takes charge in difficult situations",
+                "Flirty and playful, loves to tease and joke around",
+                "Protective and caring, puts others before themselves",
+                "Mysterious and quiet, speaks little but observes much",
+                "Energetic and optimistic, brings light to dark situations",
+                "Wise beyond their years, gives thoughtful advice",
+                "Rebellious and free-spirited, doesn't follow rules"
+            ],
+            "user_details": [
+                "Born on a full moon, loves stargazing",
+                "Has a collection of antique books, favorite color is deep blue",
+                "Learned to cook from their grandmother, loves spicy food",
+                "Speaks three languages, dreams of traveling the world",
+                "Has a pet cat named Shadow, afraid of thunderstorms",
+                "Plays the violin, birthday is in autumn",
+                "Collects seashells, favorite season is spring",
+                "Loves to paint, has a scar on their left hand"
             ]
         }
         return random.choice(examples.get(field_type, ["Example"]))
@@ -227,31 +265,28 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("💡 **Pick something cool, elegant, or fun. Be as creative as you like!**")
     st.markdown("*Examples: Eliora, Jack the Brave, Neko-chan, Artemis, Rei*")
     
-    # Random button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🎲 Random", key="random_name"):
-            st.session_state["random_name_clicked"] = True
-            st.rerun()
+    # Get random name if button was clicked
+    if "random_name_clicked" not in st.session_state:
+        st.session_state["random_name_clicked"] = False
     
-    with col1:
-        # Get random name if button was clicked
-        if "random_name_clicked" not in st.session_state:
-            st.session_state["random_name_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_name = st.session_state.get("char_name_input", "")
-        if st.session_state["random_name_clicked"]:
-            default_name = get_random_example("name")
-            st.session_state["char_name_input"] = default_name
-            st.session_state["random_name_clicked"] = False
-        
-        char_name = st.text_input(
-            "What's their name?",
-            value=default_name,
-            placeholder="Eliora / Jack the Brave / Neko-chan",
-            key="char_name_input"
-        )
+    # Set default value based on random click or existing session state
+    default_name = st.session_state.get("char_name_input", "")
+    if st.session_state["random_name_clicked"]:
+        default_name = get_random_example("name")
+        st.session_state["char_name_input"] = default_name
+        st.session_state["random_name_clicked"] = False
+    
+    char_name = st.text_input(
+        "What's their name?",
+        value=default_name,
+        placeholder="Eliora / Jack the Brave / Neko-chan",
+        key="char_name_input"
+    )
+    
+    # Random button below input
+    if st.button("🎲 Random", key="random_name"):
+        st.session_state["random_name_clicked"] = True
+        st.rerun()
     
     if char_name.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Love that name!</span> It already paints a picture in my mind.</div>', unsafe_allow_html=True)
@@ -261,31 +296,28 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("💡 **What's their role in your world or story? Be descriptive or playful!**")
     st.markdown("*Examples: Your loyal knight, Time-traveling librarian, Witch who sells cursed flowers, Guardian spirit of your dreams*")
     
-    # Random button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🎲 Random", key="random_role"):
-            st.session_state["random_role_clicked"] = True
-            st.rerun()
+    # Get random role if button was clicked
+    if "random_role_clicked" not in st.session_state:
+        st.session_state["random_role_clicked"] = False
     
-    with col1:
-        # Get random role if button was clicked
-        if "random_role_clicked" not in st.session_state:
-            st.session_state["random_role_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_role = st.session_state.get("char_role_input", "")
-        if st.session_state["random_role_clicked"]:
-            default_role = get_random_example("role")
-            st.session_state["char_role_input"] = default_role
-            st.session_state["random_role_clicked"] = False
-        
-        char_role = st.text_input(
-            "What do they do? What's their role?",
-            value=default_role,
-            placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
-            key="char_role_input"
-        )
+    # Set default value based on random click or existing session state
+    default_role = st.session_state.get("char_role_input", "")
+    if st.session_state["random_role_clicked"]:
+        default_role = get_random_example("role")
+        st.session_state["char_role_input"] = default_role
+        st.session_state["random_role_clicked"] = False
+    
+    char_role = st.text_input(
+        "What do they do? What's their role?",
+        value=default_role,
+        placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
+        key="char_role_input"
+    )
+    
+    # Random button below input
+    if st.button("🎲 Random", key="random_role"):
+        st.session_state["random_role_clicked"] = True
+        st.rerun()
     
     if char_role.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That role is so vivid</span> — I want to meet them already!</div>', unsafe_allow_html=True)
@@ -302,16 +334,22 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *\"Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.\"*")
     st.markdown("- *\"Chaotic and charming. A street magician who trusts no one but you.\"*")
     
-    # AI Generation button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🤖 AI Generate", key="ai_generate_traits"):
-            if char_name.strip() and char_role.strip():
-                # Configure Gemini API for generating traits
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-                
-                traits_prompt = f"""
+    char_traits = st.text_area(
+        "Tell us about their personality, background, and how they behave:",
+        value=st.session_state.get("char_traits_input", ""),
+        placeholder="Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
+        height=120,
+        key="char_traits_input"
+    )
+    
+    # AI Generation button below input
+    if st.button("🤖 AI Generate", key="ai_generate_traits"):
+        if char_name.strip() and char_role.strip():
+            # Configure Gemini API for generating traits
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            traits_prompt = f"""
 Generate personality traits and backstory for a character based on their name and role.
 
 Character Name: {char_name}
@@ -327,26 +365,17 @@ Create a compelling personality description that:
 
 Generate only the personality description, nothing else.
 """
-                try:
-                    response = model.generate_content(traits_prompt)
-                    generated_traits = response.text.strip()
-                    if generated_traits.startswith('"') and generated_traits.endswith('"'):
-                        generated_traits = generated_traits[1:-1]
-                    st.session_state["char_traits_input"] = generated_traits
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to generate traits: {e}")
-            else:
-                st.warning("Please complete Step 1 (Name and Role) before generating personality traits.")
-    
-    with col1:
-        char_traits = st.text_area(
-            "Tell us about their personality, background, and how they behave:",
-            value=st.session_state.get("char_traits_input", ""),
-            placeholder="Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
-            height=120,
-            key="char_traits_input"
-        )
+            try:
+                response = model.generate_content(traits_prompt)
+                generated_traits = response.text.strip()
+                if generated_traits.startswith('"') and generated_traits.endswith('"'):
+                    generated_traits = generated_traits[1:-1]
+                st.session_state["char_traits_input"] = generated_traits
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate traits: {e}")
+        else:
+            st.warning("Please complete Step 1 (Name and Role) before generating personality traits.")
 
     if char_traits.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That\'s so rich</span> — they already feel alive!</div>', unsafe_allow_html=True)
@@ -364,16 +393,21 @@ Generate only the personality description, nothing else.
     st.markdown("- *\"Talks in old poetic phrases\"*")
     st.markdown("- *\"Speaks bluntly and calls you 'human'\"*")
     
-    # AI Generation button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🤖 AI Generate", key="ai_generate_voice"):
-            if char_name.strip() and char_role.strip() and char_traits.strip():
-                # Configure Gemini API for generating voice style
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-                
-                voice_prompt = f"""
+    voice_style = st.text_input(
+        "How do they speak? Any unique speech patterns?",
+        value=st.session_state.get("voice_style_input", ""),
+        placeholder="Always says 'nya~' like a catgirl / Talks in old poetic phrases",
+        key="voice_style_input"
+    )
+    
+    # AI Generation button below input
+    if st.button("🤖 AI Generate", key="ai_generate_voice"):
+        if char_name.strip() and char_role.strip() and char_traits.strip():
+            # Configure Gemini API for generating voice style
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            voice_prompt = f"""
 Generate a unique voice style for a character based on their details.
 
 Character Name: {char_name}
@@ -389,25 +423,17 @@ Create a distinctive speech pattern that:
 
 Generate only the voice style description, nothing else.
 """
-                try:
-                    response = model.generate_content(voice_prompt)
-                    generated_voice = response.text.strip()
-                    if generated_voice.startswith('"') and generated_voice.endswith('"'):
-                        generated_voice = generated_voice[1:-1]
-                    st.session_state["voice_style_input"] = generated_voice
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to generate voice style: {e}")
-            else:
-                st.warning("Please complete Steps 1 and 2 before generating voice style.")
-    
-    with col1:
-        voice_style = st.text_input(
-            "How do they speak? Any unique speech patterns?",
-            value=st.session_state.get("voice_style_input", ""),
-            placeholder="Always says 'nya~' like a catgirl / Talks in old poetic phrases",
-            key="voice_style_input"
-        )
+            try:
+                response = model.generate_content(voice_prompt)
+                generated_voice = response.text.strip()
+                if generated_voice.startswith('"') and generated_voice.endswith('"'):
+                    generated_voice = generated_voice[1:-1]
+                st.session_state["voice_style_input"] = generated_voice
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate voice style: {e}")
+        else:
+            st.warning("Please complete Steps 1 and 2 before generating voice style.")
     
     if voice_style.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Nice!</span> I can already imagine hearing them talk.</div>', unsafe_allow_html=True)
@@ -420,16 +446,21 @@ Generate only the voice style description, nothing else.
     st.markdown("- *Tsundere (hot and cold flirty)*")
     st.markdown("- *Warm and clingy childhood friend*")
     
-    # AI Generation button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🤖 AI Generate", key="ai_generate_emotional"):
-            if char_name.strip() and char_role.strip() and char_traits.strip():
-                # Configure Gemini API for generating emotional style
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-                
-                emotional_prompt = f"""
+    emotional_style = st.text_input(
+        "How do they treat the user emotionally?",
+        value=st.session_state.get("emotional_style_input", ""),
+        placeholder="Protective big brother energy / Tsundere (hot and cold flirty)",
+        key="emotional_style_input"
+    )
+    
+    # AI Generation button below input
+    if st.button("🤖 AI Generate", key="ai_generate_emotional"):
+        if char_name.strip() and char_role.strip() and char_traits.strip():
+            # Configure Gemini API for generating emotional style
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            emotional_prompt = f"""
 Generate an emotional/relationship style for a character based on their details.
 
 Character Name: {char_name}
@@ -446,25 +477,17 @@ Create an emotional connection style that:
 
 Generate only the emotional style description, nothing else.
 """
-                try:
-                    response = model.generate_content(emotional_prompt)
-                    generated_emotional = response.text.strip()
-                    if generated_emotional.startswith('"') and generated_emotional.endswith('"'):
-                        generated_emotional = generated_emotional[1:-1]
-                    st.session_state["emotional_style_input"] = generated_emotional
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to generate emotional style: {e}")
-            else:
-                st.warning("Please complete Steps 1 and 2 before generating emotional style.")
-    
-    with col1:
-        emotional_style = st.text_input(
-            "How do they treat the user emotionally?",
-            value=st.session_state.get("emotional_style_input", ""),
-            placeholder="Protective big brother energy / Tsundere (hot and cold flirty)",
-            key="emotional_style_input"
-        )
+            try:
+                response = model.generate_content(emotional_prompt)
+                generated_emotional = response.text.strip()
+                if generated_emotional.startswith('"') and generated_emotional.endswith('"'):
+                    generated_emotional = generated_emotional[1:-1]
+                st.session_state["emotional_style_input"] = generated_emotional
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate emotional style: {e}")
+        else:
+            st.warning("Please complete Steps 1 and 2 before generating emotional style.")
     
     if emotional_style.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Adorable!</span> Their emotional vibe is going to make this chat really fun.</div>', unsafe_allow_html=True)
@@ -476,16 +499,22 @@ Generate only the emotional style description, nothing else.
     st.markdown("- *\"They still carry the ring you gave them long ago.\"*")
     st.markdown("- *\"You used to sneak into the temple garden together as kids.\"*")
     
-    # AI Generation button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🤖 AI Generate", key="ai_generate_lore"):
-            if char_name.strip() and char_role.strip() and char_traits.strip():
-                # Configure Gemini API for generating lore
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-                
-                lore_prompt = f"""
+    lore_snippets = st.text_area(
+        "Any personal backstory or shared memories?",
+        value=st.session_state.get("lore_snippets_input", ""),
+        placeholder="They still carry the ring you gave them long ago. / You used to sneak into the temple garden together as kids.",
+        height=80,
+        key="lore_snippets_input"
+    )
+    
+    # AI Generation button below input
+    if st.button("🤖 AI Generate", key="ai_generate_lore"):
+        if char_name.strip() and char_role.strip() and char_traits.strip():
+            # Configure Gemini API for generating lore
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            lore_prompt = f"""
 Generate a personal memory or lore snippet for a character based on their details.
 
 Character Name: {char_name}
@@ -503,33 +532,155 @@ Create a shared memory or personal history that:
 
 Generate only the lore snippet, nothing else.
 """
-                try:
-                    response = model.generate_content(lore_prompt)
-                    generated_lore = response.text.strip()
-                    if generated_lore.startswith('"') and generated_lore.endswith('"'):
-                        generated_lore = generated_lore[1:-1]
-                    st.session_state["lore_snippets_input"] = generated_lore
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to generate lore: {e}")
-            else:
-                st.warning("Please complete Steps 1 and 2 before generating lore.")
-    
-    with col1:
-        lore_snippets = st.text_area(
-            "Any personal backstory or shared memories?",
-            value=st.session_state.get("lore_snippets_input", ""),
-            placeholder="They still carry the ring you gave them long ago. / You used to sneak into the temple garden together as kids.",
-            height=80,
-            key="lore_snippets_input"
-        )
+            try:
+                response = model.generate_content(lore_prompt)
+                generated_lore = response.text.strip()
+                if generated_lore.startswith('"') and generated_lore.endswith('"'):
+                    generated_lore = generated_lore[1:-1]
+                st.session_state["lore_snippets_input"] = generated_lore
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate lore: {e}")
+        else:
+            st.warning("Please complete Steps 1 and 2 before generating lore.")
     
     if lore_snippets.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That detail adds so much depth</span> — what a story!</div>', unsafe_allow_html=True)
 
-    # ===== STEP 4: FINAL TOUCHES =====
+    # ===== STEP 4: YOUR ROLE IN THE STORY =====
     st.markdown("---")
-    st.markdown("## ✨ Step 4: Final Touches")
+    st.markdown("## 🌟 Step 4: Your Role in the Story")
+    st.info("Now let's define who YOU are in this story. This helps the character understand and interact with you better!")
+
+    # User Name
+    st.markdown("### 👤 Your Name")
+    st.markdown("💡 **What's your name in this story?**")
+    st.markdown("*Examples: Alex, Mei, Hiro, Luna, Kai, Aria*")
+    
+    # Get random user name if button was clicked
+    if "random_user_name_clicked" not in st.session_state:
+        st.session_state["random_user_name_clicked"] = False
+    
+    # Set default value based on random click or existing session state
+    default_user_name = st.session_state.get("user_name_input", "")
+    if st.session_state["random_user_name_clicked"]:
+        default_user_name = get_random_example("user_name")
+        st.session_state["user_name_input"] = default_user_name
+        st.session_state["random_user_name_clicked"] = False
+    
+    user_name = st.text_input(
+        "Your name",
+        value=default_user_name,
+        placeholder="Alex / Mei / Hiro / Luna",
+        key="user_name_input"
+    )
+    
+    # Random button below input
+    if st.button("🎲 Random", key="random_user_name"):
+        st.session_state["random_user_name_clicked"] = True
+        st.rerun()
+    
+    if user_name.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Nice name!</span> It suits you perfectly.</div>', unsafe_allow_html=True)
+
+    # User Role/Identity
+    st.markdown("### 🎭 Your Role / Identity")
+    st.markdown("💡 **What's your role in relation to the character?**")
+    st.markdown("*Examples: The chosen one, their long-lost friend, a time-traveling guest, the last hope*")
+    
+    # Get random user role if button was clicked
+    if "random_user_role_clicked" not in st.session_state:
+        st.session_state["random_user_role_clicked"] = False
+    
+    # Set default value based on random click or existing session state
+    default_user_role = st.session_state.get("user_role_input", "")
+    if st.session_state["random_user_role_clicked"]:
+        default_user_role = get_random_example("user_role")
+        st.session_state["user_role_input"] = default_user_role
+        st.session_state["random_user_role_clicked"] = False
+    
+    user_role = st.text_input(
+        "Your role or identity",
+        value=default_user_role,
+        placeholder="The chosen one / Their long-lost friend / A time-traveling guest",
+        key="user_role_input"
+    )
+    
+    # Random button below input
+    if st.button("🎲 Random", key="random_user_role"):
+        st.session_state["random_user_role_clicked"] = True
+        st.rerun()
+    
+    if user_role.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That role sounds exciting!</span> It adds so much depth to the story.</div>', unsafe_allow_html=True)
+
+    # User Personality Traits
+    st.markdown("### 💫 Your Key Personality Traits or Behavior")
+    st.markdown("💡 **How do you behave? What's your personality like?**")
+    st.markdown("*Examples: Curious but shy, assertive and logical, flirty and playful, protective and caring*")
+    
+    # Get random user traits if button was clicked
+    if "random_user_traits_clicked" not in st.session_state:
+        st.session_state["random_user_traits_clicked"] = False
+    
+    # Set default value based on random click or existing session state
+    default_user_traits = st.session_state.get("user_traits_input", "")
+    if st.session_state["random_user_traits_clicked"]:
+        default_user_traits = get_random_example("user_traits")
+        st.session_state["user_traits_input"] = default_user_traits
+        st.session_state["random_user_traits_clicked"] = False
+    
+    user_traits = st.text_area(
+        "Your personality traits or behavior",
+        value=default_user_traits,
+        placeholder="Curious but shy, always asking questions / Assertive and logical, takes charge in difficult situations",
+        height=80,
+        key="user_traits_input"
+    )
+    
+    # Random button below input
+    if st.button("🎲 Random", key="random_user_traits"):
+        st.session_state["random_user_traits_clicked"] = True
+        st.rerun()
+    
+    if user_traits.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Great personality!</span> The character will love getting to know you.</div>', unsafe_allow_html=True)
+
+    # User Details
+    st.markdown("### 📝 Anything Relevant the Character Should Know")
+    st.markdown("💡 **Share some personal details that make you unique!**")
+    st.markdown("*Examples: Born on a full moon, loves stargazing / Has a collection of antique books, favorite color is deep blue / Learned to cook from their grandmother, loves spicy food*")
+    
+    # Get random user details if button was clicked
+    if "random_user_details_clicked" not in st.session_state:
+        st.session_state["random_user_details_clicked"] = False
+    
+    # Set default value based on random click or existing session state
+    default_user_details = st.session_state.get("user_details_input", "")
+    if st.session_state["random_user_details_clicked"]:
+        default_user_details = get_random_example("user_details")
+        st.session_state["user_details_input"] = default_user_details
+        st.session_state["random_user_details_clicked"] = False
+    
+    user_details = st.text_area(
+        "Personal details or preferences",
+        value=default_user_details,
+        placeholder="Born on a full moon, loves stargazing / Has a collection of antique books, favorite color is deep blue",
+        height=80,
+        key="user_details_input"
+    )
+    
+    # Random button below input
+    if st.button("🎲 Random", key="random_user_details"):
+        st.session_state["random_user_details_clicked"] = True
+        st.rerun()
+    
+    if user_details.strip():
+        st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Those details are perfect!</span> They\'ll make conversations so much more personal.</div>', unsafe_allow_html=True)
+
+    # ===== STEP 5: FINAL TOUCHES =====
+    st.markdown("---")
+    st.markdown("## ✨ Step 5: Final Touches")
     st.info("Let's get ready for your first encounter.")
 
     # Opening Lines
@@ -541,16 +692,22 @@ Generate only the lore snippet, nothing else.
     st.markdown("- *\"I thought you'd never return...\"*")
     st.markdown("**💡 Tip:** If you don't write anything here, I'll come up with something fun for you!")
     
-    # AI Generation button above input
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🤖 AI Generate", key="ai_generate_opening"):
-            if char_name.strip() and char_role.strip() and char_traits.strip():
-                # Configure Gemini API for generating opening line
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-                
-                opening_prompt = f"""
+    opening_line = st.text_area(
+        "What should they say to start the conversation?",
+        value=st.session_state.get("opening_line_input", ""),
+        placeholder="Took you long enough. Shall we begin?",
+        height=80,
+        key="opening_line_input"
+    )
+    
+    # AI Generation button below input
+    if st.button("🤖 AI Generate", key="ai_generate_opening"):
+        if char_name.strip() and char_role.strip() and char_traits.strip():
+            # Configure Gemini API for generating opening line
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            
+            opening_prompt = f"""
 Generate an engaging opening line for a character based on their details.
 
 Character Name: {char_name}
@@ -571,26 +728,17 @@ The opening line should:
 
 Generate only the opening line, nothing else.
 """
-                try:
-                    response = model.generate_content(opening_prompt)
-                    generated_opening = response.text.strip()
-                    if generated_opening.startswith('"') and generated_opening.endswith('"'):
-                        generated_opening = generated_opening[1:-1]
-                    st.session_state["opening_line_input"] = generated_opening
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to generate opening line: {e}")
-            else:
-                st.warning("Please complete Steps 1 and 2 before generating opening line.")
-    
-    with col1:
-        opening_line = st.text_area(
-            "What should they say to start the conversation?",
-            value=st.session_state.get("opening_line_input", ""),
-            placeholder="Took you long enough. Shall we begin?",
-            height=80,
-            key="opening_line_input"
-        )
+            try:
+                response = model.generate_content(opening_prompt)
+                generated_opening = response.text.strip()
+                if generated_opening.startswith('"') and generated_opening.endswith('"'):
+                    generated_opening = generated_opening[1:-1]
+                st.session_state["opening_line_input"] = generated_opening
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate opening line: {e}")
+        else:
+            st.warning("Please complete Steps 1 and 2 before generating opening line.")
 
     if opening_line.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Oooh, such a strong intro!</span> They\'re totally in character.</div>', unsafe_allow_html=True)
@@ -642,6 +790,12 @@ Generate only the opening line, nothing else.
         **📖 Memory:** {lore_snippets if lore_snippets.strip() else 'None yet'}
         
         **💬 Opening Line:** {opening_line if opening_line.strip() else 'Will be generated'}
+        
+        **👤 Your Name:** {user_name if user_name.strip() else 'Not set yet'}
+        
+        **🎭 Your Role:** {user_role if user_role.strip() else 'Not set yet'}
+        
+        **💫 Your Traits:** {user_traits[:50] if user_traits.strip() else 'Not set yet'}{'...' if len(user_traits) > 50 and user_traits.strip() else ''}
         """)
 
     # ===== CHARACTER TEMPLATE GENERATION =====
@@ -661,7 +815,12 @@ Generate only the opening line, nothing else.
                     "emotional_style": emotional_style if emotional_style.strip() else "Friendly",
                     "lore_snippets": lore_snippets if lore_snippets.strip() else "",
                     "opening_line": opening_line if opening_line.strip() else "",
-                    "image_uploaded": char_image is not None
+                    "image_uploaded": char_image is not None,
+                    # User information
+                    "user_name": user_name if user_name.strip() else "User",
+                    "user_role": user_role if user_role.strip() else "",
+                    "user_traits": user_traits if user_traits.strip() else "",
+                    "user_details": user_details if user_details.strip() else ""
                 }
                 
                 st.session_state["character_template"] = character_template
@@ -723,8 +882,19 @@ Generate only the opening line, nothing else.
         if lore_snippets:
             character_prompt += f"Background lore: {lore_snippets}\n"
         
+        # Add user information to the character prompt
+        if user_name.strip() and user_name != "User":
+            character_prompt += f"\nThe user's name is: {user_name}\n"
+        if user_role.strip():
+            character_prompt += f"The user's role/identity is: {user_role}\n"
+        if user_traits.strip():
+            character_prompt += f"The user's personality traits: {user_traits}\n"
+        if user_details.strip():
+            character_prompt += f"Personal details about the user: {user_details}\n"
+        
         character_prompt += "\nSpeak naturally as this character would. Stay in character and never say you're an AI.\n"
         character_prompt += "Keep your replies concise (under 100 words) unless the user asks for a long story or detailed answer.\n"
+        character_prompt += "Use the information about the user to make conversations more personal and engaging.\n"
         character_prompt += "Start the conversation by introducing yourself."
         
         st.session_state["character_prompt"] = character_prompt
@@ -1277,41 +1447,41 @@ Generate only the 3 choices, nothing else.
     with col1:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">🌍</div>
+            <div style="font-size: 24px;">🌟</div>
             <div style="font-weight: bold; color: #495057;">Step 1</div>
-            <div style="color: #6c757d; font-size: 14px;">Your Sekai World</div>
+            <div style="color: #6c757d; font-size: 14px;">Core Details</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">👤</div>
+            <div style="font-size: 24px;">🧠</div>
             <div style="font-weight: bold; color: #495057;">Step 2</div>
-            <div style="color: #6c757d; font-size: 14px;">Create Your Character</div>
+            <div style="color: #6c757d; font-size: 14px;">Personality & Background</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">👥</div>
+            <div style="font-size: 24px;">💫</div>
             <div style="font-weight: bold; color: #495057;">Step 3</div>
-            <div style="color: #6c757d; font-size: 14px;">Main Characters</div>
+            <div style="color: #6c757d; font-size: 14px;">Expression & Relationships</div>
         </div>
         """, unsafe_allow_html=True)
     with col4:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">📜</div>
+            <div style="font-size: 24px;">🌟</div>
             <div style="font-weight: bold; color: #495057;">Step 4</div>
-            <div style="color: #6c757d; font-size: 14px;">Story Template</div>
+            <div style="color: #6c757d; font-size: 14px;">Your Role in the Story</div>
         </div>
         """, unsafe_allow_html=True)
     with col5:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">🎮</div>
+            <div style="font-size: 24px;">✨</div>
             <div style="font-weight: bold; color: #495057;">Step 5</div>
-            <div style="color: #6c757d; font-size: 14px;">Start Your Journey</div>
+            <div style="color: #6c757d; font-size: 14px;">Final Touches</div>
         </div>
         """, unsafe_allow_html=True)
     st.markdown("---")
