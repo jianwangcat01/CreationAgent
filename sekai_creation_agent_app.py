@@ -25,6 +25,12 @@ st.markdown("""
 
 .feedback-animation {
     animation: fadeInUp 0.6s ease-out;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    color: #155724;
 }
 
 .emoji-sparkle {
