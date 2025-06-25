@@ -1903,43 +1903,86 @@ Respond with:
             if world_keywords:
                 world_context += f"\nKeywords: {world_keywords}"
             
-            prompt = f"""Generate {num_characters} completely unique and different characters for the following world:
+            # Generate each character individually based on their idea
+            for i in range(num_characters):
+                # Get the character idea for this specific character
+                character_idea = st.session_state.get(f"idea_{i}", "").strip()
+                
+                # Build existing characters list (excluding current character)
+                other_chars = []
+                for j in range(num_characters):
+                    if j != i:  # Skip the current character being generated
+                        char_name = st.session_state.get(f"name_{j}", "")
+                        char_role = st.session_state.get(f"role_{j}", "")
+                        char_traits = st.session_state.get(f"trait_{j}", "")
+                        char_voice = st.session_state.get(f"voice_style_{j}", "")
+                        if char_name and char_traits:  # Only include characters that have been generated
+                            char_info = f"- {char_name} ({char_role}): {char_traits}"
+                            if char_voice and char_voice != "Default":
+                                char_info += f" | Voice: {char_voice}"
+                            other_chars.append(char_info)
+                
+                existing_chars_text = "\n".join(other_chars) if other_chars else "None"
+                
+                # Create prompt based on whether character idea exists
+                if character_idea:
+                    prompt = f"""Create a new character for the following world:
 
 {world_context}
 
 Player Character: {user_name} ({user_traits})
 
-Create {num_characters} supporting characters that:
-- Are distinct from each other and from the player character
+Character Idea: {character_idea}
+
+Existing Characters:
+{existing_chars_text}
+
+Create a character that:
+- Incorporates the character idea: {character_idea}
+- Is clearly different from the player character and any existing characters
 - Would naturally exist in this world
-- Have interesting personalities and abilities
+- Has an interesting personality and abilities
 - Could interact meaningfully with the player character
-- Fit the genre and tone of the world
+- Fits the genre and tone of the world
 
-Please provide {num_characters} character descriptions separated by '---'.
-
-Each character description must follow this format:
+Respond in this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
 Traits: <Personality traits and special abilities>
 Voice Style: <How do they speak?>"""
-            
-            response_text = generate_field(prompt)
-            generated_characters = response_text.strip().split("\n---\n")
+                else:
+                    prompt = f"""Create a new character for the following world:
 
-            for i in range(num_characters):
-                if i < len(generated_characters):
-                    char_text = generated_characters[i].strip()
-                    st.session_state[f"char_{i}"] = char_text
-                    
-                    # Parse the character text into individual fields
+{world_context}
+
+Player Character: {user_name} ({user_traits})
+
+Existing Characters:
+{existing_chars_text}
+
+Create a character that:
+- Is clearly different from the player character and any existing characters
+- Would naturally exist in this world
+- Has an interesting personality and abilities
+- Could interact meaningfully with the player character
+- Fits the genre and tone of the world
+
+Respond in this format:
+Name: <A standard first name and optional last name only, no titles or descriptions>
+Role: <Character Role>
+Traits: <Personality traits and special abilities>
+Voice Style: <How do they speak?>"""
+                
+                try:
+                    result = generate_field(prompt)
+                    # Parse the result
                     parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
                     try:
                         # Use regex for robust parsing
-                        name_match = re.search(r'Name\s*[:：\-]\s*(.*)', char_text)
-                        role_match = re.search(r'Role\s*[:：\-]\s*(.*)', char_text)
-                        traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', char_text)
-                        voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', char_text)
+                        name_match = re.search(r'Name\s*[:：\-]\s*(.*)', result)
+                        role_match = re.search(r'Role\s*[:：\-]\s*(.*)', result)
+                        traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', result)
+                        voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', result)
                         if name_match:
                             parsed_name = name_match.group(1).strip()
                         if role_match:
@@ -1952,16 +1995,26 @@ Voice Style: <How do they speak?>"""
                         pass
                     
                     # Store parsed fields in session state
+                    st.session_state[f"char_{i}"] = result
                     st.session_state[f"name_{i}"] = parsed_name
                     st.session_state[f"role_{i}"] = parsed_role
                     st.session_state[f"trait_{i}"] = parsed_traits
                     st.session_state[f"voice_style_{i}"] = parsed_voice
-                else:
+                    
+                    # Increment generation counter to force form refresh
+                    current_gen_count = st.session_state.get(f"gen_count_{i}", 0)
+                    st.session_state[f"gen_count_{i}"] = current_gen_count + 1
+                    
+                except Exception as e:
+                    st.error(f"Failed to generate character {i+1}: {e}")
+                    # Set empty values if generation fails
                     st.session_state[f"char_{i}"] = ""
                     st.session_state[f"name_{i}"] = ""
                     st.session_state[f"role_{i}"] = ""
                     st.session_state[f"trait_{i}"] = ""
                     st.session_state[f"voice_style_{i}"] = ""
+            
+            st.success(f"✅ All {num_characters} characters generated successfully!")
             st.rerun()
 
     # Character Forms
