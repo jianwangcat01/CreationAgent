@@ -227,7 +227,13 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("💡 **Pick something cool, elegant, or fun. Be as creative as you like!**")
     st.markdown("*Examples: Eliora, Jack the Brave, Neko-chan, Artemis, Rei*")
     
+    # Random button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🎲 Random", key="random_name"):
+            st.session_state["random_name_clicked"] = True
+            st.rerun()
+    
     with col1:
         # Get random name if button was clicked
         if "random_name_clicked" not in st.session_state:
@@ -246,10 +252,6 @@ Design a unique character, then chat with them as if they were real! The AI will
             placeholder="Eliora / Jack the Brave / Neko-chan",
             key="char_name_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_name"):
-            st.session_state["random_name_clicked"] = True
-            st.rerun()
     
     if char_name.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Love that name!</span> It already paints a picture in my mind.</div>', unsafe_allow_html=True)
@@ -259,7 +261,13 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("💡 **What's their role in your world or story? Be descriptive or playful!**")
     st.markdown("*Examples: Your loyal knight, Time-traveling librarian, Witch who sells cursed flowers, Guardian spirit of your dreams*")
     
+    # Random button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🎲 Random", key="random_role"):
+            st.session_state["random_role_clicked"] = True
+            st.rerun()
+    
     with col1:
         # Get random role if button was clicked
         if "random_role_clicked" not in st.session_state:
@@ -278,10 +286,6 @@ Design a unique character, then chat with them as if they were real! The AI will
             placeholder="Your loyal knight / Time-traveling librarian / Guardian spirit",
             key="char_role_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_role"):
-            st.session_state["random_role_clicked"] = True
-            st.rerun()
     
     if char_role.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That role is so vivid</span> — I want to meet them already!</div>', unsafe_allow_html=True)
@@ -298,30 +302,51 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *\"Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.\"*")
     st.markdown("- *\"Chaotic and charming. A street magician who trusts no one but you.\"*")
     
+    # AI Generation button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🤖 AI Generate", key="ai_generate_traits"):
+            if char_name.strip() and char_role.strip():
+                # Configure Gemini API for generating traits
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+                
+                traits_prompt = f"""
+Generate personality traits and backstory for a character based on their name and role.
+
+Character Name: {char_name}
+Role/Occupation: {char_role}
+
+Create a compelling personality description that:
+- Fits naturally with their name and role
+- Includes personality traits and behavioral quirks
+- Mentions a brief backstory or background
+- Is 2-3 sentences maximum
+- Feels authentic and engaging
+- Avoids generic descriptions
+
+Generate only the personality description, nothing else.
+"""
+                try:
+                    response = model.generate_content(traits_prompt)
+                    generated_traits = response.text.strip()
+                    if generated_traits.startswith('"') and generated_traits.endswith('"'):
+                        generated_traits = generated_traits[1:-1]
+                    st.session_state["char_traits_input"] = generated_traits
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate traits: {e}")
+            else:
+                st.warning("Please complete Step 1 (Name and Role) before generating personality traits.")
+    
     with col1:
-        # Get random traits if button was clicked
-        if "random_traits_clicked" not in st.session_state:
-            st.session_state["random_traits_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_traits = st.session_state.get("char_traits_input", "")
-        if st.session_state["random_traits_clicked"]:
-            default_traits = get_random_example("traits")
-            st.session_state["char_traits_input"] = default_traits
-            st.session_state["random_traits_clicked"] = False
-        
         char_traits = st.text_area(
             "Tell us about their personality, background, and how they behave:",
-            value=default_traits,
+            value=st.session_state.get("char_traits_input", ""),
             placeholder="Soft-spoken but bold when protecting loved ones. Speaks like an ancient priestess.",
             height=120,
             key="char_traits_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_traits"):
-            st.session_state["random_traits_clicked"] = True
-            st.rerun()
 
     if char_traits.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That\'s so rich</span> — they already feel alive!</div>', unsafe_allow_html=True)
@@ -339,29 +364,50 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *\"Talks in old poetic phrases\"*")
     st.markdown("- *\"Speaks bluntly and calls you 'human'\"*")
     
+    # AI Generation button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🤖 AI Generate", key="ai_generate_voice"):
+            if char_name.strip() and char_role.strip() and char_traits.strip():
+                # Configure Gemini API for generating voice style
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+                
+                voice_prompt = f"""
+Generate a unique voice style for a character based on their details.
+
+Character Name: {char_name}
+Role/Occupation: {char_role}
+Personality/Background: {char_traits}
+
+Create a distinctive speech pattern that:
+- Matches their personality and role
+- Is specific and memorable
+- Could include speech quirks, mannerisms, or style
+- Is 1-2 sentences maximum
+- Feels authentic to the character
+
+Generate only the voice style description, nothing else.
+"""
+                try:
+                    response = model.generate_content(voice_prompt)
+                    generated_voice = response.text.strip()
+                    if generated_voice.startswith('"') and generated_voice.endswith('"'):
+                        generated_voice = generated_voice[1:-1]
+                    st.session_state["voice_style_input"] = generated_voice
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate voice style: {e}")
+            else:
+                st.warning("Please complete Steps 1 and 2 before generating voice style.")
+    
     with col1:
-        # Get random voice style if button was clicked
-        if "random_voice_clicked" not in st.session_state:
-            st.session_state["random_voice_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_voice = st.session_state.get("voice_style_input", "")
-        if st.session_state["random_voice_clicked"]:
-            default_voice = get_random_example("voice_style")
-            st.session_state["voice_style_input"] = default_voice
-            st.session_state["random_voice_clicked"] = False
-        
         voice_style = st.text_input(
             "How do they speak? Any unique speech patterns?",
-            value=default_voice,
+            value=st.session_state.get("voice_style_input", ""),
             placeholder="Always says 'nya~' like a catgirl / Talks in old poetic phrases",
             key="voice_style_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_voice"):
-            st.session_state["random_voice_clicked"] = True
-            st.rerun()
     
     if voice_style.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Nice!</span> I can already imagine hearing them talk.</div>', unsafe_allow_html=True)
@@ -374,29 +420,51 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *Tsundere (hot and cold flirty)*")
     st.markdown("- *Warm and clingy childhood friend*")
     
+    # AI Generation button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🤖 AI Generate", key="ai_generate_emotional"):
+            if char_name.strip() and char_role.strip() and char_traits.strip():
+                # Configure Gemini API for generating emotional style
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+                
+                emotional_prompt = f"""
+Generate an emotional/relationship style for a character based on their details.
+
+Character Name: {char_name}
+Role/Occupation: {char_role}
+Personality/Background: {char_traits}
+Voice Style: {st.session_state.get('voice_style_input', '')}
+
+Create an emotional connection style that:
+- Fits their personality and role
+- Describes how they relate to the user emotionally
+- Could be protective, romantic, friendly, mysterious, etc.
+- Is 1-2 sentences maximum
+- Feels authentic and engaging
+
+Generate only the emotional style description, nothing else.
+"""
+                try:
+                    response = model.generate_content(emotional_prompt)
+                    generated_emotional = response.text.strip()
+                    if generated_emotional.startswith('"') and generated_emotional.endswith('"'):
+                        generated_emotional = generated_emotional[1:-1]
+                    st.session_state["emotional_style_input"] = generated_emotional
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate emotional style: {e}")
+            else:
+                st.warning("Please complete Steps 1 and 2 before generating emotional style.")
+    
     with col1:
-        # Get random emotional style if button was clicked
-        if "random_emotional_clicked" not in st.session_state:
-            st.session_state["random_emotional_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_emotional = st.session_state.get("emotional_style_input", "")
-        if st.session_state["random_emotional_clicked"]:
-            default_emotional = get_random_example("emotional_style")
-            st.session_state["emotional_style_input"] = default_emotional
-            st.session_state["random_emotional_clicked"] = False
-        
         emotional_style = st.text_input(
             "How do they treat the user emotionally?",
-            value=default_emotional,
+            value=st.session_state.get("emotional_style_input", ""),
             placeholder="Protective big brother energy / Tsundere (hot and cold flirty)",
             key="emotional_style_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_emotional"):
-            st.session_state["random_emotional_clicked"] = True
-            st.rerun()
     
     if emotional_style.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Adorable!</span> Their emotional vibe is going to make this chat really fun.</div>', unsafe_allow_html=True)
@@ -408,30 +476,53 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *\"They still carry the ring you gave them long ago.\"*")
     st.markdown("- *\"You used to sneak into the temple garden together as kids.\"*")
     
+    # AI Generation button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🤖 AI Generate", key="ai_generate_lore"):
+            if char_name.strip() and char_role.strip() and char_traits.strip():
+                # Configure Gemini API for generating lore
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+                
+                lore_prompt = f"""
+Generate a personal memory or lore snippet for a character based on their details.
+
+Character Name: {char_name}
+Role/Occupation: {char_role}
+Personality/Background: {char_traits}
+Voice Style: {st.session_state.get('voice_style_input', '')}
+Emotional Style: {st.session_state.get('emotional_style_input', '')}
+
+Create a shared memory or personal history that:
+- Fits their personality and background
+- Creates emotional connection with the user
+- Could be a shared experience, gift, or meaningful moment
+- Is 1-2 sentences maximum
+- Adds depth to their relationship
+
+Generate only the lore snippet, nothing else.
+"""
+                try:
+                    response = model.generate_content(lore_prompt)
+                    generated_lore = response.text.strip()
+                    if generated_lore.startswith('"') and generated_lore.endswith('"'):
+                        generated_lore = generated_lore[1:-1]
+                    st.session_state["lore_snippets_input"] = generated_lore
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate lore: {e}")
+            else:
+                st.warning("Please complete Steps 1 and 2 before generating lore.")
+    
     with col1:
-        # Get random lore if button was clicked
-        if "random_lore_clicked" not in st.session_state:
-            st.session_state["random_lore_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_lore = st.session_state.get("lore_snippets_input", "")
-        if st.session_state["random_lore_clicked"]:
-            default_lore = get_random_example("lore_snippets")
-            st.session_state["lore_snippets_input"] = default_lore
-            st.session_state["random_lore_clicked"] = False
-        
         lore_snippets = st.text_area(
             "Any personal backstory or shared memories?",
-            value=default_lore,
+            value=st.session_state.get("lore_snippets_input", ""),
             placeholder="They still carry the ring you gave them long ago. / You used to sneak into the temple garden together as kids.",
             height=80,
             key="lore_snippets_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_lore"):
-            st.session_state["random_lore_clicked"] = True
-            st.rerun()
     
     if lore_snippets.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">That detail adds so much depth</span> — what a story!</div>', unsafe_allow_html=True)
@@ -450,30 +541,56 @@ Design a unique character, then chat with them as if they were real! The AI will
     st.markdown("- *\"I thought you'd never return...\"*")
     st.markdown("**💡 Tip:** If you don't write anything here, I'll come up with something fun for you!")
     
+    # AI Generation button above input
     col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🤖 AI Generate", key="ai_generate_opening"):
+            if char_name.strip() and char_role.strip() and char_traits.strip():
+                # Configure Gemini API for generating opening line
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+                
+                opening_prompt = f"""
+Generate an engaging opening line for a character based on their details.
+
+Character Name: {char_name}
+Role/Occupation: {char_role}
+Personality/Background: {char_traits}
+Voice Style: {st.session_state.get('voice_style_input', '')}
+Emotional Style: {st.session_state.get('emotional_style_input', '')}
+Lore: {st.session_state.get('lore_snippets_input', '')}
+
+The opening line should:
+- Be in character and reflect their personality
+- Be welcoming and engaging
+- Be 1-2 sentences maximum
+- Feel natural and conversational
+- Not mention being an AI or fictional character
+- Incorporate their voice style if specified
+- Match their emotional style
+
+Generate only the opening line, nothing else.
+"""
+                try:
+                    response = model.generate_content(opening_prompt)
+                    generated_opening = response.text.strip()
+                    if generated_opening.startswith('"') and generated_opening.endswith('"'):
+                        generated_opening = generated_opening[1:-1]
+                    st.session_state["opening_line_input"] = generated_opening
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate opening line: {e}")
+            else:
+                st.warning("Please complete Steps 1 and 2 before generating opening line.")
+    
     with col1:
-        # Get random opening if button was clicked
-        if "random_opening_clicked" not in st.session_state:
-            st.session_state["random_opening_clicked"] = False
-        
-        # Set default value based on random click or existing session state
-        default_opening = st.session_state.get("opening_line_input", "")
-        if st.session_state["random_opening_clicked"]:
-            default_opening = get_random_example("opening")
-            st.session_state["opening_line_input"] = default_opening
-            st.session_state["random_opening_clicked"] = False
-        
         opening_line = st.text_area(
             "What should they say to start the conversation?",
-            value=default_opening,
+            value=st.session_state.get("opening_line_input", ""),
             placeholder="Took you long enough. Shall we begin?",
             height=80,
             key="opening_line_input"
         )
-    with col2:
-        if st.button("🎲 Random", key="random_opening"):
-            st.session_state["random_opening_clicked"] = True
-            st.rerun()
 
     if opening_line.strip():
         st.markdown('<div class="feedback-animation">✅ <span class="emoji-sparkle">Oooh, such a strong intro!</span> They\'re totally in character.</div>', unsafe_allow_html=True)
@@ -527,24 +644,82 @@ Design a unique character, then chat with them as if they were real! The AI will
         **💬 Opening Line:** {opening_line if opening_line.strip() else 'Will be generated'}
         """)
 
+    # ===== CHARACTER TEMPLATE GENERATION =====
+    st.markdown("---")
+    st.markdown("## 📜 Character Template Generation")
+    st.info("Generate a character template to see all the information gathered and prepare for chat!")
+
+    if st.button("🧙 Generate Character Template", type="primary"):
+        if char_name.strip() and char_role.strip() and char_traits.strip():
+            with st.spinner("Creating your character template..."):
+                # Build character template
+                character_template = {
+                    "name": char_name,
+                    "role": char_role,
+                    "personality": char_traits,
+                    "voice_style": voice_style if voice_style.strip() else "Natural",
+                    "emotional_style": emotional_style if emotional_style.strip() else "Friendly",
+                    "lore_snippets": lore_snippets if lore_snippets.strip() else "",
+                    "opening_line": opening_line if opening_line.strip() else "",
+                    "image_uploaded": char_image is not None
+                }
+                
+                st.session_state["character_template"] = character_template
+                st.success("🎉 Character template generated successfully!")
+                st.json(character_template)
+        else:
+            st.warning("⚠️ Please complete at least the Name, Role, and Personality fields before generating the template.")
+
+    # Display generated template if available
+    if "character_template" in st.session_state:
+        st.markdown("### 📋 Generated Character Template")
+        template = st.session_state["character_template"]
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Template Details:**")
+            st.json(template)
+        
+        with col2:
+            st.markdown("**Ready to Chat:**")
+            st.markdown("""
+            Your character template is ready! You can now:
+            - Start chatting with your character
+            - Edit any details above and regenerate
+            - Save this template for future use
+            """)
+
     # Start Chat Button
     st.markdown("---")
     if st.button("🔮 Start Chat with Character", type="primary", use_container_width=True):
+        # Check if we have a template or enough basic info
+        if "character_template" in st.session_state:
+            template = st.session_state["character_template"]
+            char_name = template["name"]
+            char_role = template["role"]
+            char_traits = template["personality"]
+            voice_style = template["voice_style"]
+            emotional_style = template["emotional_style"]
+            lore_snippets = template["lore_snippets"]
+            opening_line = template["opening_line"]
+        elif char_name.strip() and char_role.strip() and char_traits.strip():
+            # Use current form data
+            pass
+        else:
+            st.error("Please complete the character creation and generate a template first.")
+            st.stop()
+        
         # Start the chat
         st.session_state["chat_started"] = True
         st.session_state["chat_history"] = []
         
         # Build character prompt with advanced options
-        voice_style = st.session_state.get("voice_style_input", "")
-        emotional_style = st.session_state.get("emotional_style_input", "")
-        lore_snippets = st.session_state.get("lore_snippets_input", "")
-        
         character_prompt = f"You are roleplaying as a fictional character named {char_name}. "
         character_prompt += f"Your role is: {char_role}. Your personality and background: {char_traits}.\n\n"
         
-        if voice_style:
+        if voice_style and voice_style != "Natural":
             character_prompt += f"Speech style: {voice_style}\n"
-        if emotional_style:
+        if emotional_style and emotional_style != "Friendly":
             character_prompt += f"Emotional style: {emotional_style}\n"
         if lore_snippets:
             character_prompt += f"Background lore: {lore_snippets}\n"
