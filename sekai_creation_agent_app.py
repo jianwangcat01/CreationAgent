@@ -1073,14 +1073,9 @@ Generate only the opening line, nothing else.
             "bot": opening_line.strip()
         })
         
-        # Initialize memories and extract from opening line
+        # Initialize memories
         if "memories" not in st.session_state:
             st.session_state["memories"] = []
-        
-        # Extract memory from opening line if meaningful
-        opening_memory = memory_extractor(opening_line.strip(), char_name)
-        if opening_memory:
-            st.session_state["memories"].append(opening_memory)
         
         st.rerun()
 
@@ -1120,6 +1115,11 @@ Generate only the opening line, nothing else.
                 st.markdown(f"**{char_name}:** {bot_reply}")
             
             # Chat input
+            # Check if we need to clear the input field
+            if st.session_state.get("clear_chat_input", False):
+                st.session_state["char_chat_input"] = ""
+                st.session_state["clear_chat_input"] = False
+            
             user_input = st.text_input("Your Message", key="char_chat_input")
             if st.button("📩 Send"):
                 # Get current memories for context
@@ -1152,8 +1152,8 @@ Generate only the opening line, nothing else.
                     "bot": formatted_reply
                 })
                 
-                # Clear the input field
-                st.session_state["char_chat_input"] = ""
+                # Set flag to clear input field on next render
+                st.session_state["clear_chat_input"] = True
                 st.rerun()
 
             # Back to character creation
