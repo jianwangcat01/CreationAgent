@@ -3318,11 +3318,12 @@ Write the opening scene below in proper visual novel script format:
                     st.markdown("**Or write your own action/dialogue:**")
                     st.text_input("Enter your next action or dialogue", key="reply_input")
                     
-                    # Create columns for Send button and End Journey button (for exploration mode)
+                    # Always show Send button below input
+                    st.button("Send", on_click=handle_send)
+
+                    # Create columns for End Journey button (for exploration mode)
                     if gameplay_mode == "🌍 Explore the World":
                         send_col, end_col = st.columns([1, 1])
-                        with send_col:
-                            st.button("Send", on_click=handle_send)
                         with end_col:
                             if st.button("🛑 End Journey", key="end_exploration_main"):
                                 with st.spinner("Writing the epilogue to your journey..."):
@@ -3459,11 +3460,12 @@ Write the opening scene below in proper visual novel script format:
             st.markdown("**Or write your own action/dialogue:**")
             st.text_input("Enter your next action or dialogue", key="reply_input")
             
-            # Create columns for Send button and End Journey button (for exploration mode)
+            # Always show Send button below input
+            st.button("Send", on_click=handle_send)
+
+            # Create columns for End Journey button (for exploration mode)
             if gameplay_mode == "🌍 Explore the World":
                 send_col, end_col = st.columns([1, 1])
-                with send_col:
-                    st.button("Send", on_click=handle_send)
                 with end_col:
                     if st.button("🛑 End Journey", key="end_exploration_fallback"):
                         st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
