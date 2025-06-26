@@ -23,6 +23,11 @@ st.markdown("""
     50% { transform: scale(1.1); }
 }
 
+@keyframes memoryGlow {
+    0%, 100% { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    50% { box-shadow: 0 4px 16px rgba(138, 43, 226, 0.2); }
+}
+
 .feedback-animation {
     animation: fadeInUp 0.6s ease-out;
     background-color: #d4edda;
@@ -46,6 +51,52 @@ st.markdown("""
 
 .step-inactive {
     color: #ccc;
+}
+
+.memory-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+    position: relative;
+    transition: all 0.3s ease;
+    animation: memoryGlow 2s ease-in-out infinite;
+}
+
+.memory-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.memory-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #495057;
+    margin: 0;
+}
+
+.memories-sidebar {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+    border-left: 2px solid #e9ecef;
+    padding: 20px;
+    border-radius: 0 12px 12px 0;
+}
+
+.empty-memories {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    transition: all 0.3s ease;
+}
+
+.empty-memories:hover {
+    border-color: #8a2be2;
+    color: #8a2be2;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -120,7 +171,9 @@ Design a unique character, then chat with them as if they were real! The AI will
             "random_voice_clicked", "random_emotional_clicked", "random_lore_clicked", "random_opening_clicked",
             # New user fields
             "user_name_input", "user_role_input", "user_traits_input", "user_details_input",
-            "random_user_name_clicked", "random_user_role_clicked", "random_user_traits_clicked", "random_user_details_clicked"
+            "random_user_name_clicked", "random_user_role_clicked", "random_user_traits_clicked", "random_user_details_clicked",
+            # Memories
+            "memories"
         ]
         for key in keys_to_clear:
             if key in st.session_state:
@@ -275,6 +328,60 @@ Design a unique character, then chat with them as if they were real! The AI will
         # Ensure expressions and movements are properly formatted with parentheses and italics
         # The AI should already be formatting them correctly, but we can add some basic formatting if needed
         return response_text.strip()
+
+    def memory_extractor(response_text, char_name):
+        """Extract meaningful memories from AI character responses"""
+        if not response_text.strip():
+            return None
+        
+        # Configure Gemini API for memory extraction
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+        
+        memory_prompt = f"""
+Analyze this character response and determine if it contains meaningful relationship-building content that should be remembered.
+
+Character: {char_name}
+Response: {response_text}
+
+Look for:
+- Emotional moments or revelations
+- Secrets shared or confessions
+- Important events or experiences mentioned
+- Gifts given or received
+- Promises made
+- Personal stories shared
+- Significant interactions or bonding moments
+- Character development or relationship growth
+
+If you find meaningful content, create a short memory (1-2 lines max) with an appropriate emoji.
+If no meaningful content is found, respond with "NO_MEMORY".
+
+Examples of good memories:
+- 🎁 "Character gave you a special gift"
+- 💝 "Character shared a personal secret about their past"
+- 🌟 "Character promised to always protect you"
+- 🎭 "Character revealed their true feelings for you"
+
+Respond with either the memory or "NO_MEMORY".
+"""
+        
+        try:
+            response = model.generate_content(memory_prompt)
+            memory = response.text.strip()
+            
+            # Clean up the response
+            if memory.startswith('"') and memory.endswith('"'):
+                memory = memory[1:-1]
+            
+            # Check if it's a valid memory (not NO_MEMORY)
+            if memory and memory != "NO_MEMORY" and len(memory) > 5:
+                return memory
+            else:
+                return None
+        except Exception as e:
+            # If memory extraction fails, return None
+            return None
 
     # ===== STEP 1: CORE DETAILS =====
     st.markdown("---")
@@ -966,6 +1073,15 @@ Generate only the opening line, nothing else.
             "bot": opening_line.strip()
         })
         
+        # Initialize memories and extract from opening line
+        if "memories" not in st.session_state:
+            st.session_state["memories"] = []
+        
+        # Extract memory from opening line if meaningful
+        opening_memory = memory_extractor(opening_line.strip(), char_name)
+        if opening_memory:
+            st.session_state["memories"].append(opening_memory)
+        
         st.rerun()
 
     # --- Chat UI (after Start) ---
@@ -980,46 +1096,107 @@ Generate only the opening line, nothing else.
         st.markdown("- Example: `(adjusts glasses) Hello there! How are you today?`")
         st.markdown("---")
         
-        # Character info display
-        char_name = st.session_state.get("char_name_input", "Luna")
-        char_image = st.session_state.get("char_image_upload")
+        # Initialize memories in session state if not exists
+        if "memories" not in st.session_state:
+            st.session_state["memories"] = []
         
-        if char_image:
-            st.image(char_image, use_container_width=False, width=200, caption=f"{char_name}'s Avatar")
+        # Create two columns: chat and memories sidebar
+        chat_col, memories_col = st.columns([3, 1])
         
-        # Chat history
-        for i, entry in enumerate(st.session_state["chat_history"]):
-            if entry['user']:
-                st.markdown(f"**You:** {entry['user']}")
-            # Format character response
-            bot_reply = format_character_response(entry['bot'], char_name)
-            st.markdown(f"**{char_name}:** {bot_reply}")
-        
-        # Chat input
-        user_input = st.text_input("Your Message", key="char_chat_input")
-        if st.button("📩 Send"):
-            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-            full_prompt = st.session_state["character_prompt"] + "\n\n"
-            for entry in st.session_state["chat_history"]:
+        with chat_col:
+            # Character info display
+            char_name = st.session_state.get("char_name_input", "Luna")
+            char_image = st.session_state.get("char_image_upload")
+            
+            if char_image:
+                st.image(char_image, use_container_width=False, width=200, caption=f"{char_name}'s Avatar")
+            
+            # Chat history
+            for i, entry in enumerate(st.session_state["chat_history"]):
                 if entry['user']:
-                    full_prompt += f"You: {entry['user']}\n{char_name}: {entry['bot']}\n"
-                else:
-                    full_prompt += f"{char_name}: {entry['bot']}\n"
-            full_prompt += f"You: {user_input}\n{char_name}:"
-            response = model.generate_content(full_prompt)
-            reply = response.text.strip()
-            # Format the reply before saving
-            formatted_reply = format_character_response(reply, char_name)
-            st.session_state["chat_history"].append({
-                "user": user_input,
-                "bot": formatted_reply
-            })
-            st.rerun()
+                    st.markdown(f"**You:** {entry['user']}")
+                # Format character response
+                bot_reply = format_character_response(entry['bot'], char_name)
+                st.markdown(f"**{char_name}:** {bot_reply}")
+            
+            # Chat input
+            user_input = st.text_input("Your Message", key="char_chat_input")
+            if st.button("📩 Send"):
+                # Get current memories for context
+                memories_list = st.session_state.get("memories", [])
+                memories_text = ""
+                if memories_list:
+                    memories_text = "\n\nHere are shared memories between user and character:\n" + "\n".join([f"- {memory}" for memory in memories_list])
+                
+                model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+                full_prompt = st.session_state["character_prompt"] + memories_text + "\n\n"
+                for entry in st.session_state["chat_history"]:
+                    if entry['user']:
+                        full_prompt += f"You: {entry['user']}\n{char_name}: {entry['bot']}\n"
+                    else:
+                        full_prompt += f"{char_name}: {entry['bot']}\n"
+                full_prompt += f"You: {user_input}\n{char_name}:"
+                
+                response = model.generate_content(full_prompt)
+                reply = response.text.strip()
+                # Format the reply before saving
+                formatted_reply = format_character_response(reply, char_name)
+                
+                # Extract memory from the response
+                new_memory = memory_extractor(formatted_reply, char_name)
+                if new_memory and new_memory not in st.session_state["memories"]:
+                    st.session_state["memories"].append(new_memory)
+                
+                st.session_state["chat_history"].append({
+                    "user": user_input,
+                    "bot": formatted_reply
+                })
+                st.rerun()
 
-        # Back to character creation
-        if st.button("🔄 Create New Character"):
-            st.session_state["chat_started"] = False
-            st.rerun()
+            # Back to character creation
+            if st.button("🔄 Create New Character"):
+                st.session_state["chat_started"] = False
+                st.rerun()
+        
+        with memories_col:
+            # Memories Sidebar
+            st.markdown("""
+            <div class="memories-sidebar">
+                <h3>💭 Memories</h3>
+                <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">
+                    <em>Important moments shared with your character</em>
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.session_state["memories"]:
+                for i, memory in enumerate(st.session_state["memories"]):
+                    # Create a styled memory card
+                    st.markdown(f"""
+                    <div class="memory-card">
+                        <p class="memory-text">{memory}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Delete button for each memory
+                    col1, col2 = st.columns([4, 1])
+                    with col2:
+                        if st.button(f"🗑️", key=f"delete_memory_{i}", help="Delete this memory"):
+                            st.session_state["memories"].pop(i)
+                            st.rerun()
+                
+                st.markdown("---")
+                # Clear all memories button
+                if st.button("🗑️ Clear All Memories", key="clear_all_memories", use_container_width=True):
+                    st.session_state["memories"] = []
+                    st.rerun()
+            else:
+                st.markdown("""
+                <div class="empty-memories">
+                    No memories yet.<br>
+                    Start chatting to create special moments! ✨
+                </div>
+                """, unsafe_allow_html=True)
     
     st.stop()
 
