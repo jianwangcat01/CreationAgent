@@ -1273,11 +1273,46 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
     def strip_stars(s):
         return s.strip().strip('*').strip()
 
-    def update_exploration_log(discovery_text):
-        """Add a discovery to the exploration log"""
+    def summarize_discovery(story_line, user_input=None):
+        """
+        Summarize a story line or user input into a concise, journal-style discovery log entry.
+        - Focus on key discoveries, actions, or lore moments.
+        - Remove dialogue, keep only the essence.
+        - 1–2 lines max.
+        """
+        # Remove character dialogue and keep only the action/summary
+        # Try to extract character, action, and object
+        import re
+        line = story_line.strip()
+        # Remove dialogue in quotes
+        line = re.sub(r'"[^"]+"', '', line)
+        # Remove dialogue in single quotes
+        line = re.sub(r'\'[^"]+\'', '', line)
+        # Remove parenthetical expressions
+        line = re.sub(r'\([^)]*\)', '', line)
+        # Remove leading character names
+        line = re.sub(r'^[A-Za-z0-9_\- ]+:?', '', line).strip()
+        # Remove 'Explored:' prefix if present
+        line = line.replace('Explored:', '').strip()
+        # Remove extra punctuation
+        line = re.sub(r'[\.,;:!?]+$', '', line)
+        # If the line is still too long, truncate
+        if len(line) > 80:
+            line = line[:77] + '...'
+        # If nothing left, fallback to user input
+        if not line and user_input:
+            line = user_input.strip()
+        # Capitalize first letter
+        if line:
+            line = line[0].upper() + line[1:]
+        return line if line else "A new discovery was made."
+
+    def update_exploration_log(discovery_text, user_input=None):
+        """Add a summarized discovery to the exploration log"""
         if "exploration_log" not in st.session_state:
             st.session_state["exploration_log"] = []
-        st.session_state["exploration_log"].append(discovery_text)
+        summary = summarize_discovery(discovery_text, user_input)
+        st.session_state["exploration_log"].append(summary)
     
     def update_exploration_progress():
         """Update exploration progress based on discoveries made"""
@@ -1574,7 +1609,7 @@ Generate the next story turn in proper visual novel script format:
                                     # Clean up the line for logging
                                     clean_line = line.replace('**What do you do?**', '').strip()
                                     if clean_line and len(clean_line) > 10:
-                                        update_exploration_log(f"Explored: {clean_line[:80]}{'...' if len(clean_line) > 80 else ''}")
+                                        update_exploration_log(clean_line, user_input)
                                         break
                             else:
                                 # Fallback if no specific line found
@@ -3234,25 +3269,18 @@ Write the opening scene below in proper visual novel script format:
                         st.button("Send", on_click=handle_send)
                     with end_col:
                         if st.button("🛑 End Journey", key="end_exploration_main"):
-                            st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
-                            if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
-                                for i, discovery in enumerate(st.session_state["exploration_log"]):
-                                    st.markdown(f"• {discovery}")
-                elif gameplay_mode == "🎯 Achieve a Goal":
-                    # Goal information display under the input
-                    mode_details = sekai_json.get('modeDetails', {})
-                    main_goal = mode_details.get('main_goal', 'Unknown Goal')
-                    success_condition = mode_details.get('success_condition', '')
-                    
-                    st.markdown("---")
-                    st.markdown("### 🎯 Your Mission")
-                    st.info(f"**Goal:** {main_goal}")
-                    if success_condition:
-                        st.info(f"**Success:** {success_condition}")
-                    
-                    st.button("Send", on_click=handle_send)
-                else:
-                    st.button("Send", on_click=handle_send)
+                            # Generate and store the journey summary
+                            world_title = sekai_json.get('title', None)
+                            summary = generate_journey_summary(st.session_state.get("exploration_log", []), None, world_title)
+                            st.session_state["journey_summary"] = summary
+                            st.session_state["show_journey_summary"] = True
+                            st.success("✨ Your exploration of Sekai is complete! See your journey summary below.")
+
+                # After the story blocks, show the journey summary if available
+                if st.session_state.get("show_journey_summary"):
+                    with st.container():
+                        st.markdown("---")
+                        st.markdown(st.session_state["journey_summary"])
             
             with sidebar_col:
                 # Gameplay Mode Sidebar
@@ -3400,3 +3428,26 @@ Write the opening scene below in proper visual novel script format:
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
     
     st.stop()
+
+    def generate_journey_summary(discovery_log, character_names=None, world_title=None):
+        """
+        Generate a narrative epilogue from the Discovery Log.
+        - Compose a paragraph summarizing the journey, referencing key discoveries and characters.
+        - Use a warm, story-like tone.
+        """
+        if not discovery_log:
+            return "Your journey has ended, but no discoveries were recorded."
+        # Compose a narrative
+        summary = ""
+        if world_title:
+            summary += f"✨ Your exploration of {world_title} is complete! Here's what you uncovered:\n"
+        else:
+            summary += "✨ Your exploration is complete! Here's what you uncovered:\n"
+        # Join discoveries into a narrative
+        for entry in discovery_log:
+            summary += f"- {entry.strip()}\n"
+        # Optionally, add a closing line
+        summary += "\nThrough these moments, you gained wisdom and memories unique to this world."
+        return summary
+
+    # Patch End Journey button logic in all three places to display the summary under the story area
