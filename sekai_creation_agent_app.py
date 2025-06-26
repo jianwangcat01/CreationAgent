@@ -213,7 +213,7 @@ Design a unique character, then chat with them as if they were real! The AI will
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
             <div style="font-size: 24px;">🌟</div>
             <div style="font-weight: bold; color: #495057;">Step 4</div>
-            <div style="color: #6c757d; font-size: 14px;">Your Role in the Story</div>
+            <div style="color: #6c757d; font-size: 14px;">Your Information</div>
         </div>
         """, unsafe_allow_html=True)
     with col5:
@@ -1242,7 +1242,9 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             "user_name", "user_traits", "user_name_input", "user_traits_input", "num_characters_slider",
             "sekai_json", "game_state", "story_colors", "user_inputs", "story_tone", "pacing", "pov", "narration_style",
             # New guided world creation variables (without step tracking)
-            "world_inspiration", "world_environment", "world_mood", "world_magic"
+            "world_inspiration", "world_environment", "world_mood", "world_magic",
+            # Add exploration log and progress to the clear list
+            "exploration_log", "exploration_progress", "journey_summary", "show_journey_summary"
         ]
         # Clear character-specific keys (up to 5 characters)
         for i in range(5):
@@ -1275,74 +1277,73 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
 
     def summarize_discovery(story_line, user_input=None):
         """
-        Summarize a story line or user input into a concise, journal-style discovery log entry.
-        - Focus on key discoveries, actions, or lore moments.
-        - Remove dialogue, keep only the essence.
-        - 1–2 lines max.
+        Summarize a story line or user input into a concise, journal-style discovery log entry using an LLM.
         """
-        # Remove character dialogue and keep only the action/summary
-        # Try to extract character, action, and object
-        import re
-        line = story_line.strip()
-        # Remove dialogue in quotes
-        line = re.sub(r'"[^"]+"', '', line)
-        # Remove dialogue in single quotes
-        line = re.sub(r'\'[^"]+\'', '', line)
-        # Remove parenthetical expressions
-        line = re.sub(r'\([^)]*\)', '', line)
-        # Remove leading character names
-        line = re.sub(r'^[A-Za-z0-9_\- ]+:?', '', line).strip()
-        # Remove 'Explored:' prefix if present
-        line = line.replace('Explored:', '').strip()
-        # Remove extra punctuation
-        line = re.sub(r'[\.,;:!?]+$', '', line)
-        # If the line is still too long, truncate
-        if len(line) > 80:
-            line = line[:77] + '...'
-        # If nothing left, fallback to user input
-        if not line and user_input:
-            line = user_input.strip()
-        # Capitalize first letter
-        if line:
-            line = line[0].upper() + line[1:]
-        return line if line else "A new discovery was made."
-    
+        if not story_line and not user_input:
+            return "A new discovery was made."
+
+        # Prepare the prompt for the LLM
+        prompt = f"""
+        Analyze the following game event and summarize it into a single, concise, past-tense sentence for a discovery log.
+        Focus on the most important action or finding. The summary should be a complete sentence and not truncated with "...".
+
+        Event context: "{story_line}"
+        Player's action: "{user_input}"
+
+        Generate only the one-sentence summary.
+        Example Input:
+        - Event: 'Lyra (thoughtful) "Oh, sorrowful runes? They whisper tales of the forest spirits..."'
+        - Player's action: 'Ask Lyra about the runes'
+        Example Output:
+        - Lyra revealed that the sorrowful runes hold secrets of forgotten forest spirits.
+        
+        Now, summarize the provided event.
+        """
+        try:
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            response = model.generate_content(prompt)
+            summary = response.text.strip().replace('"', '')
+            return summary if summary else "A new discovery was made."
+        except Exception:
+            # Fallback to a simpler summary if LLM fails
+            line = str(story_line).strip()
+            line = re.sub(r'"[^"]+"', '', line)
+            line = re.sub(r'\([^)]*\)', '', line)
+            line = re.sub(r'^[A-Za-z0-9_\- ]+:?', '', line).strip()
+            return line if line else "A new discovery was made."
+
     def generate_journey_summary(discovery_log, character_names=None, world_title=None):
         """
-        Generate a narrative epilogue from the Discovery Log.
-        - Compose a paragraph summarizing the journey, referencing key discoveries and characters.
-        - Use a warm, story-like tone.
+        Generate a narrative epilogue from the Discovery Log using an LLM.
         """
         if not discovery_log:
             return "Your journey has ended, but no discoveries were recorded."
-        # Compose a narrative
-        summary = ""
-        if world_title:
-            summary += f"✨ Your exploration of {world_title} is complete! Here's what you uncovered:\n\n"
-        else:
-            summary += "✨ Your exploration is complete! Here's what you uncovered:\n\n"
-        # Join discoveries into a narrative
-        summary_lines = []
-        for entry in discovery_log:
-            # Ensure the entry is a string and clean it up
-            clean_entry = str(entry).strip()
-            if clean_entry:
-                # Capitalize the first letter and ensure it ends with a period.
-                if not clean_entry.endswith('.'):
-                    clean_entry += '.'
-                summary_lines.append(clean_entry.capitalize())
-        
-        # Create a more narrative flow
-        if len(summary_lines) > 1:
-            narrative = " ".join(summary_lines)
-        else:
-            narrative = "".join(summary_lines)
 
-        summary += narrative
+        log_text = "\n- ".join(discovery_log)
         
-        # Optionally, add a closing line
-        summary += "\n\nThrough these moments, you gained wisdom and memories unique to this world."
-        return summary
+        prompt = f"""
+        You are a master storyteller. Your task is to write a short, narrative epilogue (1-2 paragraphs) for a role-playing game.
+        Use the following log of key discoveries from the player's journey in the world of '{world_title or 'this wondrous world'}' to craft a cohesive story summary.
+        Weave the events together smoothly. Do not just list them.
+
+        Discovery Log:
+        - {log_text}
+
+        Write the epilogue now.
+        """
+        try:
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            response = model.generate_content(prompt)
+            summary = response.text.strip()
+            
+            # Prepend the header
+            header = f"✨ Your exploration of {world_title or 'Sekai'} is complete! Here is the story of your journey:\n\n"
+            return header + summary
+        except Exception as e:
+            # Fallback to the old list format if LLM fails
+            summary = f"✨ Your exploration of {world_title or 'Sekai'} is complete! Here's what you uncovered:\n"
+            summary += "\n".join([f"- {entry.strip()}" for entry in discovery_log])
+            return summary
 
     def update_exploration_log(discovery_text, user_input=None):
         """Add a summarized discovery to the exploration log"""
@@ -3154,6 +3155,15 @@ Gameplay Mode: {selected_mode}
                 st.session_state["sekai_json"] = sekai_json
                 st.success("🎉 Sekai story template generated successfully!")
                 st.json(sekai_json)
+                # Reset exploration log when template is regenerated
+                if "exploration_log" in st.session_state:
+                    del st.session_state["exploration_log"]
+                if "exploration_progress" in st.session_state:
+                    del st.session_state["exploration_progress"]
+                if "journey_summary" in st.session_state:
+                    del st.session_state["journey_summary"]
+                if "show_journey_summary" in st.session_state:
+                    del st.session_state["show_journey_summary"]
             except json.JSONDecodeError:
                 st.error("Failed to parse JSON. Please try again.")
                 st.code(output)
@@ -3247,6 +3257,15 @@ Write the opening scene below in proper visual novel script format:
                     st.session_state["game_state"] = [cleaned_first_turn]
                     st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
                     st.session_state["user_inputs"] = [""]
+                    # Reset exploration log for new game
+                    if "exploration_log" in st.session_state:
+                        del st.session_state["exploration_log"]
+                    if "exploration_progress" in st.session_state:
+                        del st.session_state["exploration_progress"]
+                    if "journey_summary" in st.session_state:
+                        del st.session_state["journey_summary"]
+                    if "show_journey_summary" in st.session_state:
+                        del st.session_state["show_journey_summary"]
                     st.rerun()
             except Exception as e:
                 st.error(f"Error starting the game: {e}")
@@ -3284,41 +3303,48 @@ Write the opening scene below in proper visual novel script format:
                     )
 
                 # Game input (only appears when game is active)
-                st.markdown("### 🎮 Your Turn")
-                
-                # Generate 3 choice options
-                choices = generate_choices()
-                
-                # Display choice buttons vertically with full description
-                st.markdown("**Choose an action or write your own:**")
-                for idx, choice in enumerate(choices):
-                    btn_label = f"Choice {idx+1}: {choice}"
-                    if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
-                        pass
-                
-                # Freeform input
-                st.markdown("**Or write your own action/dialogue:**")
-                st.text_input("Enter your next action or dialogue", key="reply_input")
-                
-                # Create columns for Send button and End Journey button (for exploration mode)
-                if gameplay_mode == "🌍 Explore the World":
-                    send_col, end_col = st.columns([1, 1])
-                    with send_col:
-                        st.button("Send", on_click=handle_send)
-                    with end_col:
-                        if st.button("🛑 End Journey", key="end_exploration_main"):
-                            # Generate and store the journey summary
-                            world_title = sekai_json.get('title', None)
-                            summary = generate_journey_summary(st.session_state.get("exploration_log", []), None, world_title)
-                            st.session_state["journey_summary"] = summary
-                            st.session_state["show_journey_summary"] = True
-                            st.success("✨ Your exploration of Sekai is complete! See your journey summary below.")
+                if not st.session_state.get("show_journey_summary"):
+                    st.markdown("### 🎮 Your Turn")
+                    
+                    # Generate 3 choice options
+                    choices = generate_choices()
+                    
+                    # Display choice buttons vertically with full description
+                    st.markdown("**Choose an action or write your own:**")
+                    for idx, choice in enumerate(choices):
+                        btn_label = f"Choice {idx+1}: {choice}"
+                        if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
+                            pass
+                    
+                    # Freeform input
+                    st.markdown("**Or write your own action/dialogue:**")
+                    st.text_input("Enter your next action or dialogue", key="reply_input")
+                    
+                    # Create columns for Send button and End Journey button (for exploration mode)
+                    if gameplay_mode == "🌍 Explore the World":
+                        send_col, end_col = st.columns([1, 1])
+                        with send_col:
+                            st.button("Send", on_click=handle_send)
+                        with end_col:
+                            if st.button("🛑 End Journey", key="end_exploration_main"):
+                                with st.spinner("Writing the epilogue to your journey..."):
+                                    world_title = sekai_json.get('title', None)
+                                    summary = generate_journey_summary(st.session_state.get("exploration_log", []), None, world_title)
+                                    st.session_state["journey_summary"] = summary
+                                    st.session_state["show_journey_summary"] = True
+                                    st.rerun()
+                    # ... (rest of gameplay modes) ...
 
                 # After the story blocks, show the journey summary if available
                 if st.session_state.get("show_journey_summary"):
+                    st.success("✨ Your exploration of Sekai is complete! See your journey summary below.")
                     with st.container():
                         st.markdown("---")
+                        st.markdown("### Your Journey's Epilogue")
                         st.markdown(st.session_state["journey_summary"])
+                        if st.button("Back to Creation"):
+                            st.session_state["show_journey_summary"] = False
+                            st.rerun()
             
             with sidebar_col:
                 # Gameplay Mode Sidebar
