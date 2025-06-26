@@ -1661,7 +1661,7 @@ Generate the next story turn in proper visual novel script format:
                 ]
                 new_color = random.choice(available_colors)
                 st.session_state["story_colors"].append(new_color)
-                
+                st.rerun() # Ensure UI refreshes to show progress
             except Exception as e:
                 st.error(f"Error generating story response: {e}")
                 # Fallback response
@@ -1678,6 +1678,7 @@ Generate the next story turn in proper visual novel script format:
                 ]
                 new_color = random.choice(available_colors)
                 st.session_state["story_colors"].append(new_color)
+                st.rerun() # Ensure UI refreshes to show progress
             # st.rerun is implicit with on_click callback
 
     def clean_story_response(response_text):
@@ -3254,6 +3255,9 @@ Write the opening scene below in proper visual novel script format:
                         del st.session_state["journey_summary"]
                     if "show_journey_summary" in st.session_state:
                         del st.session_state["show_journey_summary"]
+                    # Reset goal_progress for new game
+                    if "goal_progress" in st.session_state:
+                        del st.session_state["goal_progress"]
                     st.rerun()
             except Exception as e:
                 st.error(f"Error starting the game: {e}")
