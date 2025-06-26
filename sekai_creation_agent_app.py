@@ -3320,6 +3320,16 @@ Write the opening scene below in proper visual novel script format:
                     # Always show Send button below input
                     st.button("Send", on_click=handle_send)
 
+                    # Show goal completion feedback below input if progress is 100%
+                    if gameplay_mode == "🎯 Achieve a Goal":
+                        progress = st.session_state.get("goal_progress", 0)
+                        mode_details = sekai_json.get('modeDetails', {})
+                        main_goal = mode_details.get('main_goal', 'Unknown Goal')
+                        if progress >= 100:
+                            st.success("🏆 You achieved your goal!")
+                            st.markdown(f"**Goal:** {main_goal}")
+                            st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
+
                     # Create columns for End Journey button (for exploration mode)
                     if gameplay_mode == "🌍 Explore the World":
                         send_col, end_col = st.columns([1, 1])
@@ -3461,6 +3471,16 @@ Write the opening scene below in proper visual novel script format:
             
             # Always show Send button below input
             st.button("Send", on_click=handle_send)
+
+            # Show goal completion feedback below input if progress is 100%
+            if gameplay_mode == "🎯 Achieve a Goal":
+                progress = st.session_state.get("goal_progress", 0)
+                mode_details = sekai_json.get('modeDetails', {})
+                main_goal = mode_details.get('main_goal', 'Unknown Goal')
+                if progress >= 100:
+                    st.success("🏆 You achieved your goal!")
+                    st.markdown(f"**Goal:** {main_goal}")
+                    st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
 
             # Create columns for End Journey button (for exploration mode)
             if gameplay_mode == "🌍 Explore the World":
