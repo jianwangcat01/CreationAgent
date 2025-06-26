@@ -2527,6 +2527,77 @@ Relationship: <How do they relate to the player character? Are they friends, riv
             key="exploration_chapters"
         )
         
+        # AI Generation button for exploration mode
+        if st.button("🤖 AI: Generate Exploration Plan", key="generate_exploration", type="secondary"):
+            with st.spinner("Creating an exciting exploration journey..."):
+                # Get all world and character information
+                world_genres = st.session_state.get("world_genre", [])
+                if not isinstance(world_genres, list):
+                    world_genres = []
+                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
+                
+                char_list = f"Player: {user_name} ({user_traits})\n"
+                for c in characters:
+                    if c['name'].strip() and c['traits'].strip():
+                        char_list += f"- {c['name']} ({c['role']}): {c['traits']}"
+                        if c.get('relationship'):
+                            char_list += f" | Relationship: {c['relationship']}"
+                        char_list += "\n"
+                
+                # Get advanced settings
+                story_tone = st.session_state.get("story_tone", "Balanced")
+                pacing = st.session_state.get("pacing", "Balanced")
+                
+                prompt = f"""
+Generate an exploration plan for an interactive story based on the following information.
+
+World Information:
+- Title: {world_title}
+- Setting: {world_setting}
+- Keywords: {world_keywords}
+- Genre: {genre_str}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+
+Characters:
+{char_list}
+
+Create an exploration plan that includes:
+1. Key locations or mysteries to explore (3-5 locations)
+2. Chapters or key discoveries (3-5 chapters)
+
+The exploration should:
+- Fit naturally with the world setting and genre
+- Be engaging and mysterious
+- Provide opportunities for character interaction
+- Include a mix of locations and discoveries
+- Match the story tone: {story_tone}
+- Use appropriate pacing: {pacing}
+
+Respond in this format:
+Locations: <comma-separated list of 3-5 exploration targets>
+Chapters: <comma-separated list of 3-5 chapter names or discoveries>
+"""
+                try:
+                    response = model.generate_content(prompt)
+                    generated_content = response.text.strip()
+                    
+                    # Parse the response
+                    locations_match = re.search(r'Locations\s*[:：\-]\s*(.*)', generated_content)
+                    chapters_match = re.search(r'Chapters\s*[:：\-]\s*(.*)', generated_content)
+                    
+                    if locations_match:
+                        st.session_state["exploration_locations"] = locations_match.group(1).strip()
+                    if chapters_match:
+                        st.session_state["exploration_chapters"] = chapters_match.group(1).strip()
+                    
+                    st.success("🗺️ Exploration plan generated successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate exploration plan: {e}")
+        
         if exploration_locations.strip():
             st.success("🗺️ Great exploration targets! Your journey will be full of discoveries.")
     
@@ -2554,6 +2625,77 @@ Relationship: <How do they relate to the player character? Are they friends, riv
             height=100,
             key="goal_success"
         )
+        
+        # AI Generation button for goal mode
+        if st.button("🤖 AI: Generate Goal Mission", key="generate_goal", type="secondary"):
+            with st.spinner("Creating an exciting mission..."):
+                # Get all world and character information
+                world_genres = st.session_state.get("world_genre", [])
+                if not isinstance(world_genres, list):
+                    world_genres = []
+                genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
+                
+                char_list = f"Player: {user_name} ({user_traits})\n"
+                for c in characters:
+                    if c['name'].strip() and c['traits'].strip():
+                        char_list += f"- {c['name']} ({c['role']}): {c['traits']}"
+                        if c.get('relationship'):
+                            char_list += f" | Relationship: {c['relationship']}"
+                        char_list += "\n"
+                
+                # Get advanced settings
+                story_tone = st.session_state.get("story_tone", "Balanced")
+                pacing = st.session_state.get("pacing", "Balanced")
+                
+                prompt = f"""
+Generate a goal mission for an interactive story based on the following information.
+
+World Information:
+- Title: {world_title}
+- Setting: {world_setting}
+- Keywords: {world_keywords}
+- Genre: {genre_str}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+
+Characters:
+{char_list}
+
+Create a goal mission that includes:
+1. A main goal that fits the world and characters
+2. A clear success condition that indicates when the goal is achieved
+
+The goal should:
+- Be challenging but achievable
+- Fit naturally with the world setting and genre
+- Involve the characters meaningfully
+- Be engaging and motivating
+- Match the story tone: {story_tone}
+- Use appropriate pacing: {pacing}
+
+Respond in this format:
+Goal: <main goal description>
+Success: <success condition description>
+"""
+                try:
+                    response = model.generate_content(prompt)
+                    generated_content = response.text.strip()
+                    
+                    # Parse the response
+                    goal_match = re.search(r'Goal\s*[:：\-]\s*(.*)', generated_content)
+                    success_match = re.search(r'Success\s*[:：\-]\s*(.*)', generated_content)
+                    
+                    if goal_match:
+                        st.session_state["goal_main"] = goal_match.group(1).strip()
+                    if success_match:
+                        st.session_state["goal_success"] = success_match.group(1).strip()
+                    
+                    st.success("🎯 Goal mission generated successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Failed to generate goal mission: {e}")
         
         if goal_main.strip():
             st.success("🎯 Excellent goal! Your mission is clear and achievable.")
