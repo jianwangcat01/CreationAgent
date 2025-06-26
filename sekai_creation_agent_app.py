@@ -3040,7 +3040,20 @@ Write the opening scene below in proper visual novel script format:
                 # Freeform input
                 st.markdown("**Or write your own action/dialogue:**")
                 st.text_input("Enter your next action or dialogue", key="reply_input")
-                st.button("Send", on_click=handle_send)
+                
+                # Create columns for Send button and End Journey button (for exploration mode)
+                if gameplay_mode == "🌍 Explore the World":
+                    send_col, end_col = st.columns([1, 1])
+                    with send_col:
+                        st.button("Send", on_click=handle_send)
+                    with end_col:
+                        if st.button("🛑 End Journey", key="end_exploration"):
+                            st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
+                            if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
+                                for i, discovery in enumerate(st.session_state["exploration_log"]):
+                                    st.markdown(f"• {discovery}")
+                else:
+                    st.button("Send", on_click=handle_send)
             
             with sidebar_col:
                 # Gameplay Mode Sidebar
@@ -3156,7 +3169,20 @@ Write the opening scene below in proper visual novel script format:
             # Freeform input
             st.markdown("**Or write your own action/dialogue:**")
             st.text_input("Enter your next action or dialogue", key="reply_input")
-            st.button("Send", on_click=handle_send)
+            
+            # Create columns for Send button and End Journey button (for exploration mode)
+            if gameplay_mode == "🌍 Explore the World":
+                send_col, end_col = st.columns([1, 1])
+                with send_col:
+                    st.button("Send", on_click=handle_send)
+                with end_col:
+                    if st.button("🛑 End Journey", key="end_exploration"):
+                        st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
+                        if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
+                            for i, discovery in enumerate(st.session_state["exploration_log"]):
+                                st.markdown(f"• {discovery}")
+            else:
+                st.button("Send", on_click=handle_send)
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
