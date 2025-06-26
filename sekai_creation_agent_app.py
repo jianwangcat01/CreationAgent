@@ -3332,6 +3332,11 @@ Write the opening scene below in proper visual novel script format:
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # Add a progress bar for exploration
+                    exploration_progress = st.session_state.get("exploration_progress", 0)
+                    st.progress(exploration_progress / 100)
+                    st.markdown(f"**Exploration Progress:** {exploration_progress}%")
+                    
                     if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                         for i, discovery in enumerate(st.session_state["exploration_log"]):
                             st.markdown(f"""
@@ -3340,11 +3345,6 @@ Write the opening scene below in proper visual novel script format:
                             </div>
                             """, unsafe_allow_html=True)
                         
-                        st.markdown("---")
-                        if st.button("🛑 End Journey", key="end_exploration_sidebar", use_container_width=True):
-                            st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
-                            for i, discovery in enumerate(st.session_state["exploration_log"]):
-                                st.markdown(f"• {discovery}")
                     else:
                         st.markdown("""
                         <div class="empty-memories">
