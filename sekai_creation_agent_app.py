@@ -1277,27 +1277,30 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
 
     def summarize_discovery(story_line, user_input=None):
         """
-        Summarize a story line or user input into a concise, journal-style discovery log entry using an LLM.
+        Summarize a story line or user input into a rich discovery log entry (2–3 sentences) that captures:
+        1. What happened in the scene.
+        2. How it affected the player character.
+        3. How other characters responded or evolved.
+
+        The summary should read like a meaningful journal record rather than a simple list of discovered objects or places.
         """
         if not story_line and not user_input:
             return "A new discovery was made."
 
         # Prepare the prompt for the LLM
         prompt = f"""
-        Analyze the following game event and summarize it into a single, concise, past-tense sentence for a discovery log.
-        Focus on the most important action or finding. The summary should be a complete sentence and not truncated with "...".
+        You are updating an exploratory adventure journal. Write a discovery log entry of **2–3 complete sentences** in past tense that:
+        • Recaps what happened in the scene.
+        • Describes how the event affected the player character.
+        • Notes how the other character(s) reacted, changed, or evolved.
+
+        Do not use ellipses and do not truncate the sentences.
 
         Event context: "{story_line}"
+
         Player's action: "{user_input}"
 
-        Generate only the one-sentence summary.
-        Example Input:
-        - Event: 'Lyra (thoughtful) "Oh, sorrowful runes? They whisper tales of the forest spirits..."'
-        - Player's action: 'Ask Lyra about the runes'
-        Example Output:
-        - Lyra revealed that the sorrowful runes hold secrets of forgotten forest spirits.
-        
-        Now, summarize the provided event.
+        Respond with ONLY the discovery log text – no list markers, no additional commentary.
         """
         try:
             model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
@@ -1658,11 +1661,10 @@ Generate the next story turn in proper visual novel script format:
                             # User was exploring but response didn't contain exploration keywords
                             update_exploration_log(f"Explored: {user_input[:50]}{'...' if len(user_input) > 50 else ''}")
                         
-                        # Update exploration progress
-                        update_exploration_progress()
-                elif gameplay_mode == "🎯 Achieve a Goal":
-                    # Update goal progress
-                    update_goal_progress(st.session_state["game_state"])
+                        # Exploration progress tracking removed – open-ended exploration
+                    elif gameplay_mode == "🎯 Achieve a Goal":
+                        # Update goal progress
+                        update_goal_progress(st.session_state["game_state"])
 
                 # Clear the input box for the next turn
                 st.session_state["reply_input"] = ""
@@ -3358,22 +3360,17 @@ Write the opening scene below in proper visual novel script format:
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # Add a progress bar for exploration
-                    exploration_progress = st.session_state.get("exploration_progress", 0)
-                    st.progress(exploration_progress / 100)
-                    st.markdown(f"**Exploration Progress:** {exploration_progress}%")
-                    
+                    # Progress bar removed – exploration is open-ended
                     if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                         for i, discovery in enumerate(st.session_state["exploration_log"]):
                             st.markdown(f"""
-                            <div class="memory-card">
-                                <p class="memory-text">{discovery}</p>
+                            <div class=\"memory-card\">
+                                <p class=\"memory-text\">{discovery}</p>
                             </div>
                             """, unsafe_allow_html=True)
-                        
                     else:
                         st.markdown("""
-                        <div class="empty-memories">
+                        <div class=\"empty-memories\">
                             No discoveries yet.<br>
                             Keep exploring to uncover secrets! 🗺️
                         </div>
