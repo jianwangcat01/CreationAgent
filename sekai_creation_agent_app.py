@@ -3008,12 +3008,9 @@ Write the opening scene below in proper visual novel script format:
         gameplay_mode = sekai_json.get('gameplayMode', '')
 
         # Create columns for main game and sidebar
-        if gameplay_mode:
+        if gameplay_mode and gameplay_mode in ["🌍 Explore the World", "🎯 Achieve a Goal"]:
             game_col, sidebar_col = st.columns([3, 1])
-        else:
-            game_col = None
-
-        if game_col:
+            
             with game_col:
                 for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
                     color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
@@ -3044,8 +3041,93 @@ Write the opening scene below in proper visual novel script format:
                 st.markdown("**Or write your own action/dialogue:**")
                 st.text_input("Enter your next action or dialogue", key="reply_input")
                 st.button("Send", on_click=handle_send)
+            
+            with sidebar_col:
+                # Gameplay Mode Sidebar
+                if gameplay_mode == "🌍 Explore the World":
+                    st.markdown("""
+                    <div class="memories-sidebar">
+                        <h3>🌍 Discovery Log</h3>
+                        <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">
+                            <em>Places and mysteries you've uncovered</em>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
+                        for i, discovery in enumerate(st.session_state["exploration_log"]):
+                            st.markdown(f"""
+                            <div class="memory-card">
+                                <p class="memory-text">{discovery}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        st.markdown("---")
+                        if st.button("🛑 End Journey", key="end_exploration", use_container_width=True):
+                            st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
+                            for i, discovery in enumerate(st.session_state["exploration_log"]):
+                                st.markdown(f"• {discovery}")
+                    else:
+                        st.markdown("""
+                        <div class="empty-memories">
+                            No discoveries yet.<br>
+                            Keep exploring to uncover secrets! 🗺️
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                elif gameplay_mode == "🎯 Achieve a Goal":
+                    st.markdown("""
+                    <div class="memories-sidebar">
+                        <h3>🎯 Goal Progress</h3>
+                        <p style="color: #6c757d; font-size: 14px; margin-bottom: 20px;">
+                            <em>Track your mission progress</em>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    mode_details = sekai_json.get('modeDetails', {})
+                    main_goal = mode_details.get('main_goal', 'Unknown Goal')
+                    success_condition = mode_details.get('success_condition', '')
+                    
+                    # Goal information card
+                    st.markdown(f"""
+                    <div class="memory-card">
+                        <p class="memory-text"><strong>Goal:</strong> {main_goal}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if success_condition:
+                        st.markdown(f"""
+                        <div class="memory-card">
+                            <p class="memory-text"><strong>Success:</strong> {success_condition}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    # Progress bar
+                    progress = st.session_state.get("goal_progress", 0)
+                    st.progress(progress / 100)
+                    st.markdown(f"**Progress:** {progress}%")
+                    
+                    # Recent Actions - show complete information
+                    if "game_state" in st.session_state and st.session_state["game_state"]:
+                        st.markdown("**Recent Actions:**")
+                        for i, turn in enumerate(st.session_state["game_state"][-3:], 1):  # Last 3 turns
+                            # Clean up the turn text for display
+                            clean_turn = turn.replace('narrator ', '').replace('**What do you do?**', '').strip()
+                            if clean_turn:
+                                st.markdown(f"""
+                                <div class="memory-card">
+                                    <p class="memory-text"><strong>{i}.</strong> {clean_turn}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                    
+                    # Check if goal is complete
+                    if progress >= 100:
+                        st.success("🏆 You achieved your goal!")
+                        st.markdown(f"**Goal:** {main_goal}")
+                        st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
         else:
-            # No sidebar layout
+            # No sidebar layout for other modes
             for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
                 color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
                 user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
@@ -3075,52 +3157,6 @@ Write the opening scene below in proper visual novel script format:
             st.markdown("**Or write your own action/dialogue:**")
             st.text_input("Enter your next action or dialogue", key="reply_input")
             st.button("Send", on_click=handle_send)
-
-        # Gameplay Mode Sidebar
-        if gameplay_mode and gameplay_mode in ["🌍 Explore the World", "🎯 Achieve a Goal"]:
-            st.markdown("---")
-            if gameplay_mode == "🌍 Explore the World":
-                st.markdown("### 🌍 Discovery Log")
-                
-                if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
-                    for i, discovery in enumerate(st.session_state["exploration_log"]):
-                        st.markdown(f"**{i+1}.** {discovery}")
-                    
-                    st.markdown("---")
-                    if st.button("🛑 End Journey", key="end_exploration"):
-                        st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
-                        for i, discovery in enumerate(st.session_state["exploration_log"]):
-                            st.markdown(f"• {discovery}")
-                else:
-                    st.info("No discoveries yet. Keep exploring!")
-            
-            elif gameplay_mode == "🎯 Achieve a Goal":
-                st.markdown("### 🎯 Goal Progress Tracker")
-                
-                mode_details = sekai_json.get('modeDetails', {})
-                main_goal = mode_details.get('main_goal', 'Unknown Goal')
-                success_condition = mode_details.get('success_condition', '')
-                
-                st.markdown(f"**Goal:** {main_goal}")
-                if success_condition:
-                    st.markdown(f"**Success:** {success_condition}")
-                
-                # Show progress
-                progress = st.session_state.get("goal_progress", 0)
-                st.progress(progress / 100)
-                st.markdown(f"**Progress:** {progress}%")
-                
-                # Show summary of actions
-                if "game_state" in st.session_state and st.session_state["game_state"]:
-                    st.markdown("**Recent Actions:**")
-                    for i, turn in enumerate(st.session_state["game_state"][-3:], 1):  # Last 3 turns
-                        st.markdown(f"{i}. {turn[:50]}...")
-                
-                # Check if goal is complete
-                if progress >= 100:
-                    st.success("🏆 You achieved your goal!")
-                    st.markdown(f"**Goal:** {main_goal}")
-                    st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
