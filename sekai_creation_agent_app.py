@@ -1244,7 +1244,9 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             # New guided world creation variables (without step tracking)
             "world_inspiration", "world_environment", "world_mood", "world_magic",
             # Add exploration log and progress to the clear list
-            "exploration_log", "exploration_progress", "journey_summary", "show_journey_summary"
+            "exploration_log", "exploration_progress", "journey_summary", "show_journey_summary",
+            # Add goal action log to clear list
+            "goal_action_log"
         ]
         # Clear character-specific keys (up to 5 characters)
         for i in range(5):
@@ -1373,10 +1375,9 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if "goal_progress" not in st.session_state:
             st.session_state["goal_progress"] = 0
         
-        # Simple progress calculation based on number of interactions
-        # In a real implementation, this would analyze the content for goal-related actions
-        progress_increment = min(5, len(chat_history) * 2)  # 2% per interaction, max 5%
-        st.session_state["goal_progress"] = min(100, st.session_state["goal_progress"] + progress_increment)
+        # Increment progress by a fixed amount per turn
+        fixed_progress_increment = 10 # Increase by 10% per turn for visibility
+        st.session_state["goal_progress"] = min(100, st.session_state["goal_progress"] + fixed_progress_increment)
         
         return st.session_state["goal_progress"]
 
@@ -1649,6 +1650,11 @@ Generate the next story turn in proper visual novel script format:
                     elif gameplay_mode == "🎯 Achieve a Goal":
                         # Update goal progress
                         update_goal_progress(st.session_state["game_state"])
+                        # Generate and append current action summary
+                        current_action_summary = generate_action_summary(cleaned_turn, user_input)
+                        if "goal_action_log" not in st.session_state:
+                            st.session_state["goal_action_log"] = []
+                        st.session_state["goal_action_log"].append(current_action_summary)
 
                 # Clear the input box for the next turn
                 st.session_state["reply_input"] = ""
@@ -3400,17 +3406,22 @@ Write the opening scene below in proper visual novel script format:
                     st.markdown(f"**Progress:** {progress}%")
                     
                     # Recent Actions - show complete information
-                    if "game_state" in st.session_state and st.session_state["game_state"]:
+                    if "goal_action_log" in st.session_state and st.session_state["goal_action_log"]:
                         st.markdown("**Recent Actions:**")
-                        for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"]), 1):  # All turns
-                            # Generate action summary instead of showing full text
-                            action_summary = generate_action_summary(turn, user_input_hist)
+                        for i, action_summary in enumerate(st.session_state["goal_action_log"], 1):
                             if action_summary:
                                 st.markdown(f"""
                                 <div class="memory-card">
                                     <p class="memory-text"><strong>{i}.</strong> {action_summary}</p>
                                 </div>
                                 """, unsafe_allow_html=True)
+                    else:
+                        st.markdown("""
+                        <div class="empty-memories">
+                            No actions yet.<br>
+                            Start playing to make progress! 🚀
+                        </div>
+                        """, unsafe_allow_html=True)
                     
                     # Check if goal is complete
                     if progress >= 100:
