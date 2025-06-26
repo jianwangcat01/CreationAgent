@@ -2188,59 +2188,6 @@ Relationship: <How do they relate to the player character? Are they friends, riv
         name = st.text_input(f"Name {i+1}", key=f"name_input_{i}", value=current_name)
         role = st.text_input(f"Role {i+1}", key=f"role_input_{i}", value=current_role, placeholder="Librarian who hides a secret / Rival time mage")
         trait = st.text_area(f"Key Traits {i+1}", key=f"trait_input_{i}", value=current_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
-        
-        # Relationship with Player
-        st.markdown(f"#### 💕 Relationship with {user_name}")
-        st.markdown("**How does this character relate to you? Are they a friend, rival, mentor, etc.?**")
-        
-        # AI Generate Relationship Button
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            if st.button(f"🤖 AI: Generate Relationship {i+1}", key=f"gen_relationship_{i}"):
-                if not (name.strip() and trait.strip()):
-                    st.warning(f"Please fill in the name and traits for Character {i+1} before generating their relationship.")
-                else:
-                    with st.spinner(f"Generating relationship for {name}..."):
-                        # Get complete world and user information
-                        world_genres = st.session_state.get("world_genre", [])
-                        # Safety check for genres
-                        if not isinstance(world_genres, list):
-                            world_genres = []
-                        genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
-                        world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
-                        if world_keywords:
-                            world_context += f"\nKeywords: {world_keywords}"
-                        
-                        prompt = f"""Generate a relationship description between a character and the player.
-
-World Context:
-{world_context}
-
-Player Character: {user_name} ({user_traits})
-
-Character: {name} ({role})
-Character Traits: {trait}
-
-Generate a relationship description that:
-- Explains how this character relates to the player character
-- Could be friends, rivals, mentors, allies, enemies, etc.
-- Fits naturally with both characters' personalities and the world setting
-- Is 1-2 sentences maximum
-- Creates interesting story potential
-- Feels authentic and engaging
-
-Generate only the relationship description, nothing else."""
-                        
-                        try:
-                            response = model.generate_content(prompt)
-                            generated_relationship = response.text.strip()
-                            if generated_relationship.startswith('"') and generated_relationship.endswith('"'):
-                                generated_relationship = generated_relationship[1:-1]
-                            st.session_state[f"relationship_input_{i}"] = generated_relationship
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Failed to generate relationship: {e}")
-        
         relationship = st.text_area(
             f"Relationship with {user_name}",
             value=current_relationship,
@@ -2426,6 +2373,7 @@ Characters:
             prompt += f"pointOfView: {pov}\n"
             prompt += f"narrationStyle: {narration_style}\n"
             
+            prompt += "\nIMPORTANT: Include the COMPLETE relationship text for each character in the JSON, not just a summary. Preserve all the relationship details exactly as provided."
             prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style or relationship field. Include all the advanced settings fields in the JSON output."
 
             response = model.generate_content(prompt)
