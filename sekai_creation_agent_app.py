@@ -3281,6 +3281,9 @@ Write the opening scene below in proper visual novel script format:
                     # Reset goal_progress for new game
                     if "goal_progress" in st.session_state:
                         del st.session_state["goal_progress"]
+                    # Reset goal_action_log for new game
+                    if "goal_action_log" in st.session_state:
+                        del st.session_state["goal_action_log"]
                     st.rerun()
             except Exception as e:
                 st.error(f"Error starting the game: {e}")
