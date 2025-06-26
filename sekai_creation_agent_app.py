@@ -3398,7 +3398,7 @@ Write the opening scene below in proper visual novel script format:
                     # Recent Actions - show complete information
                     if "game_state" in st.session_state and st.session_state["game_state"]:
                         st.markdown("**Recent Actions:**")
-                        for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"][-3:], st.session_state["user_inputs"][-3:]), 1):  # Last 3 turns
+                        for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"]), 1):  # All turns
                             # Generate action summary instead of showing full text
                             action_summary = generate_action_summary(turn, user_input_hist)
                             if action_summary:
