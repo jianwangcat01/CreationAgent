@@ -2899,6 +2899,8 @@ The goal should:
 - Match the story tone: {story_tone}
 - Use appropriate pacing: {pacing}
 
+Keep each line concise: limit goal and success to a short phrase (max 8 words each)
+
 Respond in this format:
 Goal: <main goal description>
 Success: <success condition description>
