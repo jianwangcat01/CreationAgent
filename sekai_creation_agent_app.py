@@ -1370,16 +1370,34 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         
         return progress
 
-    def update_goal_progress(chat_history):
-        """Update goal progress based on chat history"""
-        if "goal_progress" not in st.session_state:
+    def update_goal_progress_ai(goal, success, action_log):
+        """Use LLM to evaluate progress percentage based on goal, success, and action log."""
+        if not goal or not action_log:
             st.session_state["goal_progress"] = 0
-        
-        # Increment progress by a fixed amount per turn
-        fixed_progress_increment = 10 # Increase by 10% per turn for visibility
-        st.session_state["goal_progress"] = min(100, st.session_state["goal_progress"] + fixed_progress_increment)
-        
-        return st.session_state["goal_progress"]
+            return 0
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        prompt = f"""
+You are an expert interactive fiction game master. Given the main goal, the success condition, and a chronological list of the player's recent actions, estimate the player's progress toward achieving the goal as a percentage (0-100). Consider how much of the goal has been accomplished, how close the player is to the success condition, and any major setbacks or breakthroughs.
+
+Main Goal: {goal}
+Success Condition: {success}
+
+Recent Actions:
+"""
+        for i, action in enumerate(action_log, 1):
+            prompt += f"{i}. {action}\n"
+        prompt += "\nRespond ONLY with a single integer percentage (0-100)."
+        try:
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            response = model.generate_content(prompt)
+            percent_str = response.text.strip().split("%", 1)[0]
+            percent = int(''.join(filter(str.isdigit, percent_str)))
+            percent = max(0, min(100, percent))
+            st.session_state["goal_progress"] = percent
+            return percent
+        except Exception:
+            # Fallback: keep previous or 0
+            return st.session_state.get("goal_progress", 0)
 
     def generate_action_summary(turn_text, user_input):
         """Generate a narrative summary (1-2 sentences) of key events, goal progress, and character impacts."""
@@ -1649,7 +1667,7 @@ Generate the next story turn in proper visual novel script format:
 
                 # Always update goal progress and log in goal mode (not elif!)
                 if gameplay_mode == "🎯 Achieve a Goal":
-                    update_goal_progress(st.session_state["game_state"])
+                    update_goal_progress_ai(st.session_state.get('goal_main', ''), st.session_state.get('goal_success', ''), st.session_state.get('goal_action_log', []))
                     current_action_summary = generate_action_summary(cleaned_turn, user_input)
                     if "goal_action_log" not in st.session_state:
                         st.session_state["goal_action_log"] = []
