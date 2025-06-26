@@ -1645,16 +1645,15 @@ Generate the next story turn in proper visual novel script format:
                         else:
                             # User was exploring but response didn't contain exploration keywords
                             update_exploration_log(f"Explored: {user_input[:50]}{'...' if len(user_input) > 50 else ''}")
-                        
                         # Exploration progress tracking removed – open-ended exploration
-                    elif gameplay_mode == "🎯 Achieve a Goal":
-                        # Update goal progress
-                        update_goal_progress(st.session_state["game_state"])
-                        # Generate and append current action summary
-                        current_action_summary = generate_action_summary(cleaned_turn, user_input)
-                        if "goal_action_log" not in st.session_state:
-                            st.session_state["goal_action_log"] = []
-                        st.session_state["goal_action_log"].append(current_action_summary)
+
+                # Always update goal progress and log in goal mode (not elif!)
+                if gameplay_mode == "🎯 Achieve a Goal":
+                    update_goal_progress(st.session_state["game_state"])
+                    current_action_summary = generate_action_summary(cleaned_turn, user_input)
+                    if "goal_action_log" not in st.session_state:
+                        st.session_state["goal_action_log"] = []
+                    st.session_state["goal_action_log"].append(current_action_summary)
 
                 # Clear the input box for the next turn
                 st.session_state["reply_input"] = ""
