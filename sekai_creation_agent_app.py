@@ -2007,41 +2007,41 @@ Generate only the 3 choices, nothing else.
     with col1:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">🌟</div>
+            <div style="font-size: 24px;">🌍</div>
             <div style="font-weight: bold; color: #495057;">Step 1</div>
-            <div style="color: #6c757d; font-size: 14px;">Core Details</div>
+            <div style="color: #6c757d; font-size: 14px;">Your Sekai World</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">🧠</div>
+            <div style="font-size: 24px;">👤</div>
             <div style="font-weight: bold; color: #495057;">Step 2</div>
-            <div style="color: #6c757d; font-size: 14px;">Personality & Background</div>
+            <div style="color: #6c757d; font-size: 14px;">Your Character</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">💫</div>
+            <div style="font-size: 24px;">👥</div>
             <div style="font-weight: bold; color: #495057;">Step 3</div>
-            <div style="color: #6c757d; font-size: 14px;">Expression & Relationships</div>
+            <div style="color: #6c757d; font-size: 14px;">Main Characters</div>
         </div>
         """, unsafe_allow_html=True)
     with col4:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">🌟</div>
+            <div style="font-size: 24px;">📜</div>
             <div style="font-weight: bold; color: #495057;">Step 4</div>
-            <div style="color: #6c757d; font-size: 14px;">Your Role in the Story</div>
+            <div style="color: #6c757d; font-size: 14px;">Story Template</div>
         </div>
         """, unsafe_allow_html=True)
     with col5:
         st.markdown("""
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-            <div style="font-size: 24px;">✨</div>
+            <div style="font-size: 24px;">🎮</div>
             <div style="font-weight: bold; color: #495057;">Step 5</div>
-            <div style="color: #6c757d; font-size: 14px;">Final Touches</div>
+            <div style="color: #6c757d; font-size: 14px;">Play!</div>
         </div>
         """, unsafe_allow_html=True)
     st.markdown("---")
