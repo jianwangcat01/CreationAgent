@@ -2505,29 +2505,7 @@ Relationship: <How do they relate to the player character? Are they friends, riv
     if selected_mode == "🌍 Explore the World":
         st.success("🌍 You chose to explore the world! Let's set up your exploration journey.")
         
-        # Initialize session state for exploration inputs
-        if "exploration_locations" not in st.session_state:
-            st.session_state["exploration_locations"] = ""
-        if "exploration_chapters" not in st.session_state:
-            st.session_state["exploration_chapters"] = ""
-        
-        exploration_locations = st.text_area(
-            "🧭 Key locations or mysteries to explore",
-            value=st.session_state["exploration_locations"],
-            placeholder="find the hidden temple, unlock floating garden, discover the ancient library, explore the crystal caves",
-            height=100,
-            key="exploration_locations"
-        )
-        
-        exploration_chapters = st.text_area(
-            "🧩 Chapters or key discoveries",
-            value=st.session_state["exploration_chapters"],
-            placeholder="Chapter 1: The Mysterious Map, Chapter 2: The Hidden Temple, Chapter 3: The Floating Garden",
-            height=100,
-            key="exploration_chapters"
-        )
-        
-        # AI Generation button for exploration mode
+        # AI Generation button for exploration mode (before input fields)
         if st.button("🤖 AI: Generate Exploration Plan", key="generate_exploration", type="secondary"):
             with st.spinner("Creating an exciting exploration journey..."):
                 # Get all world and character information
@@ -2598,35 +2576,35 @@ Chapters: <comma-separated list of 3-5 chapter names or discoveries>
                 except Exception as e:
                     st.error(f"Failed to generate exploration plan: {e}")
         
+        # Initialize session state for exploration inputs
+        if "exploration_locations" not in st.session_state:
+            st.session_state["exploration_locations"] = ""
+        if "exploration_chapters" not in st.session_state:
+            st.session_state["exploration_chapters"] = ""
+        
+        exploration_locations = st.text_area(
+            "🧭 Key locations or mysteries to explore",
+            value=st.session_state["exploration_locations"],
+            placeholder="find the hidden temple, unlock floating garden, discover the ancient library, explore the crystal caves",
+            height=100,
+            key="exploration_locations"
+        )
+        
+        exploration_chapters = st.text_area(
+            "🧩 Chapters or key discoveries",
+            value=st.session_state["exploration_chapters"],
+            placeholder="Chapter 1: The Mysterious Map, Chapter 2: The Hidden Temple, Chapter 3: The Floating Garden",
+            height=100,
+            key="exploration_chapters"
+        )
+        
         if exploration_locations.strip():
             st.success("🗺️ Great exploration targets! Your journey will be full of discoveries.")
     
     elif selected_mode == "🎯 Achieve a Goal":
         st.success("🎯 You chose to achieve a goal! Let's define your mission.")
         
-        # Initialize session state for goal inputs
-        if "goal_main" not in st.session_state:
-            st.session_state["goal_main"] = ""
-        if "goal_success" not in st.session_state:
-            st.session_state["goal_success"] = ""
-        
-        goal_main = st.text_area(
-            "🎯 What is your main goal?",
-            value=st.session_state["goal_main"],
-            placeholder="restore the crystal kingdom, win the elemental tournament, find the lost artifact, become the master of time",
-            height=100,
-            key="goal_main"
-        )
-        
-        goal_success = st.text_area(
-            "✅ How do you know you've succeeded?",
-            value=st.session_state["goal_success"],
-            placeholder="The moon spirit gives you the final shard, You receive the champion's crown, The ancient artifact glows with power",
-            height=100,
-            key="goal_success"
-        )
-        
-        # AI Generation button for goal mode
+        # AI Generation button for goal mode (before input fields)
         if st.button("🤖 AI: Generate Goal Mission", key="generate_goal", type="secondary"):
             with st.spinner("Creating an exciting mission..."):
                 # Get all world and character information
@@ -2696,6 +2674,28 @@ Success: <success condition description>
                     st.rerun()
                 except Exception as e:
                     st.error(f"Failed to generate goal mission: {e}")
+        
+        # Initialize session state for goal inputs
+        if "goal_main" not in st.session_state:
+            st.session_state["goal_main"] = ""
+        if "goal_success" not in st.session_state:
+            st.session_state["goal_success"] = ""
+        
+        goal_main = st.text_area(
+            "🎯 What is your main goal?",
+            value=st.session_state["goal_main"],
+            placeholder="restore the crystal kingdom, win the elemental tournament, find the lost artifact, become the master of time",
+            height=100,
+            key="goal_main"
+        )
+        
+        goal_success = st.text_area(
+            "✅ How do you know you've succeeded?",
+            value=st.session_state["goal_success"],
+            placeholder="The moon spirit gives you the final shard, You receive the champion's crown, The ancient artifact glows with power",
+            height=100,
+            key="goal_success"
+        )
         
         if goal_main.strip():
             st.success("🎯 Excellent goal! Your mission is clear and achievable.")
