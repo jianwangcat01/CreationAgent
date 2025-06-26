@@ -1306,13 +1306,51 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         if line:
             line = line[0].upper() + line[1:]
         return line if line else "A new discovery was made."
+    
+    def generate_journey_summary(discovery_log, character_names=None, world_title=None):
+        """
+        Generate a narrative epilogue from the Discovery Log.
+        - Compose a paragraph summarizing the journey, referencing key discoveries and characters.
+        - Use a warm, story-like tone.
+        """
+        if not discovery_log:
+            return "Your journey has ended, but no discoveries were recorded."
+        # Compose a narrative
+        summary = ""
+        if world_title:
+            summary += f"✨ Your exploration of {world_title} is complete! Here's what you uncovered:\n\n"
+        else:
+            summary += "✨ Your exploration is complete! Here's what you uncovered:\n\n"
+        # Join discoveries into a narrative
+        summary_lines = []
+        for entry in discovery_log:
+            # Ensure the entry is a string and clean it up
+            clean_entry = str(entry).strip()
+            if clean_entry:
+                # Capitalize the first letter and ensure it ends with a period.
+                if not clean_entry.endswith('.'):
+                    clean_entry += '.'
+                summary_lines.append(clean_entry.capitalize())
+        
+        # Create a more narrative flow
+        if len(summary_lines) > 1:
+            narrative = " ".join(summary_lines)
+        else:
+            narrative = "".join(summary_lines)
+
+        summary += narrative
+        
+        # Optionally, add a closing line
+        summary += "\n\nThrough these moments, you gained wisdom and memories unique to this world."
+        return summary
 
     def update_exploration_log(discovery_text, user_input=None):
         """Add a summarized discovery to the exploration log"""
         if "exploration_log" not in st.session_state:
             st.session_state["exploration_log"] = []
         summary = summarize_discovery(discovery_text, user_input)
-        st.session_state["exploration_log"].append(summary)
+        if summary not in st.session_state["exploration_log"]:
+            st.session_state["exploration_log"].append(summary)
     
     def update_exploration_progress():
         """Update exploration progress based on discoveries made"""
@@ -3428,26 +3466,3 @@ Write the opening scene below in proper visual novel script format:
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
     
     st.stop()
-
-    def generate_journey_summary(discovery_log, character_names=None, world_title=None):
-        """
-        Generate a narrative epilogue from the Discovery Log.
-        - Compose a paragraph summarizing the journey, referencing key discoveries and characters.
-        - Use a warm, story-like tone.
-        """
-        if not discovery_log:
-            return "Your journey has ended, but no discoveries were recorded."
-        # Compose a narrative
-        summary = ""
-        if world_title:
-            summary += f"✨ Your exploration of {world_title} is complete! Here's what you uncovered:\n"
-        else:
-            summary += "✨ Your exploration is complete! Here's what you uncovered:\n"
-        # Join discoveries into a narrative
-        for entry in discovery_log:
-            summary += f"- {entry.strip()}\n"
-        # Optionally, add a closing line
-        summary += "\nThrough these moments, you gained wisdom and memories unique to this world."
-        return summary
-
-    # Patch End Journey button logic in all three places to display the summary under the story area
