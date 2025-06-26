@@ -1151,6 +1151,9 @@ Generate only the opening line, nothing else.
                     "user": user_input,
                     "bot": formatted_reply
                 })
+                
+                # Clear the input field
+                st.session_state["char_chat_input"] = ""
                 st.rerun()
 
             # Back to character creation
@@ -1376,7 +1379,7 @@ Generate the next story turn in proper visual novel script format:
                 st.session_state["user_inputs"].append(user_input.strip())
 
                 # Clear the input box for the next turn
-                st.session_state.reply_input = ""
+                st.session_state["reply_input"] = ""
 
                 existing_colors = st.session_state.get("story_colors", [])
                 available_colors = [
@@ -1393,7 +1396,7 @@ Generate the next story turn in proper visual novel script format:
                 fallback_response = f'narrator The story continues...\n**What do you do?**'
                 st.session_state["game_state"].append(fallback_response)
                 st.session_state["user_inputs"].append(user_input.strip())
-                st.session_state.reply_input = ""
+                st.session_state["reply_input"] = ""
                 
                 existing_colors = st.session_state.get("story_colors", [])
                 available_colors = [
