@@ -3454,11 +3454,6 @@ Write the opening scene below in proper visual novel script format:
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    # Check if goal is complete
-                    if progress >= 100:
-                        st.success("🏆 You achieved your goal!")
-                        st.markdown(f"**Goal:** {main_goal}")
-                        st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
         else:
             # No sidebar layout for other modes
             for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
