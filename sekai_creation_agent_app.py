@@ -1291,6 +1291,57 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         
         return st.session_state["goal_progress"]
 
+    def generate_action_summary(turn_text, user_input):
+        """Generate a brief summary of what happened in this turn"""
+        if not turn_text:
+            return "Story continued..."
+        
+        # Clean up the turn text
+        clean_text = turn_text.replace('**What do you do?**', '').strip()
+        
+        # Extract key information
+        lines = clean_text.split('\n')
+        summary_parts = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Look for character dialogue or key actions
+            if '"' in line:
+                # Extract character name and dialogue
+                match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
+                if match:
+                    speaker_expr = match.group(1).strip()
+                    dialogue = match.group(2)
+                    # Extract just the character name
+                    char_name = speaker_expr.split('(')[0].strip()
+                    summary_parts.append(f"{char_name} spoke")
+                else:
+                    # Try simpler format
+                    match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                    if match:
+                        speaker = match.group(1).strip()
+                        if speaker.lower() not in ['narrator', 'story', 'scene']:
+                            summary_parts.append(f"{speaker} spoke")
+            else:
+                # Look for key action words
+                action_words = ['moved', 'walked', 'ran', 'found', 'discovered', 'entered', 'left', 'approached', 'reached', 'arrived', 'saw', 'noticed', 'felt', 'thought', 'decided']
+                for word in action_words:
+                    if word in line.lower():
+                        summary_parts.append(line[:50] + "..." if len(line) > 50 else line)
+                        break
+        
+        # If no specific actions found, create a general summary
+        if not summary_parts:
+            if user_input:
+                summary_parts.append(f"You {user_input[:30]}{'...' if len(user_input) > 30 else ''}")
+            else:
+                summary_parts.append("Story progressed")
+        
+        return " | ".join(summary_parts[:2])  # Limit to 2 parts max
+
     def handle_send():
         user_input = st.session_state.get("reply_input", "")
         if user_input.strip():
@@ -1471,7 +1522,7 @@ Generate the next story turn in proper visual novel script format:
             except Exception as e:
                 st.error(f"Error generating story response: {e}")
                 # Fallback response
-                fallback_response = f'narrator The story continues...\n**What do you do?**'
+                fallback_response = f'The story continues...\n**What do you do?**'
                 st.session_state["game_state"].append(fallback_response)
                 st.session_state["user_inputs"].append(user_input.strip())
                 st.session_state["reply_input"] = ""
@@ -1489,7 +1540,7 @@ Generate the next story turn in proper visual novel script format:
     def clean_story_response(response_text):
         """Clean and format the story response to ensure consistency"""
         if not response_text:
-            return 'narrator The story continues...\n**What do you do?**'
+            return 'The story continues...\n**What do you do?**'
         
         # Split into lines and clean each line
         lines = response_text.split('\n')
@@ -1518,7 +1569,7 @@ Generate the next story turn in proper visual novel script format:
                         dialogue = match.group(2)
                         if speaker.lower() == 'narrator':
                             # Narrator without quotes
-                            cleaned_lines.append(f'narrator {dialogue}')
+                            cleaned_lines.append(f'{dialogue}')
                         else:
                             # Character with expression
                             cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
@@ -1531,15 +1582,15 @@ Generate the next story turn in proper visual novel script format:
                         speaker = match.group(1).strip()
                         dialogue = match.group(2)
                         if speaker.lower() == 'narrator':
-                            cleaned_lines.append(f'narrator {dialogue}')
+                            cleaned_lines.append(f'{dialogue}')
                         else:
                             cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
                     else:
                         # Assume it's narration
-                        cleaned_lines.append(f'narrator {line}')
+                        cleaned_lines.append(f'{line}')
             else:
                 # Assume it's narration
-                cleaned_lines.append(f'narrator {line}')
+                cleaned_lines.append(f'{line}')
         
         # Ensure it ends with "What do you do?"
         if not any('What do you do?' in line for line in cleaned_lines):
@@ -1565,7 +1616,7 @@ Generate the next story turn in proper visual novel script format:
                 formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**What do you do?**</p>')
                 continue
             
-            # Remove 'narrator' prefix for narration lines
+            # Remove 'narrator' prefix for narration lines and display cleanly
             if line.startswith('narrator '):
                 content = line[9:]  # Remove 'narrator '
                 formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{content}</p>')
@@ -2992,7 +3043,7 @@ Write the opening scene below in proper visual novel script format:
             except Exception as e:
                 st.error(f"Error starting the game: {e}")
                 # Fallback opening
-                fallback_opening = f'narrator Welcome to {sekai_json.get("title", "your adventure")}!\nnarrator The story begins...\n**What do you do?**'
+                fallback_opening = f'Welcome to {sekai_json.get("title", "your adventure")}!\nThe story begins...\n**What do you do?**'
                 st.session_state["game_state"] = [fallback_opening]
                 st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
                 st.session_state["user_inputs"] = [""]
@@ -3052,6 +3103,19 @@ Write the opening scene below in proper visual novel script format:
                             if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                                 for i, discovery in enumerate(st.session_state["exploration_log"]):
                                     st.markdown(f"• {discovery}")
+                elif gameplay_mode == "🎯 Achieve a Goal":
+                    # Goal information display under the input
+                    mode_details = sekai_json.get('modeDetails', {})
+                    main_goal = mode_details.get('main_goal', 'Unknown Goal')
+                    success_condition = mode_details.get('success_condition', '')
+                    
+                    st.markdown("---")
+                    st.markdown("### 🎯 Your Mission")
+                    st.info(f"**Goal:** {main_goal}")
+                    if success_condition:
+                        st.info(f"**Success:** {success_condition}")
+                    
+                    st.button("Send", on_click=handle_send)
                 else:
                     st.button("Send", on_click=handle_send)
             
@@ -3124,13 +3188,13 @@ Write the opening scene below in proper visual novel script format:
                     # Recent Actions - show complete information
                     if "game_state" in st.session_state and st.session_state["game_state"]:
                         st.markdown("**Recent Actions:**")
-                        for i, turn in enumerate(st.session_state["game_state"][-3:], 1):  # Last 3 turns
-                            # Clean up the turn text for display
-                            clean_turn = turn.replace('narrator ', '').replace('**What do you do?**', '').strip()
-                            if clean_turn:
+                        for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"][-3:], st.session_state["user_inputs"][-3:]), 1):  # Last 3 turns
+                            # Generate action summary instead of showing full text
+                            action_summary = generate_action_summary(turn, user_input_hist)
+                            if action_summary:
                                 st.markdown(f"""
                                 <div class="memory-card">
-                                    <p class="memory-text"><strong>{i}.</strong> {clean_turn}</p>
+                                    <p class="memory-text"><strong>{i}.</strong> {action_summary}</p>
                                 </div>
                                 """, unsafe_allow_html=True)
                     
@@ -3181,6 +3245,19 @@ Write the opening scene below in proper visual novel script format:
                         if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                             for i, discovery in enumerate(st.session_state["exploration_log"]):
                                 st.markdown(f"• {discovery}")
+            elif gameplay_mode == "🎯 Achieve a Goal":
+                # Goal information display under the input
+                mode_details = sekai_json.get('modeDetails', {})
+                main_goal = mode_details.get('main_goal', 'Unknown Goal')
+                success_condition = mode_details.get('success_condition', '')
+                
+                st.markdown("---")
+                st.markdown("### 🎯 Your Mission")
+                st.info(f"**Goal:** {main_goal}")
+                if success_condition:
+                    st.info(f"**Success:** {success_condition}")
+                
+                st.button("Send", on_click=handle_send)
             else:
                 st.button("Send", on_click=handle_send)
 
