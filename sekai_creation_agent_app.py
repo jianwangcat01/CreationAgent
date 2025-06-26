@@ -1273,6 +1273,24 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
     def strip_stars(s):
         return s.strip().strip('*').strip()
 
+    def update_exploration_log(discovery_text):
+        """Add a discovery to the exploration log"""
+        if "exploration_log" not in st.session_state:
+            st.session_state["exploration_log"] = []
+        st.session_state["exploration_log"].append(discovery_text)
+    
+    def update_goal_progress(chat_history):
+        """Update goal progress based on chat history"""
+        if "goal_progress" not in st.session_state:
+            st.session_state["goal_progress"] = 0
+        
+        # Simple progress calculation based on number of interactions
+        # In a real implementation, this would analyze the content for goal-related actions
+        progress_increment = min(5, len(chat_history) * 2)  # 2% per interaction, max 5%
+        st.session_state["goal_progress"] = min(100, st.session_state["goal_progress"] + progress_increment)
+        
+        return st.session_state["goal_progress"]
+
     def handle_send():
         user_input = st.session_state.get("reply_input", "")
         if user_input.strip():
@@ -1318,6 +1336,38 @@ Characters:
             # Add opening scene if available
             if sekai_json.get('openingScene'):
                 template_context += f"\nOpening Scene: {sekai_json.get('openingScene')}\n"
+            
+            # Add gameplay mode context
+            gameplay_mode = sekai_json.get('gameplayMode', '')
+            if gameplay_mode:
+                template_context += f"\nGameplay Mode: {gameplay_mode}\n"
+                if gameplay_mode == "🌍 Explore the World":
+                    mode_details = sekai_json.get('modeDetails', {})
+                    exploration_locations = mode_details.get('exploration_locations', '')
+                    exploration_chapters = mode_details.get('exploration_chapters', '')
+                    if exploration_locations:
+                        template_context += f"Exploration Targets: {exploration_locations}\n"
+                    if exploration_chapters:
+                        template_context += f"Exploration Chapters: {exploration_chapters}\n"
+                    
+                    # Add exploration log context
+                    if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
+                        template_context += f"\nExploration Log:\n"
+                        for i, discovery in enumerate(st.session_state["exploration_log"][-5:], 1):  # Last 5 discoveries
+                            template_context += f"{i}. {discovery}\n"
+                
+                elif gameplay_mode == "🎯 Achieve a Goal":
+                    mode_details = sekai_json.get('modeDetails', {})
+                    main_goal = mode_details.get('main_goal', '')
+                    success_condition = mode_details.get('success_condition', '')
+                    if main_goal:
+                        template_context += f"Main Goal: {main_goal}\n"
+                    if success_condition:
+                        template_context += f"Success Condition: {success_condition}\n"
+                    
+                    # Add goal progress context
+                    if "goal_progress" in st.session_state:
+                        template_context += f"Goal Progress: {st.session_state['goal_progress']}%\n"
             
             # Build conversation history with better formatting
             conversation_history = ""
@@ -1395,6 +1445,16 @@ Generate the next story turn in proper visual novel script format:
                 
                 st.session_state["game_state"].append(cleaned_turn)
                 st.session_state["user_inputs"].append(user_input.strip())
+
+                # Update gameplay mode tracking
+                gameplay_mode = sekai_json.get('gameplayMode', '')
+                if gameplay_mode == "🌍 Explore the World":
+                    # Extract discoveries from the response and add to exploration log
+                    if "discovery" in cleaned_turn.lower() or "found" in cleaned_turn.lower() or "discovered" in cleaned_turn.lower():
+                        update_exploration_log(f"Discovered: {cleaned_turn[:100]}...")
+                elif gameplay_mode == "🎯 Achieve a Goal":
+                    # Update goal progress
+                    update_goal_progress(st.session_state["game_state"])
 
                 # Clear the input box for the next turn
                 st.session_state["reply_input"] = ""
@@ -2425,6 +2485,79 @@ Relationship: <How do they relate to the player character? Are they friends, riv
     st.markdown('<div id="step-4"></div>', unsafe_allow_html=True)
     st.info("Let's bring everything together and create your story template!")
 
+    # 🧭 Gameplay Mode Selection (Mandatory)
+    st.markdown("### 🧭 Gameplay Mode Selection")
+    st.markdown("**Choose how you want to experience your Sekai world:**")
+    
+    selected_mode = st.selectbox(
+        "Choose your gameplay mode:",
+        ["", "🌍 Explore the World", "🎯 Achieve a Goal"],
+        format_func=lambda x: "🔽 Select a mode" if x == "" else x,
+        key="gameplay_mode"
+    )
+    
+    # Prevent continuing if no mode selected
+    if not selected_mode:
+        st.warning("⚠️ Please select a gameplay mode to continue.")
+        st.stop()
+    
+    # Mode-specific input fields
+    if selected_mode == "🌍 Explore the World":
+        st.success("🌍 You chose to explore the world! Let's set up your exploration journey.")
+        
+        # Initialize session state for exploration inputs
+        if "exploration_locations" not in st.session_state:
+            st.session_state["exploration_locations"] = ""
+        if "exploration_chapters" not in st.session_state:
+            st.session_state["exploration_chapters"] = ""
+        
+        exploration_locations = st.text_area(
+            "🧭 Key locations or mysteries to explore",
+            value=st.session_state["exploration_locations"],
+            placeholder="find the hidden temple, unlock floating garden, discover the ancient library, explore the crystal caves",
+            height=100,
+            key="exploration_locations"
+        )
+        
+        exploration_chapters = st.text_area(
+            "🧩 Chapters or key discoveries",
+            value=st.session_state["exploration_chapters"],
+            placeholder="Chapter 1: The Mysterious Map, Chapter 2: The Hidden Temple, Chapter 3: The Floating Garden",
+            height=100,
+            key="exploration_chapters"
+        )
+        
+        if exploration_locations.strip():
+            st.success("🗺️ Great exploration targets! Your journey will be full of discoveries.")
+    
+    elif selected_mode == "🎯 Achieve a Goal":
+        st.success("🎯 You chose to achieve a goal! Let's define your mission.")
+        
+        # Initialize session state for goal inputs
+        if "goal_main" not in st.session_state:
+            st.session_state["goal_main"] = ""
+        if "goal_success" not in st.session_state:
+            st.session_state["goal_success"] = ""
+        
+        goal_main = st.text_area(
+            "🎯 What is your main goal?",
+            value=st.session_state["goal_main"],
+            placeholder="restore the crystal kingdom, win the elemental tournament, find the lost artifact, become the master of time",
+            height=100,
+            key="goal_main"
+        )
+        
+        goal_success = st.text_area(
+            "✅ How do you know you've succeeded?",
+            value=st.session_state["goal_success"],
+            placeholder="The moon spirit gives you the final shard, You receive the champion's crown, The ancient artifact glows with power",
+            height=100,
+            key="goal_success"
+        )
+        
+        if goal_main.strip():
+            st.success("🎯 Excellent goal! Your mission is clear and achievable.")
+
     # Opening Line Setup
     st.markdown("### 💬 Opening Scene Setup")
     st.markdown("**💡 Tip:** This will be the first scene of your story!")
@@ -2548,15 +2681,25 @@ Generate only the opening scene description, nothing else.
             
             prompt = f"""
 You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style, relationship), openingScene, storyTone, pacing, pointOfView, and narrationStyle.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style, relationship), openingScene, storyTone, pacing, pointOfView, narrationStyle, gameplayMode, and modeDetails.
 
 Title: {world_title}
 Setting: {world_setting}
 Genre: {', '.join(selected_genres) if selected_genres and isinstance(selected_genres, list) else 'Fantasy'}
 Keywords: {world_keywords}
-Characters:
-- {user_name} (Player): {user_traits}
+Gameplay Mode: {selected_mode}
 """
+            
+            # Add mode-specific details
+            if selected_mode == "🌍 Explore the World":
+                prompt += f"Mode Details: Exploration Locations: {st.session_state.get('exploration_locations', '')}\n"
+                prompt += f"Exploration Chapters: {st.session_state.get('exploration_chapters', '')}\n"
+            elif selected_mode == "🎯 Achieve a Goal":
+                prompt += f"Mode Details: Main Goal: {st.session_state.get('goal_main', '')}\n"
+                prompt += f"Success Condition: {st.session_state.get('goal_success', '')}\n"
+            
+            prompt += f"Characters:\n- {user_name} (Player): {user_traits}\n"
+            
             for char_detail in character_details:
                 prompt += f"{char_detail}\n"
             
@@ -2593,6 +2736,20 @@ Characters:
                         del sekai_json['characters'][0]['voice_style']
                     if 'relationship' in sekai_json['characters'][0]:
                         del sekai_json['characters'][0]['relationship']
+                
+                # Store gameplay mode information
+                sekai_json['gameplayMode'] = selected_mode
+                if selected_mode == "🌍 Explore the World":
+                    sekai_json['modeDetails'] = {
+                        'exploration_locations': st.session_state.get('exploration_locations', ''),
+                        'exploration_chapters': st.session_state.get('exploration_chapters', '')
+                    }
+                elif selected_mode == "🎯 Achieve a Goal":
+                    sekai_json['modeDetails'] = {
+                        'main_goal': st.session_state.get('goal_main', ''),
+                        'success_condition': st.session_state.get('goal_success', '')
+                    }
+                
                 st.session_state["sekai_json"] = sekai_json
                 st.success("🎉 Sekai story template generated successfully!")
                 st.json(sekai_json)
@@ -2704,35 +2861,124 @@ Write the opening scene below in proper visual novel script format:
         st.markdown("---")
         st.subheader("🚀 Game In Progress")
 
-        for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
-            color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
-            user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
+        # Get gameplay mode for sidebar
+        sekai_json = st.session_state.get("sekai_json", {})
+        gameplay_mode = sekai_json.get('gameplayMode', '')
 
-            # Enhanced formatting for better readability
-            formatted_block = format_story_block(block)
+        # Create columns for main game and sidebar
+        if gameplay_mode:
+            game_col, sidebar_col = st.columns([3, 1])
+        else:
+            game_col = None
 
-            st.markdown(
-                f'<div style="background-color:{color}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1)">{user_reply_html}{formatted_block}</div>',
-                unsafe_allow_html=True,
-            )
+        if game_col:
+            with game_col:
+                for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+                    color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
+                    user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
 
-        # Game input (only appears when game is active)
-        st.markdown("### 🎮 Your Turn")
-        
-        # Generate 3 choice options
-        choices = generate_choices()
-        
-        # Display choice buttons vertically with full description
-        st.markdown("**Choose an action or write your own:**")
-        for idx, choice in enumerate(choices):
-            btn_label = f"Choice {idx+1}: {choice}"
-            if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
-                pass
-        
-        # Freeform input
-        st.markdown("**Or write your own action/dialogue:**")
-        st.text_input("Enter your next action or dialogue", key="reply_input")
-        st.button("Send", on_click=handle_send)
+                    # Enhanced formatting for better readability
+                    formatted_block = format_story_block(block)
+
+                    st.markdown(
+                        f'<div style="background-color:{color}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1)">{user_reply_html}{formatted_block}</div>',
+                        unsafe_allow_html=True,
+                    )
+
+                # Game input (only appears when game is active)
+                st.markdown("### 🎮 Your Turn")
+                
+                # Generate 3 choice options
+                choices = generate_choices()
+                
+                # Display choice buttons vertically with full description
+                st.markdown("**Choose an action or write your own:**")
+                for idx, choice in enumerate(choices):
+                    btn_label = f"Choice {idx+1}: {choice}"
+                    if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
+                        pass
+                
+                # Freeform input
+                st.markdown("**Or write your own action/dialogue:**")
+                st.text_input("Enter your next action or dialogue", key="reply_input")
+                st.button("Send", on_click=handle_send)
+        else:
+            # No sidebar layout
+            for i, (block, user_input) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+                color = st.session_state.get("story_colors", ["#e3f2fd"])[i % len(st.session_state["story_colors"])]
+                user_reply_html = f'<p style="margin-bottom:8px; padding:4px; background-color:#f0f0f0; border-radius:4px;"><b>You:</b> {user_input}</p>' if user_input.strip() else ""
+
+                # Enhanced formatting for better readability
+                formatted_block = format_story_block(block)
+
+                st.markdown(
+                    f'<div style="background-color:{color}; padding:15px; border-radius:10px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1)">{user_reply_html}{formatted_block}</div>',
+                    unsafe_allow_html=True,
+                )
+
+            # Game input (only appears when game is active)
+            st.markdown("### 🎮 Your Turn")
+            
+            # Generate 3 choice options
+            choices = generate_choices()
+            
+            # Display choice buttons vertically with full description
+            st.markdown("**Choose an action or write your own:**")
+            for idx, choice in enumerate(choices):
+                btn_label = f"Choice {idx+1}: {choice}"
+                if st.button(btn_label, key=f"choice_{idx+1}_{len(st.session_state['game_state'])}", on_click=handle_choice_click, args=(choice,)):
+                    pass
+            
+            # Freeform input
+            st.markdown("**Or write your own action/dialogue:**")
+            st.text_input("Enter your next action or dialogue", key="reply_input")
+            st.button("Send", on_click=handle_send)
+
+        # Gameplay Mode Sidebar
+        if gameplay_mode and gameplay_mode in ["🌍 Explore the World", "🎯 Achieve a Goal"]:
+            st.markdown("---")
+            if gameplay_mode == "🌍 Explore the World":
+                st.markdown("### 🌍 Discovery Log")
+                
+                if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
+                    for i, discovery in enumerate(st.session_state["exploration_log"]):
+                        st.markdown(f"**{i+1}.** {discovery}")
+                    
+                    st.markdown("---")
+                    if st.button("🛑 End Journey", key="end_exploration"):
+                        st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
+                        for i, discovery in enumerate(st.session_state["exploration_log"]):
+                            st.markdown(f"• {discovery}")
+                else:
+                    st.info("No discoveries yet. Keep exploring!")
+            
+            elif gameplay_mode == "🎯 Achieve a Goal":
+                st.markdown("### 🎯 Goal Progress Tracker")
+                
+                mode_details = sekai_json.get('modeDetails', {})
+                main_goal = mode_details.get('main_goal', 'Unknown Goal')
+                success_condition = mode_details.get('success_condition', '')
+                
+                st.markdown(f"**Goal:** {main_goal}")
+                if success_condition:
+                    st.markdown(f"**Success:** {success_condition}")
+                
+                # Show progress
+                progress = st.session_state.get("goal_progress", 0)
+                st.progress(progress / 100)
+                st.markdown(f"**Progress:** {progress}%")
+                
+                # Show summary of actions
+                if "game_state" in st.session_state and st.session_state["game_state"]:
+                    st.markdown("**Recent Actions:**")
+                    for i, turn in enumerate(st.session_state["game_state"][-3:], 1):  # Last 3 turns
+                        st.markdown(f"{i}. {turn[:50]}...")
+                
+                # Check if goal is complete
+                if progress >= 100:
+                    st.success("🏆 You achieved your goal!")
+                    st.markdown(f"**Goal:** {main_goal}")
+                    st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
