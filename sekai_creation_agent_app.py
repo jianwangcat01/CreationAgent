@@ -654,6 +654,8 @@ Generate only the emotional style description, nothing else.
             
             lore_prompt = f"""
 Generate a personal memory or lore snippet for a character based on their details.
+```
+</region_of_file_to_rewritten>
 
 Character Name: {char_name}
 Role/Occupation: {char_role}
@@ -1501,6 +1503,302 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                 summary_parts.append("story progressed")
         
         return " | ".join(summary_parts[:2])  # Limit to 2 parts max
+
+    def clean_story_response(response_text):
+        """Clean and format the story response to ensure consistency"""
+        if not response_text:
+            return 'The story continues...\n**What do you do?**'
+        
+        # Split into lines and clean each line
+        lines = response_text.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Handle different response formats
+            if line.startswith('**') and line.endswith('**'):
+                # Keep bold text as is
+                cleaned_lines.append(line)
+            elif '"' in line:
+                # Check if it's already in script format with expression: CharacterName (expression) "dialogue"
+                if re.match(r'^[a-zA-Z\s]+\([^)]*\)\s*["\']', line):
+                    # Already in correct format, keep as is
+                    cleaned_lines.append(line)
+                # Check if it's in basic script format: CharacterName "dialogue"
+                elif re.match(r'^[a-zA-Z\s]+["\']', line):
+                    # Convert to new format: CharacterName (expression) "dialogue"
+                    match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                    if match:
+                        speaker = match.group(1).strip()
+                        dialogue = match.group(2)
+                        if speaker.lower() == 'narrator':
+                            # Narrator without quotes
+                            cleaned_lines.append(f'{dialogue}')
+                        else:
+                            # Character with expression
+                            cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
+                    else:
+                        cleaned_lines.append(line)
+                else:
+                    # Try to convert to script format
+                    match = re.match(r'^([^:]+):\s*["\'](.+)["\']', line)
+                    if match:
+                        speaker = match.group(1).strip()
+                        dialogue = match.group(2)
+                        if speaker.lower() == 'narrator':
+                            cleaned_lines.append(f'{dialogue}')
+                        else:
+                            cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
+                    else:
+                        # Assume it's narration
+                        cleaned_lines.append(f'{line}')
+            else:
+                # Assume it's narration
+                cleaned_lines.append(f'{line}')
+        
+        # Ensure it ends with "What do you do?"
+        if not any('What do you do?' in line for line in cleaned_lines):
+            cleaned_lines.append('**What do you do?**')
+        
+        return '\n'.join(cleaned_lines)
+
+    def format_story_block(block_text):
+        """Format story block for consistent display"""
+        if not block_text:
+            return '<p style="margin:4px 0; color:#666;">Story continues...</p>'
+        
+        formatted_lines = []
+        lines = block_text.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Handle "What do you do?" prompt
+            if 'What do you do?' in line:
+                formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**What do you do?**</p>')
+                continue
+            
+            # Remove 'narrator' prefix for narration lines and display cleanly
+            if line.startswith('narrator '):
+                content = line[9:]  # Remove 'narrator '
+                formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{content}</p>')
+                continue
+            
+            # Character dialogue with expressions: bold everything before the first quote
+            if '"' in line:
+                # Try to extract speaker with expression: CharacterName (expression) "dialogue"
+                match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
+                if match:
+                    speaker_expr = match.group(1).strip()
+                    dialogue = match.group(2)
+                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker_expr}:</b> "{dialogue}"</p>')
+                    continue
+                
+                # Try to extract speaker without expression: CharacterName "dialogue"
+                match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                if match:
+                    speaker = match.group(1).strip()
+                    dialogue = match.group(2)
+                    # Only bold if it looks like a character name (not just random text)
+                    if not speaker.lower() in ['narrator', 'story', 'scene'] and len(speaker.strip()) > 0:
+                        formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
+                    else:
+                        formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{speaker}: "{dialogue}"</p>')
+                    continue
+            
+            # Handle other formats (fallback)
+            if line.startswith('**') and line.endswith('**'):
+                # Bold text
+                content = line[2:-2]
+                formatted_lines.append(f'<p style="margin:4px 0; font-weight:bold; color:#2c3e50;">{content}</p>')
+            else:
+                # Plain narration (no narrator prefix)
+                formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{line}</p>')
+        
+        return ''.join(formatted_lines)
+
+    def handle_choice_click(choice_text):
+        st.session_state.reply_input = choice_text
+        handle_send()
+
+    def generate_choices():
+        """Generate 3 choice options for the player"""
+        if "game_state" in st.session_state and st.session_state["game_state"]:
+            # Get the template context
+            sekai_json = st.session_state.get("sekai_json", {})
+            
+            # Get advanced settings from the JSON template
+            story_tone = sekai_json.get('storyTone', 'Balanced')
+            pacing = sekai_json.get('pacing', 'Balanced')
+            point_of_view = sekai_json.get('pointOfView', 'Third person')
+            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            
+            # Build template context
+            template_context = f"""
+STORY TEMPLATE:
+Title: {sekai_json.get('title', 'Unknown')}
+Setting: {sekai_json.get('setting', 'Unknown')}
+Genre: {sekai_json.get('genre', 'Fantasy')}
+Keywords: {sekai_json.get('keywords', '')}
+
+Story Style:
+- Tone: {story_tone}
+- Pacing: {pacing}
+- Point of View: {point_of_view}
+- Narration Style: {narration_style}
+
+Characters:
+"""
+            # Add all characters from template
+            for char in sekai_json.get('characters', []):
+                char_name = char.get('name', 'Unknown')
+                char_role = char.get('role', '')
+                char_description = char.get('description', '')
+                char_voice = char.get('voice_style', '')
+                char_relationship = char.get('relationship', '')
+                template_context += f"- {char_name} ({char_role}): {char_description}"
+                if char_voice:
+                    template_context += f" | Voice: {char_voice}"
+                if char_relationship:
+                    template_context += f" | Relationship: {char_relationship}"
+                template_context += "\n"
+            
+            # Build conversation history
+            conversation_history = ""
+            for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
+                if user_input_hist.strip():
+                    conversation_history += f"Player: {user_input_hist}\n"
+                conversation_history += f"Story: {turn}\n\n"
+            
+            player_name = st.session_state.get("user_name", "the player")
+            
+            choice_prompt = f"""
+Based on the current story situation, generate 3 different action choices for {player_name}.
+
+{template_context}
+
+CONVERSATION HISTORY:
+{conversation_history}
+
+Generate 3 distinct choices that would make sense for the player character in this situation. 
+Each choice should be:
+- 1-2 sentences maximum
+- Specific and actionable
+- Different from each other (one dialogue, one action, one investigation/exploration)
+- Appropriate for the story context and character personalities
+- Consistent with the story template and setting
+- Match the story tone: {story_tone}
+- Consider the pacing: {pacing}
+"""
+            
+            # Add exploration-specific choice instructions
+            gameplay_mode = sekai_json.get('gameplayMode', '')
+            if gameplay_mode == "🌍 Explore the World":
+                choice_prompt += f"""
+EXPLORATION MODE CHOICE GUIDELINES:
+- Prioritize exploration and discovery choices
+- Include at least 2 exploration-focused options (investigate, examine, move to new areas)
+- Make choices that lead to immediate discoveries or new locations
+- Focus on physical movement and investigation rather than lengthy dialogue
+- Encourage rapid exploration of the world
+- Include choices that reveal new areas, objects, or secrets
+- Keep dialogue choices brief and focused on getting information about exploration targets
+
+CHOICE TYPES FOR EXPLORATION:
+1. Exploration/Investigation choice (examine, investigate, move to new area)
+2. Quick dialogue choice (ask about location, get directions, learn about area)
+3. Action choice (interact with objects, open doors, climb, etc.)
+"""
+            else:
+                choice_prompt += f"""
+CHOICE TYPES:
+1. Dialogue choice (speaking to someone)
+2. Action choice (doing something physical)
+3. Investigation/Exploration choice (examining surroundings or moving)
+"""
+            
+            choice_prompt += f"""
+
+Format as:
+1. [First choice]
+2. [Second choice] 
+3. [Third choice]
+
+Generate only the 3 choices, nothing else.
+"""
+            
+            try:
+                response = model.generate_content(choice_prompt)
+                choices_text = response.text.strip()
+                
+                # Parse the choices
+                choices = []
+                lines = choices_text.split('\n')
+                for line in lines:
+                    line = line.strip()
+                    if line and (line.startswith('1.') or line.startswith('2.') or line.startswith('3.')):
+                        choice = line.split('.', 1)[1].strip()
+                        if choice:
+                            choices.append(choice)
+                
+                # Ensure we have exactly 3 choices with fallbacks
+                while len(choices) < 3:
+                    if gameplay_mode == "🌍 Explore the World":
+                        # Exploration-focused fallback choices
+                        if len(choices) == 0:
+                            choices.append("Examine the surroundings for anything interesting")
+                        elif len(choices) == 1:
+                            choices.append("Move to explore a new area")
+                        else:
+                            choices.append("Investigate any objects or clues nearby")
+                    else:
+                        # General fallback choices
+                        if len(choices) == 0:
+                            choices.append("Ask someone nearby what's happening")
+                        elif len(choices) == 1:
+                            choices.append("Look around the area for clues")
+                        else:
+                            choices.append("Continue exploring the surroundings")
+                
+                if len(choices) > 3:
+                    choices = choices[:3]
+                
+                return choices
+            except Exception as e:
+                # Fallback choices
+                if gameplay_mode == "🌍 Explore the World":
+                    return [
+                        "Examine the surroundings for anything interesting",
+                        "Move to explore a new area", 
+                        "Investigate any objects or clues nearby"
+                    ]
+                else:
+                    return [
+                        "Ask someone nearby what's happening",
+                        "Look around the area for clues", 
+                        "Continue exploring the surroundings"
+                    ]
+        
+        # Final fallback for when no game state exists
+        sekai_json = st.session_state.get("sekai_json", {})
+        gameplay_mode = sekai_json.get('gameplayMode', '')
+        if gameplay_mode == "🌍 Explore the World":
+            return [
+                "Examine the surroundings for anything interesting",
+                "Move to explore a new area", 
+                "Investigate any objects or clues nearby"
+            ]
+        else:
+            return [
+                "Ask someone nearby what's happening",
+                "Look around the area for clues", 
+                "Continue exploring the surroundings"
+            ]
 
     def handle_send():
         user_input = st.session_state.get("reply_input", "")
@@ -2989,15 +3287,15 @@ Write the opening scene below in proper visual novel script format:
                 
                 # Send button for goal achieving mode
                 if gameplay_mode == "🎯 Achieve a Goal":
-                    st.button("Send", on_click=handle_send)
+                    st.button("Send", on_click=handle_send, key="send_goal_sidebar")
                 
                 # Create columns for Send button and End Journey button (for exploration mode)
                 if gameplay_mode == "🌍 Explore the World":
                     send_col, end_col = st.columns([1, 1])
                     with send_col:
-                        st.button("Send", on_click=handle_send)
+                        st.button("Send", on_click=handle_send, key="send_exploration_sidebar")
                     with end_col:
-                        if st.button("🛑 End Journey", key="end_exploration"):
+                        if st.button("🛑 End Journey", key="end_exploration_sidebar"):
                             st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
                             if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                                 for i, discovery in enumerate(st.session_state["exploration_log"]):
@@ -3014,9 +3312,9 @@ Write the opening scene below in proper visual novel script format:
                     if success_condition:
                         st.info(f"**Success:** {success_condition}")
                     
-                    st.button("Send", on_click=handle_send)
+                    st.button("Send", on_click=handle_send, key="send_goal_mission_sidebar")
                 else:
-                    st.button("Send", on_click=handle_send)
+                    st.button("Send", on_click=handle_send, key="send_general_sidebar")
             
             with sidebar_col:
                 # Gameplay Mode Sidebar
@@ -3039,7 +3337,7 @@ Write the opening scene below in proper visual novel script format:
                             """, unsafe_allow_html=True)
                         
                         st.markdown("---")
-                        if st.button("🛑 End Journey", key="end_exploration", use_container_width=True):
+                        if st.button("🛑 End Journey", key="end_exploration_sidebar", use_container_width=True):
                             st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
                             for i, discovery in enumerate(st.session_state["exploration_log"]):
                                 st.markdown(f"• {discovery}")
@@ -3119,15 +3417,15 @@ Write the opening scene below in proper visual novel script format:
             
             # Send button for goal achieving mode
             if gameplay_mode == "🎯 Achieve a Goal":
-                st.button("Send", on_click=handle_send)
+                st.button("Send", on_click=handle_send, key="send_goal_mission_sidebar")
             
             # Create columns for Send button and End Journey button (for exploration mode)
             if gameplay_mode == "🌍 Explore the World":
                 send_col, end_col = st.columns([1, 1])
                 with send_col:
-                    st.button("Send", on_click=handle_send)
+                    st.button("Send", on_click=handle_send, key="send_exploration_sidebar")
                 with end_col:
-                    if st.button("🛑 End Journey", key="end_exploration"):
+                    if st.button("🛑 End Journey", key="end_exploration_sidebar"):
                         st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
                         if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                             for i, discovery in enumerate(st.session_state["exploration_log"]):
@@ -3144,9 +3442,9 @@ Write the opening scene below in proper visual novel script format:
                 if success_condition:
                     st.info(f"**Success:** {success_condition}")
                 
-                st.button("Send", on_click=handle_send)
+                st.button("Send", on_click=handle_send, key="send_goal_mission_sidebar")
             else:
-                st.button("Send", on_click=handle_send)
+                st.button("Send", on_click=handle_send, key="send_general_sidebar")
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
