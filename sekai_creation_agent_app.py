@@ -1014,6 +1014,8 @@ Generate only the opening line, nothing else.
             st.error("Please complete the character creation and generate a template first.")
             st.stop()
         
+        # Clear old memories before starting chat
+        st.session_state["memories"] = []
         # Start the chat
         st.session_state["chat_started"] = True
         st.session_state["chat_history"] = []
