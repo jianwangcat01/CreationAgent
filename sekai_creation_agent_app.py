@@ -3233,7 +3233,7 @@ Write the opening scene below in proper visual novel script format:
                     with send_col:
                         st.button("Send", on_click=handle_send)
                     with end_col:
-                        if st.button("🛑 End Journey", key="end_exploration"):
+                        if st.button("🛑 End Journey", key="end_exploration_main"):
                             st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
                             if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                                 for i, discovery in enumerate(st.session_state["exploration_log"]):
@@ -3275,7 +3275,7 @@ Write the opening scene below in proper visual novel script format:
                             """, unsafe_allow_html=True)
                         
                         st.markdown("---")
-                        if st.button("🛑 End Journey", key="end_exploration", use_container_width=True):
+                        if st.button("🛑 End Journey", key="end_exploration_sidebar", use_container_width=True):
                             st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
                             for i, discovery in enumerate(st.session_state["exploration_log"]):
                                 st.markdown(f"• {discovery}")
@@ -3375,7 +3375,7 @@ Write the opening scene below in proper visual novel script format:
                 with send_col:
                     st.button("Send", on_click=handle_send)
                 with end_col:
-                    if st.button("🛑 End Journey", key="end_exploration"):
+                    if st.button("🛑 End Journey", key="end_exploration_fallback"):
                         st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
                         if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                             for i, discovery in enumerate(st.session_state["exploration_log"]):
