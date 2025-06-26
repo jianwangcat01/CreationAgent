@@ -1279,6 +1279,64 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.session_state["exploration_log"] = []
         st.session_state["exploration_log"].append(discovery_text)
     
+    def create_comprehensive_exploration_log(turn_text, user_input):
+        """Create a comprehensive log entry that records everything that happened in full sentences"""
+        if not turn_text:
+            return None
+        
+        # Clean up the turn text
+        clean_text = turn_text.replace('**What do you do?**', '').strip()
+        
+        # Split into lines and process each meaningful line
+        lines = clean_text.split('\n')
+        log_entries = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line or len(line) < 5:  # Skip very short lines
+                continue
+            
+            # Handle character dialogue
+            if '"' in line:
+                # Extract character name and dialogue
+                match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
+                if match:
+                    speaker_expr = match.group(1).strip()
+                    dialogue = match.group(2)
+                    # Extract just the character name
+                    char_name = speaker_expr.split('(')[0].strip()
+                    log_entries.append(f"{char_name} said: \"{dialogue}\"")
+                else:
+                    # Try simpler format
+                    match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
+                    if match:
+                        speaker = match.group(1).strip()
+                        dialogue = match.group(2)
+                        if speaker.lower() not in ['narrator', 'story', 'scene']:
+                            log_entries.append(f"{speaker} said: \"{dialogue}\"")
+            else:
+                # Handle narration/action lines
+                # Remove any 'narrator' prefix if present
+                if line.startswith('narrator '):
+                    line = line[9:]  # Remove 'narrator '
+                
+                # Only add substantial narration lines
+                if len(line) > 10 and not line.startswith('**'):
+                    log_entries.append(line)
+        
+        # If no meaningful content found, create a general entry
+        if not log_entries:
+            if user_input:
+                log_entries.append(f"You performed the action: {user_input}")
+            else:
+                log_entries.append("The story progressed with new developments")
+        
+        # Combine all entries into a comprehensive log
+        if len(log_entries) == 1:
+            return log_entries[0]
+        else:
+            return " | ".join(log_entries)
+
     def update_exploration_progress():
         """Update exploration progress based on discoveries made"""
         if "exploration_progress" not in st.session_state:
@@ -1457,394 +1515,6 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             narration_style = sekai_json.get('narrationStyle', 'Balanced')
             
             # Build the full context including template and conversation history
-            template_context = f"""
-STORY TEMPLATE:
-Title: {sekai_json.get('title', 'Unknown')}
-Setting: {sekai_json.get('setting', 'Unknown')}
-Genre: {sekai_json.get('genre', 'Fantasy')}
-Keywords: {sekai_json.get('keywords', '')}
-
-Story Style:
-- Tone: {story_tone}
-- Pacing: {pacing}
-- Point of View: {point_of_view}
-- Narration Style: {narration_style}
-
-Characters:
-"""
-            # Add all characters from template with detailed descriptions
-            for char in sekai_json.get('characters', []):
-                char_name = char.get('name', 'Unknown')
-                char_role = char.get('role', '')
-                char_description = char.get('description', '')
-                char_voice = char.get('voice_style', '')
-                char_relationship = char.get('relationship', '')
-                template_context += f"- {char_name} ({char_role}): {char_description}"
-                if char_voice:
-                    template_context += f" | Voice: {char_voice}"
-                if char_relationship:
-                    template_context += f" | Relationship: {char_relationship}"
-                template_context += "\n"
-            
-            # Add opening scene if available
-            if sekai_json.get('openingScene'):
-                template_context += f"\nOpening Scene: {sekai_json.get('openingScene')}\n"
-            
-            # Add gameplay mode context
-            gameplay_mode = sekai_json.get('gameplayMode', '')
-            if gameplay_mode:
-                template_context += f"\nGameplay Mode: {gameplay_mode}\n"
-                if gameplay_mode == "🌍 Explore the World":
-                    mode_details = sekai_json.get('modeDetails', {})
-                    exploration_locations = mode_details.get('exploration_locations', '')
-                    exploration_chapters = mode_details.get('exploration_chapters', '')
-                    if exploration_locations:
-                        template_context += f"Exploration Targets: {exploration_locations}\n"
-                    if exploration_chapters:
-                        template_context += f"Exploration Chapters: {exploration_chapters}\n"
-                    
-                    # Add exploration log context
-                    if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
-                        template_context += f"\nExploration Log:\n"
-                        for i, discovery in enumerate(st.session_state["exploration_log"][-5:], 1):  # Last 5 discoveries
-                            template_context += f"{i}. {discovery}\n"
-                
-                elif gameplay_mode == "🎯 Achieve a Goal":
-                    mode_details = sekai_json.get('modeDetails', {})
-                    main_goal = mode_details.get('main_goal', '')
-                    success_condition = mode_details.get('success_condition', '')
-                    if main_goal:
-                        template_context += f"Main Goal: {main_goal}\n"
-                    if success_condition:
-                        template_context += f"Success Condition: {success_condition}\n"
-                    
-                    # Add goal progress context
-                    if "goal_progress" in st.session_state:
-                        template_context += f"Goal Progress: {st.session_state['goal_progress']}%\n"
-            
-            # Build conversation history with better formatting
-            conversation_history = ""
-            for i, (turn, user_input_hist) in enumerate(zip(st.session_state["game_state"], st.session_state["user_inputs"])):
-                if user_input_hist.strip():
-                    conversation_history += f"Player: {user_input_hist}\n"
-                conversation_history += f"Story: {turn}\n\n"
-            
-            introduction_instruction = ""
-            # Ensure all characters are introduced within the first 3 turns
-            if len(st.session_state["game_state"]) < 3:
-                full_story_text = "".join(st.session_state["game_state"])
-                all_characters_in_json = sekai_json.get("characters", [])
-                character_names = [
-                    c.get("name") for c in all_characters_in_json if c.get("name")
-                ]
-                unintroduced_characters = [
-                    name
-                    for name in character_names
-                    if name.lower() not in full_story_text.lower()
-                ]
-                if unintroduced_characters:
-                    char_list = ", ".join(unintroduced_characters)
-                    introduction_instruction = f"IMPORTANT: In this turn, you must introduce the following character(s): {char_list}. "
-
-            player_name = st.session_state.get("user_name", "the player")
-            
-            # Enhanced prompt for better consistency and formatting
-            reply_prompt = f"""
-You are an interactive fiction narrator for a visual novel. Maintain consistent character voices and story coherence.
-
-{template_context}
-
-CONVERSATION HISTORY:
-{conversation_history}
-
-The player character is {player_name}.
-The player's input (action or dialogue) is: '{user_input}'.
-
-CRITICAL FORMATTING RULES:
-- Write in visual novel script format
-- Use this exact format for each line:
-  narrator description of what happens (no quotes, no italics)
-  CharacterName (expression/mood) "dialogue or thoughts"
-- Keep narrator descriptions short and concise
-- Maintain consistent character voices and personalities
-- Do NOT write dialogue or thoughts for the player character, {player_name}
-- End with: **What do you do?**
-
-CONTENT GUIDELINES:
-- Stay true to character personalities and voice styles from the template
-- Maintain story coherence and logical progression
-- Remember all character relationships and backstories from the template
-- Keep responses engaging but not overwhelming
-- {introduction_instruction}
-- Match the story tone: {story_tone}
-- Use the specified pacing: {pacing}
-- Write from the specified point of view: {point_of_view}
-- Apply the narration style: {narration_style}
-"""
-            
-            # Add exploration-specific instructions for faster pacing
-            if gameplay_mode == "🌍 Explore the World":
-                reply_prompt += f"""
-EXPLORATION MODE INSTRUCTIONS:
-- Keep responses concise and fast-paced (2-3 sentences maximum for narration)
-- Focus on immediate discoveries and new locations
-- Encourage rapid exploration by revealing interesting details quickly
-- Include at least one new discovery, location, or interesting detail in each response
-- Make each turn feel like progress toward uncovering the world's secrets
-- Avoid lengthy descriptions or slow-paced dialogue
-- Prioritize action and discovery over lengthy character interactions
-- If the player is exploring, immediately reveal what they find
-- Keep character dialogue brief and focused on exploration
-"""
-            elif gameplay_mode == "🎯 Achieve a Goal":
-                reply_prompt += f"""
-GOAL ACHIEVEMENT MODE INSTRUCTIONS:
-- Focus on progress toward the main goal: {sekai_json.get('modeDetails', {}).get('main_goal', 'Unknown Goal')}
-- Each response should advance the player toward their objective
-- Include meaningful progress or setbacks related to the goal
-- Keep character interactions relevant to the mission
-"""
-            
-            reply_prompt += f"""
-
-MEMORY REQUIREMENTS:
-- Remember the complete story template and all character details
-- Maintain consistency with all previous interactions
-- Keep track of character relationships and story progression
-- Ensure character expressions and moods match their personalities
-
-Generate the next story turn in proper visual novel script format:
-"""
-            
-            try:
-                new_turn = model.generate_content(reply_prompt).text.strip()
-                
-                # Clean up the response to ensure proper formatting
-                cleaned_turn = clean_story_response(new_turn)
-                
-                st.session_state["game_state"].append(cleaned_turn)
-                st.session_state["user_inputs"].append(user_input.strip())
-
-                # Update gameplay mode tracking
-                gameplay_mode = sekai_json.get('gameplayMode', '')
-                if gameplay_mode == "🌍 Explore the World":
-                    # Enhanced exploration log detection - more frequent logging
-                    exploration_keywords = [
-                        'discovery', 'found', 'discovered', 'uncovered', 'revealed', 'spotted', 'noticed', 'saw',
-                        'entered', 'approached', 'reached', 'arrived at', 'came across', 'stumbled upon',
-                        'explored', 'investigated', 'examined', 'looked at', 'studied', 'observed',
-                        'opened', 'unlocked', 'accessed', 'gained entry to', 'stepped into',
-                        'found a', 'discovered a', 'came to', 'walked into', 'moved toward',
-                        'new area', 'new location', 'new place', 'new room', 'new chamber',
-                        'hidden', 'secret', 'mysterious', 'ancient', 'forgotten', 'abandoned'
-                    ]
-                    
-                    # Check if the response contains exploration-related content
-                    cleaned_turn_lower = cleaned_turn.lower()
-                    has_exploration = any(keyword in cleaned_turn_lower for keyword in exploration_keywords)
-                    
-                    # Also check user input for exploration actions
-                    user_input_lower = user_input.lower()
-                    user_exploration_keywords = [
-                        'explore', 'look', 'examine', 'investigate', 'search', 'find', 'discover',
-                        'go to', 'walk to', 'move to', 'approach', 'enter', 'open', 'check',
-                        'what is', 'what\'s', 'where', 'how', 'why', 'tell me about'
-                    ]
-                    user_exploring = any(keyword in user_input_lower for keyword in user_exploration_keywords)
-                    
-                    # Log if either the response or user input suggests exploration
-                    if has_exploration or user_exploring:
-                        # Create a more descriptive log entry
-                        if has_exploration:
-                            # Extract the most relevant part of the response
-                            lines = cleaned_turn.split('\n')
-                            for line in lines:
-                                line_lower = line.lower()
-                                if any(keyword in line_lower for keyword in exploration_keywords):
-                                    # Clean up the line for logging
-                                    clean_line = line.replace('**What do you do?**', '').strip()
-                                    if clean_line and len(clean_line) > 10:
-                                        update_exploration_log(f"Explored: {clean_line[:80]}{'...' if len(clean_line) > 80 else ''}")
-                                        break
-                            else:
-                                # Fallback if no specific line found
-                                clean_turn = cleaned_turn.replace('**What do you do?**', '').strip()
-                                update_exploration_log(f"Explored: {clean_turn[:80]}{'...' if len(clean_turn) > 80 else ''}")
-                        else:
-                            # User was exploring but response didn't contain exploration keywords
-                            update_exploration_log(f"Explored: {user_input[:50]}{'...' if len(user_input) > 50 else ''}")
-                        
-                        # Update exploration progress
-                        update_exploration_progress()
-                elif gameplay_mode == "🎯 Achieve a Goal":
-                    # Update goal progress
-                    update_goal_progress(st.session_state["game_state"])
-
-                # Clear the input box for the next turn
-                st.session_state["reply_input"] = ""
-
-                existing_colors = st.session_state.get("story_colors", [])
-                available_colors = [
-                    c
-                    for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
-                    if c != existing_colors[-1]
-                ]
-                new_color = random.choice(available_colors)
-                st.session_state["story_colors"].append(new_color)
-                
-            except Exception as e:
-                st.error(f"Error generating story response: {e}")
-                # Fallback response
-                fallback_response = f'The story continues...\n**What do you do?**'
-                st.session_state["game_state"].append(fallback_response)
-                st.session_state["user_inputs"].append(user_input.strip())
-                st.session_state["reply_input"] = ""
-                
-                existing_colors = st.session_state.get("story_colors", [])
-                available_colors = [
-                    c
-                    for c in ["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"]
-                    if c != existing_colors[-1]
-                ]
-                new_color = random.choice(available_colors)
-                st.session_state["story_colors"].append(new_color)
-            # st.rerun is implicit with on_click callback
-
-    def clean_story_response(response_text):
-        """Clean and format the story response to ensure consistency"""
-        if not response_text:
-            return 'The story continues...\n**What do you do?**'
-        
-        # Split into lines and clean each line
-        lines = response_text.split('\n')
-        cleaned_lines = []
-        
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-                
-            # Handle different response formats
-            if line.startswith('**') and line.endswith('**'):
-                # Keep bold text as is
-                cleaned_lines.append(line)
-            elif '"' in line:
-                # Check if it's already in script format with expression: CharacterName (expression) "dialogue"
-                if re.match(r'^[a-zA-Z\s]+\([^)]*\)\s*["\']', line):
-                    # Already in correct format, keep as is
-                    cleaned_lines.append(line)
-                # Check if it's in basic script format: CharacterName "dialogue"
-                elif re.match(r'^[a-zA-Z\s]+["\']', line):
-                    # Convert to new format: CharacterName (expression) "dialogue"
-                    match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
-                    if match:
-                        speaker = match.group(1).strip()
-                        dialogue = match.group(2)
-                        if speaker.lower() == 'narrator':
-                            # Narrator without quotes
-                            cleaned_lines.append(f'{dialogue}')
-                        else:
-                            # Character with expression
-                            cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
-                    else:
-                        cleaned_lines.append(line)
-                else:
-                    # Try to convert to script format
-                    match = re.match(r'^([^:]+):\s*["\'](.+)["\']', line)
-                    if match:
-                        speaker = match.group(1).strip()
-                        dialogue = match.group(2)
-                        if speaker.lower() == 'narrator':
-                            cleaned_lines.append(f'{dialogue}')
-                        else:
-                            cleaned_lines.append(f'{speaker} (calmly) "{dialogue}"')
-                    else:
-                        # Assume it's narration
-                        cleaned_lines.append(f'{line}')
-            else:
-                # Assume it's narration
-                cleaned_lines.append(f'{line}')
-        
-        # Ensure it ends with "What do you do?"
-        if not any('What do you do?' in line for line in cleaned_lines):
-            cleaned_lines.append('**What do you do?**')
-        
-        return '\n'.join(cleaned_lines)
-
-    def format_story_block(block_text):
-        """Format story block for consistent display"""
-        if not block_text:
-            return '<p style="margin:4px 0; color:#666;">Story continues...</p>'
-        
-        formatted_lines = []
-        lines = block_text.split('\n')
-        
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-            
-            # Handle "What do you do?" prompt
-            if 'What do you do?' in line:
-                formatted_lines.append('<p style="margin:8px 0; font-weight:bold; color:#2c3e50;">**What do you do?**</p>')
-                continue
-            
-            # Remove 'narrator' prefix for narration lines and display cleanly
-            if line.startswith('narrator '):
-                content = line[9:]  # Remove 'narrator '
-                formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{content}</p>')
-                continue
-            
-            # Character dialogue with expressions: bold everything before the first quote
-            if '"' in line:
-                # Try to extract speaker with expression: CharacterName (expression) "dialogue"
-                match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
-                if match:
-                    speaker_expr = match.group(1).strip()
-                    dialogue = match.group(2)
-                    formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker_expr}:</b> "{dialogue}"</p>')
-                    continue
-                
-                # Try to extract speaker without expression: CharacterName "dialogue"
-                match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
-                if match:
-                    speaker = match.group(1).strip()
-                    dialogue = match.group(2)
-                    # Only bold if it looks like a character name (not just random text)
-                    if not speaker.lower() in ['narrator', 'story', 'scene'] and len(speaker.strip()) > 0:
-                        formatted_lines.append(f'<p style="margin:4px 0;"><b style="color:#2c3e50;">{speaker}:</b> "{dialogue}"</p>')
-                    else:
-                        formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{speaker}: "{dialogue}"</p>')
-                    continue
-            
-            # Handle other formats (fallback)
-            if line.startswith('**') and line.endswith('**'):
-                # Bold text
-                content = line[2:-2]
-                formatted_lines.append(f'<p style="margin:4px 0; font-weight:bold; color:#2c3e50;">{content}</p>')
-            else:
-                # Plain narration (no narrator prefix)
-                formatted_lines.append(f'<p style="margin:4px 0; color:#555;">{line}</p>')
-        
-        return ''.join(formatted_lines)
-
-    def handle_choice_click(choice_text):
-        st.session_state.reply_input = choice_text
-        handle_send()
-
-    def generate_choices():
-        """Generate 3 choice options for the player"""
-        if "game_state" in st.session_state and st.session_state["game_state"]:
-            # Get the template context
-            sekai_json = st.session_state.get("sekai_json", {})
-            
-            # Get advanced settings from the JSON template
-            story_tone = sekai_json.get('storyTone', 'Balanced')
-            pacing = sekai_json.get('pacing', 'Balanced')
-            point_of_view = sekai_json.get('pointOfView', 'Third person')
-            narration_style = sekai_json.get('narrationStyle', 'Balanced')
-            
-            # Build template context
             template_context = f"""
 STORY TEMPLATE:
 Title: {sekai_json.get('title', 'Unknown')}
