@@ -1279,6 +1279,18 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             st.session_state["exploration_log"] = []
         st.session_state["exploration_log"].append(discovery_text)
     
+    def update_exploration_progress():
+        """Update exploration progress based on discoveries made"""
+        if "exploration_progress" not in st.session_state:
+            st.session_state["exploration_progress"] = 0
+        
+        # Calculate progress based on number of discoveries
+        exploration_log = st.session_state.get("exploration_log", [])
+        progress = min(100, len(exploration_log) * 10)  # 10% per discovery, max 100%
+        st.session_state["exploration_progress"] = progress
+        
+        return progress
+
     def update_goal_progress(chat_history):
         """Update goal progress based on chat history"""
         if "goal_progress" not in st.session_state:
@@ -1317,28 +1329,118 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
                     dialogue = match.group(2)
                     # Extract just the character name
                     char_name = speaker_expr.split('(')[0].strip()
-                    summary_parts.append(f"{char_name} spoke")
+                    # Look for key words in dialogue that indicate what happened
+                    dialogue_lower = dialogue.lower()
+                    if any(word in dialogue_lower for word in ['help', 'save', 'protect', 'danger', 'warning', 'important', 'secret', 'truth', 'betrayal', 'trust', 'promise', 'plan', 'mission', 'goal']):
+                        summary_parts.append(f"{char_name} revealed important information")
+                    elif any(word in dialogue_lower for word in ['attack', 'fight', 'battle', 'defend', 'weapon', 'magic', 'spell']):
+                        summary_parts.append(f"{char_name} engaged in combat")
+                    elif any(word in dialogue_lower for word in ['love', 'care', 'feelings', 'heart', 'romance', 'relationship']):
+                        summary_parts.append(f"{char_name} shared emotional moment")
+                    elif any(word in dialogue_lower for word in ['explain', 'tell', 'story', 'history', 'past', 'memory']):
+                        summary_parts.append(f"{char_name} shared story or explanation")
+                    else:
+                        summary_parts.append(f"{char_name} had conversation")
                 else:
                     # Try simpler format
                     match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
                     if match:
                         speaker = match.group(1).strip()
+                        dialogue = match.group(2)
                         if speaker.lower() not in ['narrator', 'story', 'scene']:
-                            summary_parts.append(f"{speaker} spoke")
+                            # Apply same dialogue analysis
+                            dialogue_lower = dialogue.lower()
+                            if any(word in dialogue_lower for word in ['help', 'save', 'protect', 'danger', 'warning', 'important', 'secret', 'truth', 'betrayal', 'trust', 'promise', 'plan', 'mission', 'goal']):
+                                summary_parts.append(f"{speaker} revealed important information")
+                            elif any(word in dialogue_lower for word in ['attack', 'fight', 'battle', 'defend', 'weapon', 'magic', 'spell']):
+                                summary_parts.append(f"{speaker} engaged in combat")
+                            elif any(word in dialogue_lower for word in ['love', 'care', 'feelings', 'heart', 'romance', 'relationship']):
+                                summary_parts.append(f"{speaker} shared emotional moment")
+                            elif any(word in dialogue_lower for word in ['explain', 'tell', 'story', 'history', 'past', 'memory']):
+                                summary_parts.append(f"{speaker} shared story or explanation")
+                            else:
+                                summary_parts.append(f"{speaker} had conversation")
             else:
-                # Look for key action words
-                action_words = ['moved', 'walked', 'ran', 'found', 'discovered', 'entered', 'left', 'approached', 'reached', 'arrived', 'saw', 'noticed', 'felt', 'thought', 'decided']
-                for word in action_words:
+                # Look for key action words and create contextual summaries
+                action_words = {
+                    'moved': 'moved to new location',
+                    'walked': 'traveled to new area', 
+                    'ran': 'ran quickly',
+                    'found': 'discovered something',
+                    'discovered': 'uncovered new information',
+                    'entered': 'entered new area',
+                    'left': 'departed from area',
+                    'approached': 'approached something',
+                    'reached': 'arrived at destination',
+                    'arrived': 'reached new location',
+                    'saw': 'observed something',
+                    'noticed': 'noticed important detail',
+                    'felt': 'experienced emotion',
+                    'thought': 'considered situation',
+                    'decided': 'made decision',
+                    'opened': 'opened something',
+                    'closed': 'closed something',
+                    'picked': 'picked up item',
+                    'dropped': 'dropped item',
+                    'used': 'used item or ability',
+                    'cast': 'cast spell or magic',
+                    'fought': 'engaged in combat',
+                    'defeated': 'defeated enemy',
+                    'escaped': 'escaped from danger',
+                    'hid': 'hid from something',
+                    'searched': 'searched area',
+                    'examined': 'examined object',
+                    'investigated': 'investigated mystery',
+                    'solved': 'solved puzzle',
+                    'unlocked': 'unlocked door or mechanism',
+                    'activated': 'activated device',
+                    'deactivated': 'deactivated device',
+                    'healed': 'healed wounds',
+                    'rested': 'took rest',
+                    'prepared': 'prepared for action',
+                    'planned': 'made plans',
+                    'agreed': 'agreed to something',
+                    'refused': 'refused request',
+                    'accepted': 'accepted offer',
+                    'declined': 'declined offer',
+                    'promised': 'made promise',
+                    'betrayed': 'betrayed trust',
+                    'forgave': 'forgave someone',
+                    'apologized': 'apologized',
+                    'thanked': 'thanked someone',
+                    'celebrated': 'celebrated success',
+                    'mourned': 'mourned loss'
+                }
+                
+                for word, description in action_words.items():
                     if word in line.lower():
-                        summary_parts.append(line[:50] + "..." if len(line) > 50 else line)
+                        summary_parts.append(description)
                         break
+                else:
+                    # If no specific action word found, look for goal-related content
+                    goal_words = ['goal', 'mission', 'objective', 'quest', 'task', 'challenge', 'progress', 'advance', 'complete', 'finish', 'achieve', 'succeed', 'fail', 'lose', 'win']
+                    if any(word in line.lower() for word in goal_words):
+                        summary_parts.append("made progress toward goal")
+                    elif len(line) > 20:  # If it's a substantial description
+                        summary_parts.append(line[:50] + "..." if len(line) > 50 else line)
         
         # If no specific actions found, create a general summary
         if not summary_parts:
             if user_input:
-                summary_parts.append(f"You {user_input[:30]}{'...' if len(user_input) > 30 else ''}")
+                # Analyze user input for context
+                user_input_lower = user_input.lower()
+                if any(word in user_input_lower for word in ['explore', 'look', 'examine', 'investigate']):
+                    summary_parts.append("explored surroundings")
+                elif any(word in user_input_lower for word in ['talk', 'speak', 'ask', 'tell']):
+                    summary_parts.append("had conversation")
+                elif any(word in user_input_lower for word in ['move', 'go', 'walk', 'run']):
+                    summary_parts.append("moved to new location")
+                elif any(word in user_input_lower for word in ['use', 'take', 'pick', 'grab']):
+                    summary_parts.append("interacted with object")
+                else:
+                    summary_parts.append(f"performed action: {user_input[:30]}{'...' if len(user_input) > 30 else ''}")
             else:
-                summary_parts.append("Story progressed")
+                summary_parts.append("story progressed")
         
         return " | ".join(summary_parts[:2])  # Limit to 2 parts max
 
@@ -1478,6 +1580,32 @@ CONTENT GUIDELINES:
 - Use the specified pacing: {pacing}
 - Write from the specified point of view: {point_of_view}
 - Apply the narration style: {narration_style}
+"""
+            
+            # Add exploration-specific instructions for faster pacing
+            if gameplay_mode == "🌍 Explore the World":
+                reply_prompt += f"""
+EXPLORATION MODE INSTRUCTIONS:
+- Keep responses concise and fast-paced (2-3 sentences maximum for narration)
+- Focus on immediate discoveries and new locations
+- Encourage rapid exploration by revealing interesting details quickly
+- Include at least one new discovery, location, or interesting detail in each response
+- Make each turn feel like progress toward uncovering the world's secrets
+- Avoid lengthy descriptions or slow-paced dialogue
+- Prioritize action and discovery over lengthy character interactions
+- If the player is exploring, immediately reveal what they find
+- Keep character dialogue brief and focused on exploration
+"""
+            elif gameplay_mode == "🎯 Achieve a Goal":
+                reply_prompt += f"""
+GOAL ACHIEVEMENT MODE INSTRUCTIONS:
+- Focus on progress toward the main goal: {sekai_json.get('modeDetails', {}).get('main_goal', 'Unknown Goal')}
+- Each response should advance the player toward their objective
+- Include meaningful progress or setbacks related to the goal
+- Keep character interactions relevant to the mission
+"""
+            
+            reply_prompt += f"""
 
 MEMORY REQUIREMENTS:
 - Remember the complete story template and all character details
@@ -1500,9 +1628,54 @@ Generate the next story turn in proper visual novel script format:
                 # Update gameplay mode tracking
                 gameplay_mode = sekai_json.get('gameplayMode', '')
                 if gameplay_mode == "🌍 Explore the World":
-                    # Extract discoveries from the response and add to exploration log
-                    if "discovery" in cleaned_turn.lower() or "found" in cleaned_turn.lower() or "discovered" in cleaned_turn.lower():
-                        update_exploration_log(f"Discovered: {cleaned_turn[:100]}...")
+                    # Enhanced exploration log detection - more frequent logging
+                    exploration_keywords = [
+                        'discovery', 'found', 'discovered', 'uncovered', 'revealed', 'spotted', 'noticed', 'saw',
+                        'entered', 'approached', 'reached', 'arrived at', 'came across', 'stumbled upon',
+                        'explored', 'investigated', 'examined', 'looked at', 'studied', 'observed',
+                        'opened', 'unlocked', 'accessed', 'gained entry to', 'stepped into',
+                        'found a', 'discovered a', 'came to', 'walked into', 'moved toward',
+                        'new area', 'new location', 'new place', 'new room', 'new chamber',
+                        'hidden', 'secret', 'mysterious', 'ancient', 'forgotten', 'abandoned'
+                    ]
+                    
+                    # Check if the response contains exploration-related content
+                    cleaned_turn_lower = cleaned_turn.lower()
+                    has_exploration = any(keyword in cleaned_turn_lower for keyword in exploration_keywords)
+                    
+                    # Also check user input for exploration actions
+                    user_input_lower = user_input.lower()
+                    user_exploration_keywords = [
+                        'explore', 'look', 'examine', 'investigate', 'search', 'find', 'discover',
+                        'go to', 'walk to', 'move to', 'approach', 'enter', 'open', 'check',
+                        'what is', 'what\'s', 'where', 'how', 'why', 'tell me about'
+                    ]
+                    user_exploring = any(keyword in user_input_lower for keyword in user_exploration_keywords)
+                    
+                    # Log if either the response or user input suggests exploration
+                    if has_exploration or user_exploring:
+                        # Create a more descriptive log entry
+                        if has_exploration:
+                            # Extract the most relevant part of the response
+                            lines = cleaned_turn.split('\n')
+                            for line in lines:
+                                line_lower = line.lower()
+                                if any(keyword in line_lower for keyword in exploration_keywords):
+                                    # Clean up the line for logging
+                                    clean_line = line.replace('**What do you do?**', '').strip()
+                                    if clean_line and len(clean_line) > 10:
+                                        update_exploration_log(f"Explored: {clean_line[:80]}{'...' if len(clean_line) > 80 else ''}")
+                                        break
+                            else:
+                                # Fallback if no specific line found
+                                clean_turn = cleaned_turn.replace('**What do you do?**', '').strip()
+                                update_exploration_log(f"Explored: {clean_turn[:80]}{'...' if len(clean_turn) > 80 else ''}")
+                        else:
+                            # User was exploring but response didn't contain exploration keywords
+                            update_exploration_log(f"Explored: {user_input[:50]}{'...' if len(user_input) > 50 else ''}")
+                        
+                        # Update exploration progress
+                        update_exploration_progress()
                 elif gameplay_mode == "🎯 Achieve a Goal":
                     # Update goal progress
                     update_goal_progress(st.session_state["game_state"])
@@ -1727,11 +1900,35 @@ Each choice should be:
 - Consistent with the story template and setting
 - Match the story tone: {story_tone}
 - Consider the pacing: {pacing}
+"""
+            
+            # Add exploration-specific choice instructions
+            gameplay_mode = sekai_json.get('gameplayMode', '')
+            if gameplay_mode == "🌍 Explore the World":
+                choice_prompt += f"""
+EXPLORATION MODE CHOICE GUIDELINES:
+- Prioritize exploration and discovery choices
+- Include at least 2 exploration-focused options (investigate, examine, move to new areas)
+- Make choices that lead to immediate discoveries or new locations
+- Focus on physical movement and investigation rather than lengthy dialogue
+- Encourage rapid exploration of the world
+- Include choices that reveal new areas, objects, or secrets
+- Keep dialogue choices brief and focused on getting information about exploration targets
 
+CHOICE TYPES FOR EXPLORATION:
+1. Exploration/Investigation choice (examine, investigate, move to new area)
+2. Quick dialogue choice (ask about location, get directions, learn about area)
+3. Action choice (interact with objects, open doors, climb, etc.)
+"""
+            else:
+                choice_prompt += f"""
 CHOICE TYPES:
 1. Dialogue choice (speaking to someone)
 2. Action choice (doing something physical)
 3. Investigation/Exploration choice (examining surroundings or moving)
+"""
+            
+            choice_prompt += f"""
 
 Format as:
 1. [First choice]
@@ -1757,12 +1954,22 @@ Generate only the 3 choices, nothing else.
                 
                 # Ensure we have exactly 3 choices with fallbacks
                 while len(choices) < 3:
-                    if len(choices) == 0:
-                        choices.append("Ask someone nearby what's happening")
-                    elif len(choices) == 1:
-                        choices.append("Look around the area for clues")
+                    if gameplay_mode == "🌍 Explore the World":
+                        # Exploration-focused fallback choices
+                        if len(choices) == 0:
+                            choices.append("Examine the surroundings for anything interesting")
+                        elif len(choices) == 1:
+                            choices.append("Move to explore a new area")
+                        else:
+                            choices.append("Investigate any objects or clues nearby")
                     else:
-                        choices.append("Continue exploring the surroundings")
+                        # General fallback choices
+                        if len(choices) == 0:
+                            choices.append("Ask someone nearby what's happening")
+                        elif len(choices) == 1:
+                            choices.append("Look around the area for clues")
+                        else:
+                            choices.append("Continue exploring the surroundings")
                 
                 if len(choices) > 3:
                     choices = choices[:3]
@@ -1770,16 +1977,34 @@ Generate only the 3 choices, nothing else.
                 return choices
             except Exception as e:
                 # Fallback choices
-                return [
-                    "Ask someone nearby what's happening",
-                    "Look around the area for clues", 
-                    "Continue exploring the surroundings"
-                ]
-        return [
-            "Ask someone nearby what's happening",
-            "Look around the area for clues", 
-            "Continue exploring the surroundings"
-        ]
+                if gameplay_mode == "🌍 Explore the World":
+                    return [
+                        "Examine the surroundings for anything interesting",
+                        "Move to explore a new area", 
+                        "Investigate any objects or clues nearby"
+                    ]
+                else:
+                    return [
+                        "Ask someone nearby what's happening",
+                        "Look around the area for clues", 
+                        "Continue exploring the surroundings"
+                    ]
+        
+        # Final fallback for when no game state exists
+        sekai_json = st.session_state.get("sekai_json", {})
+        gameplay_mode = sekai_json.get('gameplayMode', '')
+        if gameplay_mode == "🌍 Explore the World":
+            return [
+                "Examine the surroundings for anything interesting",
+                "Move to explore a new area", 
+                "Investigate any objects or clues nearby"
+            ]
+        else:
+            return [
+                "Ask someone nearby what's happening",
+                "Look around the area for clues", 
+                "Continue exploring the surroundings"
+            ]
 
     # --- Step Overview ---
     st.markdown("---")
@@ -3092,6 +3317,10 @@ Write the opening scene below in proper visual novel script format:
                 st.markdown("**Or write your own action/dialogue:**")
                 st.text_input("Enter your next action or dialogue", key="reply_input")
                 
+                # Send button for goal achieving mode
+                if gameplay_mode == "🎯 Achieve a Goal":
+                    st.button("Send", on_click=handle_send)
+                
                 # Create columns for Send button and End Journey button (for exploration mode)
                 if gameplay_mode == "🌍 Explore the World":
                     send_col, end_col = st.columns([1, 1])
@@ -3162,24 +3391,6 @@ Write the opening scene below in proper visual novel script format:
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    mode_details = sekai_json.get('modeDetails', {})
-                    main_goal = mode_details.get('main_goal', 'Unknown Goal')
-                    success_condition = mode_details.get('success_condition', '')
-                    
-                    # Goal information card
-                    st.markdown(f"""
-                    <div class="memory-card">
-                        <p class="memory-text"><strong>Goal:</strong> {main_goal}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    if success_condition:
-                        st.markdown(f"""
-                        <div class="memory-card">
-                            <p class="memory-text"><strong>Success:</strong> {success_condition}</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
                     # Progress bar
                     progress = st.session_state.get("goal_progress", 0)
                     st.progress(progress / 100)
@@ -3201,6 +3412,8 @@ Write the opening scene below in proper visual novel script format:
                     # Check if goal is complete
                     if progress >= 100:
                         st.success("🏆 You achieved your goal!")
+                        mode_details = sekai_json.get('modeDetails', {})
+                        main_goal = mode_details.get('main_goal', 'Unknown Goal')
                         st.markdown(f"**Goal:** {main_goal}")
                         st.markdown(f"**Completed in:** {len(st.session_state.get('game_state', []))} turns")
         else:
@@ -3233,6 +3446,10 @@ Write the opening scene below in proper visual novel script format:
             # Freeform input
             st.markdown("**Or write your own action/dialogue:**")
             st.text_input("Enter your next action or dialogue", key="reply_input")
+            
+            # Send button for goal achieving mode
+            if gameplay_mode == "🎯 Achieve a Goal":
+                st.button("Send", on_click=handle_send)
             
             # Create columns for Send button and End Journey button (for exploration mode)
             if gameplay_mode == "🌍 Explore the World":
