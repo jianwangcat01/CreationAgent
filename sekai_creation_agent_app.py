@@ -1381,55 +1381,39 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         return st.session_state["goal_progress"]
 
     def generate_action_summary(turn_text, user_input):
-        """Generate a brief summary of what happened in this turn"""
+        """Generate a narrative summary (1-2 sentences) of key events, goal progress, and character impacts."""
         if not turn_text:
-            return "Story continued..."
-        
-        # Clean up the turn text
-        clean_text = turn_text.replace('**What do you do?**', '').strip()
-        
-        # Extract key information
-        lines = clean_text.split('\n')
-        summary_parts = []
-        
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-            
-            # Look for character dialogue or key actions
-            if '"' in line:
-                # Extract character name and dialogue
-                match = re.match(r'^([^(]+\([^)]*\))\s*"([^"]+)"', line)
-                if match:
-                    speaker_expr = match.group(1).strip()
-                    dialogue = match.group(2)
-                    # Extract just the character name
-                    char_name = speaker_expr.split('(')[0].strip()
-                    summary_parts.append(f"{char_name} spoke")
-                else:
-                    # Try simpler format
-                    match = re.match(r'^([^"]+)\s*"([^"]+)"', line)
-                    if match:
-                        speaker = match.group(1).strip()
-                        if speaker.lower() not in ['narrator', 'story', 'scene']:
-                            summary_parts.append(f"{speaker} spoke")
-            else:
-                # Look for key action words
-                action_words = ['moved', 'walked', 'ran', 'found', 'discovered', 'entered', 'left', 'approached', 'reached', 'arrived', 'saw', 'noticed', 'felt', 'thought', 'decided']
-                for word in action_words:
-                    if word in line.lower():
-                        summary_parts.append(line[:50] + "..." if len(line) > 50 else line)
-                        break
-        
-        # If no specific actions found, create a general summary
-        if not summary_parts:
+            return "The story continued."
+
+        # Generate narrative summary via LLM
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        prompt = f"""
+Summarize the following interactive fiction turn in 1-2 concise sentences, focusing on:
+- The key event that occurred
+- Progress toward the main goal
+- How the player's character was impacted
+- How other characters responded or evolved
+
+Turn text:
+{turn_text}
+
+Player action:
+{user_input}
+
+Provide only the summary text.
+"""
+        try:
+            model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
+            response = model.generate_content(prompt)
+            summary = response.text.strip()
+            if summary.startswith('"') and summary.endswith('"'):
+                summary = summary[1:-1]
+            return summary
+        except Exception:
+            # Fallback simple summary
             if user_input:
-                summary_parts.append(f"You {user_input[:30]}{'...' if len(user_input) > 30 else ''}")
-            else:
-                summary_parts.append("Story progressed")
-        
-        return " | ".join(summary_parts[:2])  # Limit to 2 parts max
+                return f"You {user_input}" if len(user_input) < 80 else f"You {user_input[:80]}..."
+            return turn_text[:80] if turn_text else "Story continued."
 
     def handle_send():
         user_input = st.session_state.get("reply_input", "")
