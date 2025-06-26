@@ -1050,7 +1050,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
         for i in range(5):
             keys_to_clear.extend([
                 f"char_{i}", f"idea_{i}", f"name_{i}", f"role_{i}", f"trait_{i}",
-                f"voice_style_{i}", f"opening_line_{i}", f"gen_{i}"
+                f"voice_style_{i}", f"relationship_{i}", f"opening_line_{i}", f"gen_{i}"
             ])
         for key in keys_to_clear:
             if key in st.session_state:
@@ -1109,9 +1109,12 @@ Characters:
                 char_role = char.get('role', '')
                 char_description = char.get('description', '')
                 char_voice = char.get('voice_style', '')
+                char_relationship = char.get('relationship', '')
                 template_context += f"- {char_name} ({char_role}): {char_description}"
                 if char_voice:
                     template_context += f" | Voice: {char_voice}"
+                if char_relationship:
+                    template_context += f" | Relationship: {char_relationship}"
                 template_context += "\n"
             
             # Add opening scene if available
@@ -1381,9 +1384,12 @@ Characters:
                 char_role = char.get('role', '')
                 char_description = char.get('description', '')
                 char_voice = char.get('voice_style', '')
+                char_relationship = char.get('relationship', '')
                 template_context += f"- {char_name} ({char_role}): {char_description}"
                 if char_voice:
                     template_context += f" | Voice: {char_voice}"
+                if char_relationship:
+                    template_context += f" | Relationship: {char_relationship}"
                 template_context += "\n"
             
             # Build conversation history
@@ -1916,10 +1922,13 @@ Respond with:
                         char_role = st.session_state.get(f"role_{j}", "")
                         char_traits = st.session_state.get(f"trait_{j}", "")
                         char_voice = st.session_state.get(f"voice_style_{j}", "")
+                        char_relationship = st.session_state.get(f"relationship_{j}", "")
                         if char_name and char_traits:  # Only include characters that have been generated
                             char_info = f"- {char_name} ({char_role}): {char_traits}"
                             if char_voice and char_voice != "Default":
                                 char_info += f" | Voice: {char_voice}"
+                            if char_relationship and char_relationship.strip():
+                                char_info += f" | Relationship: {char_relationship}"
                             other_chars.append(char_info)
                 
                 existing_chars_text = "\n".join(other_chars) if other_chars else "None"
@@ -1949,7 +1958,8 @@ Respond in this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
 Traits: <Personality traits and special abilities>
-Voice Style: <How do they speak?>"""
+Voice Style: <How do they speak?>
+Relationship: <How do they relate to the player character? Are they friends, rivals, mentors, etc.?>"""
                 else:
                     prompt = f"""Create a new character for the following world:
 
@@ -1971,18 +1981,20 @@ Respond in this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
 Traits: <Personality traits and special abilities>
-Voice Style: <How do they speak?>"""
+Voice Style: <How do they speak?>
+Relationship: <How do they relate to the player character? Are they friends, rivals, mentors, etc.?>"""
                 
                 try:
                     result = generate_field(prompt)
                     # Parse the result
-                    parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
+                    parsed_name, parsed_role, parsed_traits, parsed_voice, parsed_relationship = "", "", "", "", ""
                     try:
                         # Use regex for robust parsing
                         name_match = re.search(r'Name\s*[:：\-]\s*(.*)', result)
                         role_match = re.search(r'Role\s*[:：\-]\s*(.*)', result)
                         traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', result)
                         voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', result)
+                        relationship_match = re.search(r'Relationship\s*[:：\-]\s*(.*)', result)
                         if name_match:
                             parsed_name = name_match.group(1).strip()
                         if role_match:
@@ -1991,6 +2003,8 @@ Voice Style: <How do they speak?>"""
                             parsed_traits = traits_match.group(1).strip()
                         if voice_match:
                             parsed_voice = voice_match.group(1).strip()
+                        if relationship_match:
+                            parsed_relationship = relationship_match.group(1).strip()
                     except Exception:
                         pass
                     
@@ -2000,12 +2014,14 @@ Voice Style: <How do they speak?>"""
                     st.session_state[f"role_{i}"] = parsed_role
                     st.session_state[f"trait_{i}"] = parsed_traits
                     st.session_state[f"voice_style_{i}"] = parsed_voice
+                    st.session_state[f"relationship_{i}"] = parsed_relationship
                     
                     # Also update the input field values
                     st.session_state[f"name_input_{i}"] = parsed_name
                     st.session_state[f"role_input_{i}"] = parsed_role
                     st.session_state[f"trait_input_{i}"] = parsed_traits
                     st.session_state[f"voice_input_{i}"] = parsed_voice
+                    st.session_state[f"relationship_input_{i}"] = parsed_relationship
                     
                     # Increment generation counter to force form refresh
                     current_gen_count = st.session_state.get(f"gen_count_{i}", 0)
@@ -2021,6 +2037,7 @@ Voice Style: <How do they speak?>"""
                     st.session_state[f"role_{i}"] = ""
                     st.session_state[f"trait_{i}"] = ""
                     st.session_state[f"voice_style_{i}"] = ""
+                    st.session_state[f"relationship_{i}"] = ""
             
             st.success(f"✅ All {num_characters} characters generated successfully!")
             st.rerun()
@@ -2064,12 +2081,15 @@ Voice Style: <How do they speak?>"""
                                 char_role = st.session_state.get(f"role_{j}", "")
                                 char_traits = st.session_state.get(f"trait_{j}", "")
                                 char_voice = st.session_state.get(f"voice_style_{j}", "")
+                                char_relationship = st.session_state.get(f"relationship_{j}", "")
                                 if char_name and char_traits:  # Only include characters that have been generated
                                     char_info = f"- {char_name} ({char_role}): {char_traits}"
                                     if char_voice and char_voice != "Default":
                                         char_info += f" | Voice: {char_voice}"
+                                    if char_relationship and char_relationship.strip():
+                                        char_info += f" | Relationship: {char_relationship}"
                                     other_chars.append(char_info)
-                        
+                
                         existing_chars_text = "\n".join(other_chars) if other_chars else "None"
                         
                         prompt = f"""Create a new character for the following world:
@@ -2095,18 +2115,20 @@ Respond in this format:
 Name: <A standard first name and optional last name only, no titles or descriptions>
 Role: <Character Role>
 Traits: <Personality traits and special abilities>
-Voice Style: <How do they speak?>"""
+Voice Style: <How do they speak?>
+Relationship: <How do they relate to the player character? Are they friends, rivals, mentors, etc.?>"""
                         
                         try:
                             result = generate_field(prompt)
                             # Parse the result
-                            parsed_name, parsed_role, parsed_traits, parsed_voice = "", "", "", ""
+                            parsed_name, parsed_role, parsed_traits, parsed_voice, parsed_relationship = "", "", "", "", ""
                             try:
                                 # Use regex for robust parsing
                                 name_match = re.search(r'Name\s*[:：\-]\s*(.*)', result)
                                 role_match = re.search(r'Role\s*[:：\-]\s*(.*)', result)
                                 traits_match = re.search(r'Traits?\s*[:：\-]\s*(.*)', result)
                                 voice_match = re.search(r'Voice Style\s*[:：\-]\s*(.*)', result)
+                                relationship_match = re.search(r'Relationship\s*[:：\-]\s*(.*)', result)
                                 if name_match:
                                     parsed_name = name_match.group(1).strip()
                                 if role_match:
@@ -2115,6 +2137,8 @@ Voice Style: <How do they speak?>"""
                                     parsed_traits = traits_match.group(1).strip()
                                 if voice_match:
                                     parsed_voice = voice_match.group(1).strip()
+                                if relationship_match:
+                                    parsed_relationship = relationship_match.group(1).strip()
                             except Exception:
                                 pass
                             
@@ -2124,12 +2148,14 @@ Voice Style: <How do they speak?>"""
                             st.session_state[f"role_{i}"] = parsed_role
                             st.session_state[f"trait_{i}"] = parsed_traits
                             st.session_state[f"voice_style_{i}"] = parsed_voice
+                            st.session_state[f"relationship_{i}"] = parsed_relationship
                             
                             # Also update the input field values
                             st.session_state[f"name_input_{i}"] = parsed_name
                             st.session_state[f"role_input_{i}"] = parsed_role
                             st.session_state[f"trait_input_{i}"] = parsed_traits
                             st.session_state[f"voice_input_{i}"] = parsed_voice
+                            st.session_state[f"relationship_input_{i}"] = parsed_relationship
                             
                             # Increment generation counter to force form refresh
                             current_gen_count = st.session_state.get(f"gen_count_{i}", 0)
@@ -2146,6 +2172,7 @@ Voice Style: <How do they speak?>"""
         parsed_role = st.session_state.get(f"role_{i}", "")
         parsed_traits = st.session_state.get(f"trait_{i}", "")
         parsed_voice = st.session_state.get(f"voice_style_{i}", "")
+        parsed_relationship = st.session_state.get(f"relationship_{i}", "")
 
         # Character Details
         # Use a unique key that changes when character is generated to force refresh
@@ -2156,10 +2183,71 @@ Voice Style: <How do they speak?>"""
         current_role = st.session_state.get(f"role_input_{i}", st.session_state.get(f"role_{i}", parsed_role))
         current_traits = st.session_state.get(f"trait_input_{i}", st.session_state.get(f"trait_{i}", parsed_traits))
         current_voice = st.session_state.get(f"voice_input_{i}", st.session_state.get(f"voice_style_{i}", parsed_voice))
+        current_relationship = st.session_state.get(f"relationship_input_{i}", st.session_state.get(f"relationship_{i}", parsed_relationship))
         
         name = st.text_input(f"Name {i+1}", key=f"name_input_{i}", value=current_name)
         role = st.text_input(f"Role {i+1}", key=f"role_input_{i}", value=current_role, placeholder="Librarian who hides a secret / Rival time mage")
         trait = st.text_area(f"Key Traits {i+1}", key=f"trait_input_{i}", value=current_traits, height=100, placeholder="Describe their personality, abilities, and backstory...")
+        
+        # Relationship with Player
+        st.markdown(f"#### 💕 Relationship with {user_name}")
+        st.markdown("**How does this character relate to you? Are they a friend, rival, mentor, etc.?**")
+        
+        # AI Generate Relationship Button
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            if st.button(f"🤖 AI: Generate Relationship {i+1}", key=f"gen_relationship_{i}"):
+                if not (name.strip() and trait.strip()):
+                    st.warning(f"Please fill in the name and traits for Character {i+1} before generating their relationship.")
+                else:
+                    with st.spinner(f"Generating relationship for {name}..."):
+                        # Get complete world and user information
+                        world_genres = st.session_state.get("world_genre", [])
+                        # Safety check for genres
+                        if not isinstance(world_genres, list):
+                            world_genres = []
+                        genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
+                        world_context = f"World: {world_setting}\nTitle: {world_title}\nGenre: {genre_str}"
+                        if world_keywords:
+                            world_context += f"\nKeywords: {world_keywords}"
+                        
+                        prompt = f"""Generate a relationship description between a character and the player.
+
+World Context:
+{world_context}
+
+Player Character: {user_name} ({user_traits})
+
+Character: {name} ({role})
+Character Traits: {trait}
+
+Generate a relationship description that:
+- Explains how this character relates to the player character
+- Could be friends, rivals, mentors, allies, enemies, etc.
+- Fits naturally with both characters' personalities and the world setting
+- Is 1-2 sentences maximum
+- Creates interesting story potential
+- Feels authentic and engaging
+
+Generate only the relationship description, nothing else."""
+                        
+                        try:
+                            response = model.generate_content(prompt)
+                            generated_relationship = response.text.strip()
+                            if generated_relationship.startswith('"') and generated_relationship.endswith('"'):
+                                generated_relationship = generated_relationship[1:-1]
+                            st.session_state[f"relationship_input_{i}"] = generated_relationship
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Failed to generate relationship: {e}")
+        
+        relationship = st.text_area(
+            f"Relationship with {user_name}",
+            value=current_relationship,
+            key=f"relationship_input_{i}",
+            placeholder="Close childhood friend who always looks out for you / Mysterious rival who challenges your beliefs / Wise mentor who guides your journey",
+            height=80
+        )
         
         # Optional Add-ons
         with st.expander(f"🌟 Optional Add-ons for Character {i+1}", expanded=False):
@@ -2173,19 +2261,22 @@ Voice Style: <How do they speak?>"""
         st.session_state[f"name_{i}"] = name
         st.session_state[f"role_{i}"] = role
         st.session_state[f"trait_{i}"] = trait
+        st.session_state[f"relationship_{i}"] = relationship
         st.session_state[f"voice_style_{i}"] = voice_style if 'voice_style' in locals() else "Default"
         
         characters.append({
             "name": name, 
             "role": role, 
             "traits": trait,
+            "relationship": relationship,
             "voice_style": voice_style if 'voice_style' in locals() else "Default"
         })
 
     st.markdown("---")
 
     # ===== STEP 4: GENERATE SEKAI STORY TEMPLATE =====
-    st.markdown("## 📜 Step 4: Generate Sekai Story Template")
+    st.markdown("---")
+    st.markdown("### 📜 Step 4: Generate Sekai Story Template")
     st.markdown('<div id="step-4"></div>', unsafe_allow_html=True)
     st.info("Let's bring everything together and create your story template!")
 
@@ -2204,7 +2295,10 @@ Voice Style: <How do they speak?>"""
             with st.spinner("Creating an engaging opening scene..."):
                 char_list = f"Player: {user_name} ({user_traits})\n"
                 for c in characters:
-                    char_list += f"- {c['name']} ({c['role']}): {c['traits']}\n"
+                    char_list += f"- {c['name']} ({c['role']}): {c['traits']}"
+                    if c.get('relationship'):
+                        char_list += f" | Relationship: {c['relationship']}"
+                    char_list += "\n"
                 
                 # Get advanced settings for opening scene generation
                 story_tone = st.session_state.get("story_tone", "Balanced")
@@ -2246,9 +2340,7 @@ Generate only the opening scene description, nothing else.
                 try:
                     response = model.generate_content(prompt)
                     generated_opening = response.text.strip()
-                    if generated_opening.startswith('"') and generated_opening.endswith(
-                        '"'
-                    ):
+                    if generated_opening.startswith('"') and generated_opening.endswith('"'):
                         generated_opening = generated_opening[1:-1]
                     st.session_state["opening_scene_input"] = generated_opening
                     st.rerun()
@@ -2298,18 +2390,20 @@ Generate only the opening scene description, nothing else.
             st.info(f"Using world info: Title='{world_title}', Setting='{world_setting}', Keywords='{world_keywords}'")
             st.info(f"Using {len(characters)} characters from Step 3")
             
-            # Build comprehensive character information including optional add-ons
+            # Build comprehensive character information including relationships
             character_details = []
             for c in characters:
                 if c['name'].strip() and c['traits'].strip():
                     char_info = f"- {c['name']} ({c['role']}): {c['traits']}"
+                    if c.get('relationship') and c['relationship'].strip():
+                        char_info += f" | Relationship: {c['relationship']}"
                     if c.get('voice_style') and c['voice_style'] != "Default":
                         char_info += f" | Voice: {c['voice_style']}"
                     character_details.append(char_info)
             
             prompt = f"""
 You are an AI for building JSON-based interactive stories.
-Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style), openingScene, storyTone, pacing, pointOfView, and narrationStyle.
+Generate a story JSON with: title, setting, genre, keywords, characters (array of name, role, description, voice_style, relationship), openingScene, storyTone, pacing, pointOfView, and narrationStyle.
 
 Title: {world_title}
 Setting: {world_setting}
@@ -2332,7 +2426,7 @@ Characters:
             prompt += f"pointOfView: {pov}\n"
             prompt += f"narrationStyle: {narration_style}\n"
             
-            prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style field. Include all the advanced settings fields in the JSON output."
+            prompt += "\nRespond with raw JSON only. Do NOT include a 'choices' field in the JSON. The player character should NOT have a voice_style or relationship field. Include all the advanced settings fields in the JSON output."
 
             response = model.generate_content(prompt)
             output = response.text.strip()
@@ -2347,10 +2441,12 @@ Characters:
                 # Remove 'choices' if present
                 if 'choices' in sekai_json:
                     del sekai_json['choices']
-                # Remove 'voice_style' from player (assume first character is player)
+                # Remove 'voice_style' and 'relationship' from player (assume first character is player)
                 if 'characters' in sekai_json and len(sekai_json['characters']) > 0:
                     if 'voice_style' in sekai_json['characters'][0]:
                         del sekai_json['characters'][0]['voice_style']
+                    if 'relationship' in sekai_json['characters'][0]:
+                        del sekai_json['characters'][0]['relationship']
                 st.session_state["sekai_json"] = sekai_json
                 st.success("🎉 Sekai story template generated successfully!")
                 st.json(sekai_json)
@@ -2494,3 +2590,5 @@ Write the opening scene below in proper visual novel script format:
 
     # Footer
     st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
+    
+    st.stop()
