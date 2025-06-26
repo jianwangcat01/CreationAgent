@@ -356,17 +356,30 @@ Look for shared experiences and interactions such as:
 - Character development or relationship growth through interaction
 - Shared discoveries or adventures
 - Moments of trust, vulnerability, or connection
+- Arguments, disagreements, or conflicts that were meaningful
+- Moments of tension, misunderstanding, or hurt feelings
+- Apologies, reconciliations, or making up after conflicts
+- Challenges or obstacles they faced together
+- Moments of betrayal, disappointment, or broken trust
+- Significant disagreements that revealed important differences
+- Emotional outbursts or intense reactions from either party
 
-If you find meaningful shared content, create a short memory (1-2 lines max) with an appropriate emoji that captures the shared experience.
+If you find meaningful shared content (positive OR negative), create a short memory (1-2 lines max) with an appropriate emoji that captures the shared experience.
 If no meaningful shared content is found, respond with "NO_MEMORY".
 
-Examples of good shared memories:
+Examples of good shared memories (both positive and negative):
 - 🎁 "You and {char_name} exchanged meaningful gifts"
 - 💝 "You and {char_name} shared personal secrets with each other"
 - 🌟 "{char_name} promised to always protect you, and you promised to stay by their side"
 - 🎭 "You and {char_name} discovered something important together"
 - 🎮 "You and {char_name} had a fun adventure exploring together"
 - 💕 "You and {char_name} had a heartfelt conversation about your feelings"
+- ⚔️ "You and {char_name} had a heated argument about trust"
+- 😤 "You and {char_name} disagreed strongly about an important decision"
+- 💔 "You and {char_name} had a misunderstanding that hurt both of you"
+- 🤝 "You and {char_name} made up after a difficult disagreement"
+- 😰 "You and {char_name} faced a challenging situation together"
+- 🚫 "You and {char_name} had a conflict that tested your relationship"
 
 Respond with either the memory or "NO_MEMORY".
 """
