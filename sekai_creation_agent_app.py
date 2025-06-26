@@ -329,9 +329,9 @@ Design a unique character, then chat with them as if they were real! The AI will
         # The AI should already be formatting them correctly, but we can add some basic formatting if needed
         return response_text.strip()
 
-    def memory_extractor(response_text, char_name):
-        """Extract meaningful memories from AI character responses"""
-        if not response_text.strip():
+    def memory_extractor(user_input, response_text, char_name):
+        """Extract meaningful memories from user-character interactions"""
+        if not response_text.strip() or not user_input.strip():
             return None
         
         # Configure Gemini API for memory extraction
@@ -339,29 +339,34 @@ Design a unique character, then chat with them as if they were real! The AI will
         model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
         
         memory_prompt = f"""
-Analyze this character response and determine if it contains meaningful relationship-building content that should be remembered.
+Analyze this user-character interaction and determine if it contains meaningful relationship-building content that should be remembered.
 
 Character: {char_name}
-Response: {response_text}
+User Input: {user_input}
+Character Response: {response_text}
 
-Look for:
-- Emotional moments or revelations
-- Secrets shared or confessions
-- Important events or experiences mentioned
-- Gifts given or received
-- Promises made
-- Personal stories shared
-- Significant interactions or bonding moments
-- Character development or relationship growth
+Look for shared experiences and interactions such as:
+- Emotional moments or revelations shared between user and character
+- Secrets shared or confessions made by either party
+- Important events or experiences they went through together
+- Gifts given or received between them
+- Promises made to each other
+- Personal stories shared between them
+- Significant bonding moments or shared activities
+- Character development or relationship growth through interaction
+- Shared discoveries or adventures
+- Moments of trust, vulnerability, or connection
 
-If you find meaningful content, create a short memory (1-2 lines max) with an appropriate emoji.
-If no meaningful content is found, respond with "NO_MEMORY".
+If you find meaningful shared content, create a short memory (1-2 lines max) with an appropriate emoji that captures the shared experience.
+If no meaningful shared content is found, respond with "NO_MEMORY".
 
-Examples of good memories:
-- 🎁 "Character gave you a special gift"
-- 💝 "Character shared a personal secret about their past"
-- 🌟 "Character promised to always protect you"
-- 🎭 "Character revealed their true feelings for you"
+Examples of good shared memories:
+- 🎁 "You and {char_name} exchanged meaningful gifts"
+- 💝 "You and {char_name} shared personal secrets with each other"
+- 🌟 "{char_name} promised to always protect you, and you promised to stay by their side"
+- 🎭 "You and {char_name} discovered something important together"
+- 🎮 "You and {char_name} had a fun adventure exploring together"
+- 💕 "You and {char_name} had a heartfelt conversation about your feelings"
 
 Respond with either the memory or "NO_MEMORY".
 """
@@ -1143,7 +1148,7 @@ Generate only the opening line, nothing else.
                 formatted_reply = format_character_response(reply, char_name)
                 
                 # Extract memory from the response
-                new_memory = memory_extractor(formatted_reply, char_name)
+                new_memory = memory_extractor(user_input, formatted_reply, char_name)
                 if new_memory and new_memory not in st.session_state["memories"]:
                     st.session_state["memories"].append(new_memory)
                 
