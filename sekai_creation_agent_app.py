@@ -107,8 +107,8 @@ if "app_mode" not in st.session_state:
 
 # --- Menu Page ---
 if st.session_state["app_mode"] is None:
-    st.set_page_config(page_title="Sekai Creation Agent", layout="wide")
-    st.title("Sekai AI Creation Agent")
+    st.set_page_config(page_title="DreamForge Creation Agent", layout="wide")
+    st.title("DreamForge AI Creation Agent")
     st.subheader("Choose a mode to get started:")
     
     col1, col2 = st.columns(2)
@@ -1225,10 +1225,10 @@ Generate only the opening line, nothing else.
 
 # --- Roleplay Creation Mode ---
 if st.session_state["app_mode"] == "roleplay":
-    st.set_page_config(page_title="Create Your Sekai World", layout="wide")
-    st.title("🌍 Create Your Sekai World")
+    st.set_page_config(page_title="Create Your DreamForge World", layout="wide")
+    st.title("🌍 Create Your DreamForge World")
     st.markdown("""
-Welcome to the magical world of Sekai creation! Let's build something amazing together, step by step. ✨
+Welcome to the magical world of DreamForge creation! Let's build something amazing together, step by step. ✨
 """)
 
     if st.button("⬅️ Go Back to Menu", key="back_to_menu_roleplay"):
@@ -1242,7 +1242,7 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             "roleplay_step", "roleplay_feedback", "world_idea_input", "world_title", "world_setting",
             "world_title_input", "world_setting_input", "world_keywords_input", "world_genre",
             "user_name", "user_traits", "user_name_input", "user_traits_input", "num_characters_slider",
-            "sekai_json", "game_state", "story_colors", "user_inputs", "story_tone", "pacing", "pov", "narration_style",
+            "world_json", "game_state", "story_colors", "user_inputs", "story_tone", "pacing", "pov", "narration_style",
             # New guided world creation variables (without step tracking)
             "world_inspiration", "world_environment", "world_mood", "world_magic",
             # Add exploration log and progress to the clear list
@@ -1344,11 +1344,11 @@ Welcome to the magical world of Sekai creation! Let's build something amazing to
             summary = response.text.strip()
             
             # Prepend the header
-            header = f"✨ Your exploration of {world_title or 'Sekai'} is complete! Here is the story of your journey:\n\n"
+            header = f"✨ Your exploration of {world_title or 'DreamForge'} is complete! Here is the story of your journey:\n\n"
             return header + summary
         except Exception as e:
             # Fallback to the old list format if LLM fails
-            summary = f"✨ Your exploration of {world_title or 'Sekai'} is complete! Here's what you uncovered:\n"
+            summary = f"✨ Your exploration of {world_title or 'DreamForge'} is complete! Here's what you uncovered:\n"
             summary += "\n".join([f"- {entry.strip()}" for entry in discovery_log])
             return summary
 
@@ -1440,21 +1440,21 @@ Provide only the summary text.
         user_input = st.session_state.get("reply_input", "")
         if user_input.strip():
             # Get the template context
-            sekai_json = st.session_state.get("sekai_json", {})
+            world_json = st.session_state.get("world_json", {})
             
             # Get advanced settings from the JSON template
-            story_tone = sekai_json.get('storyTone', 'Balanced')
-            pacing = sekai_json.get('pacing', 'Balanced')
-            point_of_view = sekai_json.get('pointOfView', 'Third person')
-            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            story_tone = world_json.get('storyTone', 'Balanced')
+            pacing = world_json.get('pacing', 'Balanced')
+            point_of_view = world_json.get('pointOfView', 'Third person')
+            narration_style = world_json.get('narrationStyle', 'Balanced')
             
             # Build the full context including template and conversation history
             template_context = f"""
 STORY TEMPLATE:
-Title: {sekai_json.get('title', 'Unknown')}
-Setting: {sekai_json.get('setting', 'Unknown')}
-Genre: {sekai_json.get('genre', 'Fantasy')}
-Keywords: {sekai_json.get('keywords', '')}
+Title: {world_json.get('title', 'Unknown')}
+Setting: {world_json.get('setting', 'Unknown')}
+Genre: {world_json.get('genre', 'Fantasy')}
+Keywords: {world_json.get('keywords', '')}
 
 Story Style:
 - Tone: {story_tone}
@@ -1465,7 +1465,7 @@ Story Style:
 Characters:
 """
             # Add all characters from template with detailed descriptions
-            for char in sekai_json.get('characters', []):
+            for char in world_json.get('characters', []):
                 char_name = char.get('name', 'Unknown')
                 char_role = char.get('role', '')
                 char_description = char.get('description', '')
@@ -1479,15 +1479,15 @@ Characters:
                 template_context += "\n"
             
             # Add opening scene if available
-            if sekai_json.get('openingScene'):
-                template_context += f"\nOpening Scene: {sekai_json.get('openingScene')}\n"
+            if world_json.get('openingScene'):
+                template_context += f"\nOpening Scene: {world_json.get('openingScene')}\n"
             
             # Add gameplay mode context
-            gameplay_mode = sekai_json.get('gameplayMode', '')
+            gameplay_mode = world_json.get('gameplayMode', '')
             if gameplay_mode:
                 template_context += f"\nGameplay Mode: {gameplay_mode}\n"
                 if gameplay_mode == "🌍 Explore the World":
-                    mode_details = sekai_json.get('modeDetails', {})
+                    mode_details = world_json.get('modeDetails', {})
                     exploration_locations = mode_details.get('exploration_locations', '')
                     exploration_chapters = mode_details.get('exploration_chapters', '')
                     if exploration_locations:
@@ -1502,7 +1502,7 @@ Characters:
                             template_context += f"{i}. {discovery}\n"
                 
                 elif gameplay_mode == "🎯 Achieve a Goal":
-                    mode_details = sekai_json.get('modeDetails', {})
+                    mode_details = world_json.get('modeDetails', {})
                     main_goal = mode_details.get('main_goal', '')
                     success_condition = mode_details.get('success_condition', '')
                     if main_goal:
@@ -1525,7 +1525,7 @@ Characters:
             # Ensure all characters are introduced within the first 3 turns
             if len(st.session_state["game_state"]) < 3:
                 full_story_text = "".join(st.session_state["game_state"])
-                all_characters_in_json = sekai_json.get("characters", [])
+                all_characters_in_json = world_json.get("characters", [])
                 character_names = [
                     c.get("name") for c in all_characters_in_json if c.get("name")
                 ]
@@ -1591,7 +1591,7 @@ EXPLORATION MODE INSTRUCTIONS:
             elif gameplay_mode == "🎯 Achieve a Goal":
                 reply_prompt += f"""
 GOAL ACHIEVEMENT MODE INSTRUCTIONS:
-- Focus on progress toward the main goal: {sekai_json.get('modeDetails', {}).get('main_goal', 'Unknown Goal')}
+- Focus on progress toward the main goal: {world_json.get('modeDetails', {}).get('main_goal', 'Unknown Goal')}
 - Each response should advance the player toward their objective
 - Include meaningful progress or setbacks related to the goal
 - Keep character interactions relevant to the mission
@@ -1618,7 +1618,7 @@ Generate the next story turn in proper visual novel script format:
                 st.session_state["user_inputs"].append(user_input.strip())
 
                 # Update gameplay mode tracking
-                gameplay_mode = sekai_json.get('gameplayMode', '')
+                gameplay_mode = world_json.get('gameplayMode', '')
                 if gameplay_mode == "🌍 Explore the World":
                     # Enhanced exploration log detection - more frequent logging
                     exploration_keywords = [
@@ -1832,21 +1832,21 @@ Generate the next story turn in proper visual novel script format:
         """Generate 3 choice options for the player"""
         if "game_state" in st.session_state and st.session_state["game_state"]:
             # Get the template context
-            sekai_json = st.session_state.get("sekai_json", {})
+            world_json = st.session_state.get("world_json", {})
             
             # Get advanced settings from the JSON template
-            story_tone = sekai_json.get('storyTone', 'Balanced')
-            pacing = sekai_json.get('pacing', 'Balanced')
-            point_of_view = sekai_json.get('pointOfView', 'Third person')
-            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            story_tone = world_json.get('storyTone', 'Balanced')
+            pacing = world_json.get('pacing', 'Balanced')
+            point_of_view = world_json.get('pointOfView', 'Third person')
+            narration_style = world_json.get('narrationStyle', 'Balanced')
             
             # Build template context
             template_context = f"""
 STORY TEMPLATE:
-Title: {sekai_json.get('title', 'Unknown')}
-Setting: {sekai_json.get('setting', 'Unknown')}
-Genre: {sekai_json.get('genre', 'Fantasy')}
-Keywords: {sekai_json.get('keywords', '')}
+Title: {world_json.get('title', 'Unknown')}
+Setting: {world_json.get('setting', 'Unknown')}
+Genre: {world_json.get('genre', 'Fantasy')}
+Keywords: {world_json.get('keywords', '')}
 
 Story Style:
 - Tone: {story_tone}
@@ -1857,7 +1857,7 @@ Story Style:
 Characters:
 """
             # Add all characters from template
-            for char in sekai_json.get('characters', []):
+            for char in world_json.get('characters', []):
                 char_name = char.get('name', 'Unknown')
                 char_role = char.get('role', '')
                 char_description = char.get('description', '')
@@ -1899,7 +1899,7 @@ Each choice should be:
 """
             
             # Add exploration-specific choice instructions
-            gameplay_mode = sekai_json.get('gameplayMode', '')
+            gameplay_mode = world_json.get('gameplayMode', '')
             if gameplay_mode == "🌍 Explore the World":
                 choice_prompt += f"""
 EXPLORATION MODE CHOICE GUIDELINES:
@@ -1987,8 +1987,8 @@ Generate only the 3 choices, nothing else.
                     ]
         
         # Final fallback for when no game state exists
-        sekai_json = st.session_state.get("sekai_json", {})
-        gameplay_mode = sekai_json.get('gameplayMode', '')
+        world_json = st.session_state.get("world_json", {})
+        gameplay_mode = world_json.get('gameplayMode', '')
         if gameplay_mode == "🌍 Explore the World":
             return [
                 "Examine the surroundings for anything interesting",
@@ -2011,7 +2011,7 @@ Generate only the 3 choices, nothing else.
         <div style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
             <div style="font-size: 24px;">🌍</div>
             <div style="font-weight: bold; color: #495057;">Step 1</div>
-            <div style="color: #6c757d; font-size: 14px;">Your Sekai World</div>
+            <div style="color: #6c757d; font-size: 14px;">Your DreamForge World</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
@@ -2048,9 +2048,9 @@ Generate only the 3 choices, nothing else.
         """, unsafe_allow_html=True)
     st.markdown("---")
 
-    # ===== STEP 1: CREATE YOUR SEKAI WORLD =====
+    # ===== STEP 1: CREATE YOUR DREAMFORGE WORLD =====
     st.markdown("---")
-    st.markdown("## 🌍 Step 1: Your Sekai World")
+    st.markdown("## 🌍 Step 1: Your DreamForge World")
 
     # --- World Inspiration ---
     st.markdown("### 🌈 World Inspiration")
@@ -2202,7 +2202,7 @@ Generate only the 3 choices, nothing else.
     if 'world_genre' not in st.session_state:
         st.session_state['world_genre'] = []
     selected_genres = st.multiselect(
-        "Your Sekai's Genre(s)",
+        "Your DreamForge's Genre(s)",
         genre_options,
         default=st.session_state['world_genre'],
         key="world_genre"
@@ -2211,15 +2211,15 @@ Generate only the 3 choices, nothing else.
         # Dynamic feedback based on genre selection
         genre_names = [g.split(' ', 1)[0] for g in selected_genres]
         if "Slice of Life" in genre_names:
-            st.success("📚 Great choice! Your Sekai will have a warm, reflective vibe with that genre.")
+            st.success("📚 Great choice! Your DreamForge will have a warm, reflective vibe with that genre.")
         elif "Fantasy" in genre_names:
-            st.success("🧙‍♀️ Great choice! Your Sekai will have a magical, wondrous vibe with that genre.")
+            st.success("🧙‍♀️ Great choice! Your DreamForge will have a magical, wondrous vibe with that genre.")
         elif "Sci-Fi" in genre_names:
-            st.success("🚀 Great choice! Your Sekai will have a futuristic, innovative vibe with that genre.")
+            st.success("🚀 Great choice! Your DreamForge will have a futuristic, innovative vibe with that genre.")
         elif "Romance" in genre_names:
-            st.success("💕 Great choice! Your Sekai will have a heartfelt, emotional vibe with that genre.")
+            st.success("💕 Great choice! Your DreamForge will have a heartfelt, emotional vibe with that genre.")
         else:
-            st.success("🌟 Great choice! Your Sekai will have an amazing vibe with that genre.")
+            st.success("🌟 Great choice! Your DreamForge will have an amazing vibe with that genre.")
 
     # --- AI Generate World Details Button ---
     st.markdown("---")
@@ -2241,7 +2241,7 @@ Generate only the 3 choices, nothing else.
             # Build a comprehensive prompt with all available world information
             genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
             
-            prompt = f"""Generate world details for a Sekai world based on the following information:
+            prompt = f"""Generate world details for a DreamForge world based on the following information:
 
 Inspiration: {world_inspiration}
 Environment: {world_environment}
@@ -2287,14 +2287,14 @@ Keywords: <comma-separated keywords>"""
             except Exception as e:
                 st.error(f"Failed to generate world details: {e}")
 
-    # --- Sekai World Details (ALWAYS VISIBLE) ---
+    # --- DreamForge World Details (ALWAYS VISIBLE) ---
     st.markdown("---")
-    st.markdown("### 🌟 Your Sekai World Details")
+    st.markdown("### 🌟 Your DreamForge World Details")
     st.markdown("**Review and edit your world details below, or use the guided creation above:**")
     if 'world_title' not in st.session_state:
         st.session_state['world_title'] = ''
     world_title = st.text_input(
-        "Sekai Title",
+        "DreamForge Title",
         value=st.session_state['world_title'],
         key="world_title_display"
     )
@@ -2333,7 +2333,7 @@ Keywords: <comma-separated keywords>"""
             world_genres = []
         
         if not (world_title and world_setting):
-            st.warning("Please complete Step 1 (Sekai World) before generating your character.")
+            st.warning("Please complete Step 1 (DreamForge World) before generating your character.")
         else:
             # Build a comprehensive prompt with all available world information
             genre_str = ', '.join([g.split(' ', 1)[0] for g in world_genres if g]) if world_genres else 'Fantasy'
@@ -2341,7 +2341,7 @@ Keywords: <comma-separated keywords>"""
             if world_keywords:
                 world_context += f"\nKeywords: {world_keywords}"
             
-            prompt = f"""Generate a player character for the following Sekai world.
+            prompt = f"""Generate a player character for the following DreamForge world.
 
 {world_context}
 
@@ -2407,7 +2407,7 @@ Respond with:
     st.info("Now let's meet the other characters who will join your story!")
 
     # Get values from previous steps
-    world_title = st.session_state.get("world_title", "Your Sekai World")
+    world_title = st.session_state.get("world_title", "Your DreamForge World")
     world_setting = st.session_state.get("world_setting", "A magical world")
     world_keywords = st.session_state.get("world_keywords_input", "")
     world_genres = st.session_state.get("world_genre", [])
@@ -2751,15 +2751,15 @@ Relationship: <How do they relate to the player character? Are they friends, riv
 
     st.markdown("---")
 
-    # ===== STEP 4: GENERATE SEKAI STORY TEMPLATE =====
+    # ===== STEP 4: GENERATE DREAMFORGE STORY TEMPLATE =====
     st.markdown("---")
-    st.markdown("### 📜 Step 4: Generate Sekai Story Template")
+    st.markdown("### 📜 Step 4: Generate DreamForge Story Template")
     st.markdown('<div id="step-4"></div>', unsafe_allow_html=True)
     st.info("Let's bring everything together and create your story template!")
 
     # 🧭 Gameplay Mode Selection (Mandatory)
     st.markdown("### 🧭 Gameplay Mode Selection")
-    st.markdown("**Choose how you want to experience your Sekai world:**")
+    st.markdown("**Choose how you want to experience your DreamForge world:**")
     
     selected_mode = st.selectbox(
         "Choose your gameplay mode:",
@@ -3142,33 +3142,33 @@ Gameplay Mode: {selected_mode}
                 output = output[:-3].strip()
 
             try:
-                sekai_json = json.loads(output)
+                world_json = json.loads(output)
                 # Remove 'choices' if present
-                if 'choices' in sekai_json:
-                    del sekai_json['choices']
+                if 'choices' in world_json:
+                    del world_json['choices']
                 # Remove 'voice_style' and 'relationship' from player (assume first character is player)
-                if 'characters' in sekai_json and len(sekai_json['characters']) > 0:
-                    if 'voice_style' in sekai_json['characters'][0]:
-                        del sekai_json['characters'][0]['voice_style']
-                    if 'relationship' in sekai_json['characters'][0]:
-                        del sekai_json['characters'][0]['relationship']
+                if 'characters' in world_json and len(world_json['characters']) > 0:
+                    if 'voice_style' in world_json['characters'][0]:
+                        del world_json['characters'][0]['voice_style']
+                    if 'relationship' in world_json['characters'][0]:
+                        del world_json['characters'][0]['relationship']
                 
                 # Store gameplay mode information
-                sekai_json['gameplayMode'] = selected_mode
+                world_json['gameplayMode'] = selected_mode
                 if selected_mode == "🌍 Explore the World":
-                    sekai_json['modeDetails'] = {
+                    world_json['modeDetails'] = {
                         'exploration_locations': st.session_state.get('exploration_locations', ''),
                         'exploration_chapters': st.session_state.get('exploration_chapters', '')
                     }
                 elif selected_mode == "🎯 Achieve a Goal":
-                    sekai_json['modeDetails'] = {
+                    world_json['modeDetails'] = {
                         'main_goal': st.session_state.get('goal_main', ''),
                         'success_condition': st.session_state.get('goal_success', '')
                     }
                 
-                st.session_state["sekai_json"] = sekai_json
-                st.success("🎉 Sekai story template generated successfully!")
-                st.json(sekai_json)
+                st.session_state["world_json"] = world_json
+                st.success("🎉 DreamForge story template generated successfully!")
+                st.json(world_json)
                 # Reset exploration log when template is regenerated
                 if "exploration_log" in st.session_state:
                     del st.session_state["exploration_log"]
@@ -3185,14 +3185,14 @@ Gameplay Mode: {selected_mode}
     st.markdown("---")
 
     # ===== STEP 5: PLAY / START THE STORY =====
-    st.markdown("## 🎮 Step 5: Start Your Sekai Journey!")
+    st.markdown("## 🎮 Step 5: Start Your DreamForge Journey!")
     st.markdown('<div id="step-5"></div>', unsafe_allow_html=True)
     
     # Get values
     user_name = st.session_state.get("user_name", st.session_state.get("user_name_input", "Alex"))
-    world_title = st.session_state.get("world_title", "Your Sekai World")
+    world_title = st.session_state.get("world_title", "Your DreamForge World")
     
-    st.success(f"🎉 You're all set! Ready to begin your Sekai journey with {user_name} in {world_title}? Let's go!")
+    st.success(f"🎉 You're all set! Ready to begin your DreamForge journey with {user_name} in {world_title}? Let's go!")
     
     st.markdown("""
 📜 **How to play:**
@@ -3202,22 +3202,22 @@ Gameplay Mode: {selected_mode}
     """)
 
     # Check if template is generated
-    if "sekai_json" not in st.session_state:
+    if "world_json" not in st.session_state:
         st.warning("⚠️ You need to generate a story template first!")
         st.markdown("""
 **To start the game, you need to:**
-1. Complete **Step 4: Generate Sekai Story Template** above
+1. Complete **Step 4: Generate DreamForge Story Template** above
 2. Click **"🧙 Generate Template"** to create your story
 3. Then return here to start playing!
         """)
     else:
         if st.button("🎮 Start Game", type="primary"):
             # Get advanced settings from the JSON template
-            sekai_json = st.session_state['sekai_json']
-            story_tone = sekai_json.get('storyTone', 'Balanced')
-            pacing = sekai_json.get('pacing', 'Balanced')
-            point_of_view = sekai_json.get('pointOfView', 'Third person')
-            narration_style = sekai_json.get('narrationStyle', 'Balanced')
+            world_json = st.session_state['world_json']
+            story_tone = world_json.get('storyTone', 'Balanced')
+            pacing = world_json.get('pacing', 'Balanced')
+            point_of_view = world_json.get('pointOfView', 'Third person')
+            narration_style = world_json.get('narrationStyle', 'Balanced')
             
             story_prompt = f"""
 You are an interactive fiction narrator for a visual novel.
@@ -3255,7 +3255,7 @@ MEMORY REQUIREMENTS:
 - Ensure character expressions and moods match their personalities from the template
 
 JSON:
-{json.dumps(st.session_state['sekai_json'], indent=2)}
+{json.dumps(st.session_state['world_json'], indent=2)}
 
 Write the opening scene below in proper visual novel script format:
 """
@@ -3290,7 +3290,7 @@ Write the opening scene below in proper visual novel script format:
             except Exception as e:
                 st.error(f"Error starting the game: {e}")
                 # Fallback opening
-                fallback_opening = f'Welcome to {sekai_json.get("title", "your adventure")}!\nThe story begins...\n**What do you do?**'
+                fallback_opening = f'Welcome to {world_json.get("title", "your adventure")}!\nThe story begins...\n**What do you do?**'
                 st.session_state["game_state"] = [fallback_opening]
                 st.session_state["story_colors"] = [random.choice(["#fce4ec", "#e3f2fd", "#e8f5e9", "#fff8e1", "#ede7f6"])]
                 st.session_state["user_inputs"] = [""]
@@ -3302,8 +3302,8 @@ Write the opening scene below in proper visual novel script format:
         st.subheader("🚀 Game In Progress")
 
         # Get gameplay mode for sidebar
-        sekai_json = st.session_state.get("sekai_json", {})
-        gameplay_mode = sekai_json.get('gameplayMode', '')
+        world_json = st.session_state.get("world_json", {})
+        gameplay_mode = world_json.get('gameplayMode', '')
 
         # Create columns for main game and sidebar
         if gameplay_mode and gameplay_mode in ["🌍 Explore the World", "🎯 Achieve a Goal"]:
@@ -3346,7 +3346,7 @@ Write the opening scene below in proper visual novel script format:
                     # Show goal completion feedback below input if progress is 100%
                     if gameplay_mode == "🎯 Achieve a Goal":
                         progress = st.session_state.get("goal_progress", 0)
-                        mode_details = sekai_json.get('modeDetails', {})
+                        mode_details = world_json.get('modeDetails', {})
                         main_goal = mode_details.get('main_goal', 'Unknown Goal')
                         if progress >= 100:
                             st.success("🏆 You achieved your goal!")
@@ -3359,7 +3359,7 @@ Write the opening scene below in proper visual novel script format:
                         with end_col:
                             if st.button("🛑 End Journey", key="end_exploration_main"):
                                 with st.spinner("Writing the epilogue to your journey..."):
-                                    world_title = sekai_json.get('title', None)
+                                    world_title = world_json.get('title', None)
                                     summary = generate_journey_summary(st.session_state.get("exploration_log", []), None, world_title)
                                     st.session_state["journey_summary"] = summary
                                     st.session_state["show_journey_summary"] = True
@@ -3368,7 +3368,7 @@ Write the opening scene below in proper visual novel script format:
 
                 # After the story blocks, show the journey summary if available
                 if st.session_state.get("show_journey_summary"):
-                    st.success("✨ Your exploration of Sekai is complete! See your journey summary below.")
+                    st.success("✨ Your exploration of DreamForge is complete! See your journey summary below.")
                     with st.container():
                         st.markdown("---")
                         st.markdown("### Your Journey's Epilogue")
@@ -3415,7 +3415,7 @@ Write the opening scene below in proper visual novel script format:
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    mode_details = sekai_json.get('modeDetails', {})
+                    mode_details = world_json.get('modeDetails', {})
                     main_goal = mode_details.get('main_goal', 'Unknown Goal')
                     success_condition = mode_details.get('success_condition', '')
                     
@@ -3493,7 +3493,7 @@ Write the opening scene below in proper visual novel script format:
             # Show goal completion feedback below input if progress is 100%
             if gameplay_mode == "🎯 Achieve a Goal":
                 progress = st.session_state.get("goal_progress", 0)
-                mode_details = sekai_json.get('modeDetails', {})
+                mode_details = world_json.get('modeDetails', {})
                 main_goal = mode_details.get('main_goal', 'Unknown Goal')
                 if progress >= 100:
                     st.success("🏆 You achieved your goal!")
@@ -3505,13 +3505,13 @@ Write the opening scene below in proper visual novel script format:
                 send_col, end_col = st.columns([1, 1])
                 with end_col:
                     if st.button("🛑 End Journey", key="end_exploration_fallback"):
-                        st.success("✨ Your exploration of Sekai is complete! Here's what you uncovered:")
+                        st.success("✨ Your exploration of DreamForge is complete! Here's what you uncovered:")
                         if "exploration_log" in st.session_state and st.session_state["exploration_log"]:
                             for i, discovery in enumerate(st.session_state["exploration_log"]):
                                 st.markdown(f"• {discovery}")
             elif gameplay_mode == "🎯 Achieve a Goal":
                 # Goal information display under the input
-                mode_details = sekai_json.get('modeDetails', {})
+                mode_details = world_json.get('modeDetails', {})
                 main_goal = mode_details.get('main_goal', 'Unknown Goal')
                 success_condition = mode_details.get('success_condition', '')
                 
@@ -3526,6 +3526,6 @@ Write the opening scene below in proper visual novel script format:
                 st.button("Send", on_click=handle_send)
 
     # Footer
-    st.caption("Built by Claire Wang for the Sekai PM Take-Home Project ✨")
+    st.caption("Built by Claire Wang for the DreamForge PM Take-Home Project ✨")
     
     st.stop()
